@@ -2,7 +2,7 @@
 
 @section('content')
   <div class="row">
-    <div class="col-md-7">
+    <div class="col-md-7 pasien">
       <div class="box box-info">
         <div class="box-header with-border">
           <div style="display: flex; justify-content: space-between">
@@ -22,10 +22,10 @@
         </div>
       </div>
     </div>
-    
+
 
     <div class="col-md-5">
-      <div class="col-md-12">
+      <div class="col-md-12 kelamin">
         <div class="box box-info">
           <div class="box-header with-border">
             <div style="display: flex; justify-content: space-between">
@@ -45,7 +45,7 @@
           </div>
         </div>
       </div>
-      <div class="col-md-12">
+      <div class="col-md-12 umur">
         <div class="box box-info">
           <div class="box-header with-border">
             <div style="display: flex; justify-content: space-between">

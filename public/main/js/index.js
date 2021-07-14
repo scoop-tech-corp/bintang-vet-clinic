@@ -3,6 +3,21 @@ $(document).ready(function() {
   widgetTotalPasien({month: null, year: null});
   widgetJenisKelamin();
   widgetUmur();
+  let getAuthUser = localStorage.getItem('vet-clinic');
+  console.log(getAuthUser);
+
+  if (!getAuthUser) {
+    location.href = $('.baseUrl').val() + '/masuk';
+  } else {
+    getAuthUser = JSON.parse(getAuthUser);
+    role         = getAuthUser.role.toLowerCase();
+
+    if (role != 'admin') {
+      $('.pasien').hide();
+      $('.kelamin').hide();
+      $('.umur').hide();
+    }
+  }
 
   $('#datepicker-jumlah-pasien').datepicker({
     autoclose: true, clearBtn: true,
@@ -67,8 +82,8 @@ $(document).ready(function() {
       chart: { type: 'pie' },
       title: { text: '' },
       plotOptions: {
-        pie: { cursor: 'pointer', 
-        dataLabels: { 
+        pie: { cursor: 'pointer',
+        dataLabels: {
           enabled: true,
           format: '<b>{point.name}</b>: {point.y}'
         } }
