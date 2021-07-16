@@ -331,7 +331,8 @@ class UserController extends Controller
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select('users.id', 'users.username', 'users.role', 'branches.id as branch_id', 'branches.branch_name')
             ->where('users.role', '=', 'dokter')
-            ->where('users.status', '=', '1');
+            ->where('users.status', '=', '1')
+            ->where('users.isDeleted', '=', '0');
 
         if ($request->user()->role == 'resepsionis') {
             $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
