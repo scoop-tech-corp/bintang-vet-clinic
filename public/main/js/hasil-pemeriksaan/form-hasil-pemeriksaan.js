@@ -193,7 +193,7 @@ $(document).ready(function() {
     if(tempFile.length) {
       tempFile.forEach(file => { fd.append('filenames[]', file); });
     } else {
-      tempFile.append('filenames[]', []);
+      fd.append('filenames[]', []);
     }
 
     $.ajax({
