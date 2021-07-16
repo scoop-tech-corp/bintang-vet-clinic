@@ -344,11 +344,17 @@ class HasilPemeriksaanController extends Controller
             }
         }
 
-        //validasi tambah tambah gambar
+        //validasi tambah gambar
+
+        $messages_images = [
+            'filenames.required' => 'Gambar harus diisi!',
+            'filenames.*.required' => 'Gambar harus diisi!',
+        ];
+
         $validator_image = Validator::make($request->all(), [
             'filenames' => 'required',
             'filenames.*' => 'required|mimes:jpg,png,jpeg',
-        ]);
+        ], $messages_images);
 
         if ($validator_image->fails()) {
             $errors_image = $validator_image->errors()->all();
@@ -1575,9 +1581,11 @@ class HasilPemeriksaanController extends Controller
                 'user_id' => $request->user()->id,
             ]);
 
-            $delete_detail_item_patients = DB::table('detail_item_patients')
-                ->where('price_item_id', $datas->price_item_id)->delete();
         }
+        $values = DetailItemPatient::where('check_up_result_id', '=', $request->id)
+            ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
+        // $delete_detail_item_patients = DB::table('detail_item_patients')
+        //         ->where('price_item_id', $datas->price_item_id)->delete();
 
         $detail_service = DetailServicePatient::where('check_up_result_id', '=', $request->id)->get();
 
@@ -1588,8 +1596,11 @@ class HasilPemeriksaanController extends Controller
             ], 404);
         }
 
-        $delete_detail_service_patients = DB::table('detail_service_patients')
-            ->where('check_up_result_id', $request->id)->delete();
+        // $delete_detail_service_patients = DB::table('detail_service_patients')
+        //     ->where('check_up_result_id', $request->id)->delete();
+
+        $delete_detail_service_patients = InPatient::where('check_up_result_id', '=', $request->id)
+            ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
 
         $inpatient = InPatient::where('check_up_result_id', '=', $request->id)->get();
 
@@ -1600,8 +1611,11 @@ class HasilPemeriksaanController extends Controller
             ], 404);
         }
 
-        $delete_inpatient = DB::table('in_patients')
-            ->where('check_up_result_id', $request->id)->delete();
+        // $delete_inpatient = DB::table('in_patients')
+        //     ->where('check_up_result_id', $request->id)->delete();
+
+        $delete_inpatient = DetailServicePatient::where('check_up_result_id', '=', $request->id)
+            ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
 
         $find_images = DB::table('images_check_up_results')
             ->select('images_check_up_results.id', 'images_check_up_results.image')
@@ -1616,15 +1630,20 @@ class HasilPemeriksaanController extends Controller
 
                     File::delete(public_path() . $image->image);
 
-                    $delete = DB::table('images_check_up_results')
-                        ->where('id', $image->id)->delete();
+                    // $delete = DB::table('images_check_up_results')
+                    //     ->where('id', $image->id)->delete();
+                    $delete = ImagesCheckUpResults::where('id', '=', $image->id)
+                        ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
                 }
             }
 
         }
 
         $check_up_result = CheckUpResult::find($request->id);
-        $check_up_result->delete();
+        $check_up_result->isDeleted = true;
+        $check_up_result->deleted_by = $request->user()->fullname;
+        $check_up_result->deleted_at = \Carbon\Carbon::now();
+        $check_up_result->save();
 
         return response()->json([
             'message' => 'Berhasil menghapus Data',
