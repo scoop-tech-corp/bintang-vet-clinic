@@ -4,7 +4,6 @@ $(document).ready(function() {
   widgetJenisKelamin();
   widgetUmur();
   let getAuthUser = localStorage.getItem('vet-clinic');
-  console.log(getAuthUser);
 
   if (!getAuthUser) {
     location.href = $('.baseUrl').val() + '/masuk';
