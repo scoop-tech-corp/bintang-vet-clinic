@@ -165,11 +165,17 @@ class RegistrasiController extends Controller
                 'message' => 'The data was invalid.',
                 'errors' => ['Data tidak ditemukan!'],
             ], 404);
-        } elseif ($registration->acceptance_status == 1) {
-            return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Data tidak dapat dihapus karena sudah diterima oleh dokter!'],
-            ], 422);
+        } elseif ($registration->acceptance_status == 1 || $registration->acceptance_status == 3) {
+            // return response()->json([
+            //     'message' => 'The data was invalid.',
+            //     'errors' => ['Data tidak dapat dihapus karena sudah diterima oleh dokter!'],
+            // ], 422);
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                return response()->json([
+                    'message' => 'The user role was invalid.',
+                    'errors' => ['Akses User tidak diizinkan!'],
+                ], 403);
+            }
         }
 
         $registration->isDeleted = true;
