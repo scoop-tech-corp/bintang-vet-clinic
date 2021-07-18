@@ -176,7 +176,7 @@ Route::group(['middleware' => ['api']], function () {
 
         //bulanan
         Route::get('laporan-keuangan/bulanan', 'LaporanKeuanganBulananController@index');
-        Route::get('laporan-keuangan/bulanan/download', 'PembayaranController@print_pdf');
+        Route::get('laporan-keuangan/bulanan/download', 'LaporanKeuanganBulananController@download_excel');
 
         Route::get('laporan-keuangan/bulanan/detail', 'LaporanKeuanganBulananController@detail');
 

@@ -32,81 +32,149 @@ class DataPasien implements FromCollection, ShouldAutoSize, WithHeadings, WithTi
     {
         DB::statement(DB::raw('set @rownum=0'));
 
-        $data = DB::table('list_of_payments')
+        $item_sum = DB::table('list_of_payments')
             ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-
             ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
             ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
             ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
 
+            ->select(
+                DB::raw("TRIM(SUM(detail_item_patients.price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(price_items.capital_price * detail_item_patients.quantity))+0 as capital_price"),
+                DB::raw("TRIM(SUM(price_items.doctor_fee * detail_item_patients.quantity))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(price_items.petshop_fee * detail_item_patients.quantity))+0 as petshop_fee"));
+
+        if ($this->branch_id) {
+            $item_sum = $item_sum->where('branches.id', '=', $this->branch_id);
+        }
+
+        if ($this->date) {
+            $item_sum = $item_sum->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $this->date);
+        }
+
+        $item_sum = $item_sum->groupBy('list_of_payments.check_up_result_id');
+
+        $service_sum = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
             ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
             ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
             ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select(DB::raw('null as rownum'), DB::raw('null as list_of_payment_id'), DB::raw('null as check_up_result_id'), DB::raw('null as registration_number'),
-                DB::raw('null as patient_number'), DB::raw('null as pet_category'), DB::raw('null as pet_name'), DB::raw('null as complaint'),
 
-                DB::raw("TRIM(SUM(detail_item_patients.price_overall) + SUM(detail_service_patients.price_overall))+0 as price_overall"),
-                DB::raw("TRIM(SUM(price_items.capital_price * detail_item_patients.quantity) + SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
-                DB::raw("TRIM(SUM(price_items.doctor_fee * detail_item_patients.quantity) + SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(price_items.petshop_fee * detail_item_patients.quantity) + SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
+            ->select(
+                DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
+                DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"));
 
-                DB::raw('null as created_by'), DB::raw('null as created_at'),
+        if ($this->branch_id) {
+            $service_sum = $service_sum->where('branches.id', '=', $this->branch_id);
+        }
+
+        if ($this->date) {
+            $service_sum = $service_sum->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $this->date);
+        }
+
+        $service_sum = $service_sum->groupBy('list_of_payments.check_up_result_id')
+            ->union($item_sum);
+
+        $data = DB::query()->fromSub($service_sum, 't')
+            ->select(DB::raw('null as rownum'),
+                DB::raw('null as list_of_payment_id'),
+                DB::raw('null as check_up_result_id'),
+                DB::raw('null as registration_number'),
+                DB::raw('null as patient_number'),
+                DB::raw('null as pet_category'),
+                DB::raw('null as pet_name'),
+                DB::raw('null as complaint'),
+                DB::raw("TRIM(SUM(price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(capital_price))+0 as capital_price"),
+                DB::raw("TRIM(SUM(doctor_fee))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(petshop_fee))+0 as petshop_fee"),
+                DB::raw('null as created_by'),
+                DB::raw('null as created_at'),
                 DB::raw('"Total" as status_outpatient_inpatient'));
 
-        if ($this->branch_id) {
-            $data = $data->where('branches.id', '=', $this->branch_id);
-        }
-
-        if ($this->date) {
-            $data = $data->where('list_of_payments.created_at', '=', $this->date);
-        }
-
-        // if ($this->orderby) {
-
-        //     $data = $data->orderBy($this->column, $this->orderby);
-        // } else {
-        //     $data = $data->orderBy('list_of_payments.id', 'asc');
-        // }
-
-        $data2 = DB::table('list_of_payments')
+        $item = DB::table('list_of_payments')
             ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-
             ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
             ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
             ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
 
+            ->select(DB::raw('@rownum  := @rownum  + 1 AS rownum'), 'list_of_payments.id as list_of_payment_id', 'list_of_payments.check_up_result_id as check_up_result_id',
+                'registrations.id_number as registration_number',
+                'patients.id_member as patient_number', 'patients.pet_category', 'patients.pet_name', 'registrations.complaint',
+                DB::raw("TRIM(SUM(detail_item_patients.price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(price_items.capital_price * detail_item_patients.quantity))+0 as capital_price"),
+                DB::raw("TRIM(SUM(price_items.doctor_fee * detail_item_patients.quantity))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(price_items.petshop_fee * detail_item_patients.quantity))+0 as petshop_fee"),
+                'users.fullname as created_by', 'list_of_payments.created_at as created_at',
+                'branches.id as branchId', 'check_up_results.status_outpatient_inpatient')
+            ->groupBy('list_of_payments.check_up_result_id');
+
+        $service = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
             ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
             ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
             ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select(DB::raw('@rownum  := @rownum  + 1 AS rownum'), 'list_of_payments.id as list_of_payment_id', 'check_up_results.id as check_up_result_id', 'registrations.id_number as registration_number',
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+
+            ->select(DB::raw('@rownum  := @rownum  + 1 AS rownum'), 'list_of_payments.id as list_of_payment_id', 'list_of_payments.check_up_result_id as check_up_result_id',
+                'registrations.id_number as registration_number',
                 'patients.id_member as patient_number', 'patients.pet_category', 'patients.pet_name', 'registrations.complaint',
+                DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
+                DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
+                'users.fullname as created_by', 'list_of_payments.created_at as created_at',
+                'branches.id as branchId', 'check_up_results.status_outpatient_inpatient as status_outpatient_inpatient')
+            ->groupBy('list_of_payments.check_up_result_id')
+            ->union($item);
 
-                DB::raw("TRIM(SUM(detail_item_patients.price_overall) + SUM(detail_service_patients.price_overall))+0 as price_overall"),
-                DB::raw("TRIM(SUM(price_items.capital_price * detail_item_patients.quantity) + SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
-                DB::raw("TRIM(SUM(price_items.doctor_fee * detail_item_patients.quantity) + SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(price_items.petshop_fee * detail_item_patients.quantity) + SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
+        $data2 = DB::query()->fromSub($service, 'p_pn')
+            ->select('rownum',
+                'list_of_payment_id',
+                'check_up_result_id',
+                'registration_number',
+                'patient_number',
+                'pet_category',
+                'pet_name',
+                'complaint',
+                DB::raw("TRIM(SUM(price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(capital_price))+0 as capital_price"),
+                DB::raw("TRIM(SUM(doctor_fee))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(petshop_fee))+0 as petshop_fee"),
+                'created_by',
+                DB::raw("DATE_FORMAT(created_at, '%d %b %Y') as created_at"),
+                DB::raw('(CASE WHEN status_outpatient_inpatient = 1 THEN "Rawat Inap" ELSE "Rawat Jalan" END) AS status_outpatient_inpatient'));
 
-                'users.fullname as created_by', DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y') as created_at"),
-                DB::raw('(CASE WHEN check_up_results.status_outpatient_inpatient = 1 THEN "Rawat Inap" ELSE "Rawat Jalan" END) AS status_outpatient_inpatient'));
         if ($this->branch_id) {
-            $data2 = $data2->where('branches.id', '=', $this->branch_id);
+            $data2 = $data2->where('branchId', '=', $this->branch_id);
         }
 
         if ($this->date) {
-            $data2 = $data2->where('list_of_payments.created_at', '=', $this->date);
+
+            $data2 = $data2->where(DB::raw('DATE(created_at)'), '=', $this->date);
         }
-        $data2 = $data2->groupBy('list_of_payments.id', 'check_up_results.id', 'registrations.id_number', 'patients.id_member', 'patients.pet_category', 'patients.pet_name',
-            'registrations.complaint', 'users.fullname', 'list_of_payments.created_at', 'check_up_results.status_outpatient_inpatient')
+
+        if ($this->orderby) {
+
+            $data2 = $data2->orderBy($this->column, $this->orderby);
+        } else {
+            $data2 = $data2->orderBy('list_of_payment_id', 'desc');
+        }
+
+        $data2 = $data2->groupBy('check_up_result_id')
             ->union($data)
             ->get();
 
