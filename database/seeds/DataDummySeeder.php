@@ -1149,145 +1149,131 @@ class DataDummySeeder extends Seeder
             'anamnesa' => 'ini adalah bentuk dari anamnesa',
             'sign' => 'ini adalah bentuk dari sign',
             'diagnosa' => 'ini adalah bentuk dari diagnosa',
-            'status_outpatient_inpatient' => '1',
-            'status_finish' => '0',
-            'status_paid_off' => '0',
-            'user_id' => '1',
-            'created_at' => '2021-02-26',
-        ]);
-
-        DB::table('check_up_results')->insert([
-            'patient_registration_id' => '3',
-            'anamnesa' => 'Ini adalah contoh anamnesa',
-            'sign' => 'Ini adalah contoh sign',
-            'diagnosa' => 'Ini adalah contoh diagnosa',
             'status_outpatient_inpatient' => '0',
             'status_finish' => '1',
             'status_paid_off' => '0',
             'user_id' => '1',
-            'created_at' => '2021-02-26',
+            'created_at' => '2021-07-22',
         ]);
 
-        DB::table('check_up_results')->insert([
-            'patient_registration_id' => '4',
-            'anamnesa' => 'Ini adalah contoh anamnesa',
-            'sign' => 'Ini adalah contoh sign',
-            'diagnosa' => 'Ini adalah contoh diagnosa',
-            'status_outpatient_inpatient' => '0',
-            'status_finish' => '1',
-            'status_paid_off' => '0',
-            'user_id' => '1',
-            'created_at' => '2021-02-26',
-        ]);
+        // //     // DB::table('check_up_results')->insert([
+        // //     //     'patient_registration_id' => '3',
+        // //     //     'anamnesa' => 'Ini adalah contoh anamnesa',
+        // //     //     'sign' => 'Ini adalah contoh sign',
+        // //     //     'diagnosa' => 'Ini adalah contoh diagnosa',
+        // //     //     'status_outpatient_inpatient' => '0',
+        // //     //     'status_finish' => '1',
+        // //     //     'status_paid_off' => '0',
+        // //     //     'user_id' => '1',
+        // //     //     'created_at' => '2021-02-26',
+        // //     // ]);
 
-        // //detail item patient
-        DB::table('detail_item_patients')->insert([
+        // //     // DB::table('check_up_results')->insert([
+        // //     //     'patient_registration_id' => '4',
+        // //     //     'anamnesa' => 'Ini adalah contoh anamnesa',
+        // //     //     'sign' => 'Ini adalah contoh sign',
+        // //     //     'diagnosa' => 'Ini adalah contoh diagnosa',
+        // //     //     'status_outpatient_inpatient' => '0',
+        // //     //     'status_finish' => '1',
+        // //     //     'status_paid_off' => '0',
+        // //     //     'user_id' => '1',
+        // //     //     'created_at' => '2021-02-26',
+        // //     // ]);
+
+        //     // //detail item patient
+            DB::table('detail_item_patients')->insert([
+                'check_up_result_id' => '1',
+                'price_item_id' => '2',
+                'quantity' => '1',
+                'price_overall' => '200000',
+                'user_id' => '1',
+                'detail_medicine_group_id' => '1',
+                'created_at' => '2021-07-22',
+            ]);
+
+            DB::table('detail_item_patients')->insert([
+                'check_up_result_id' => '1',
+                'price_item_id' => '3',
+                'quantity' => '1',
+                'price_overall' => '200000',
+                'user_id' => '1',
+                'detail_medicine_group_id' => '1',
+                'created_at' => '2021-07-22',
+            ]);
+
+            DB::table('detail_item_patients')->insert([
+                'check_up_result_id' => '1',
+                'price_item_id' => '1',
+                'quantity' => '2',
+                'price_overall' => '400000',
+                'user_id' => '1',
+                'detail_medicine_group_id' => '2',
+                'created_at' => '2021-07-22',
+            ]);
+
+            DB::table('detail_item_patients')->insert([
+              'check_up_result_id' => '1',
+              'price_item_id' => '2',
+              'quantity' => '1',
+              'price_overall' => '200000',
+              'user_id' => '1',
+              'detail_medicine_group_id' => '2',
+              'created_at' => '2021-07-22',
+          ]);
+
+        // //     //detail_medicine_group_check_up_results
+        DB::table('detail_medicine_group_check_up_results')->insert([
             'check_up_result_id' => '1',
-            'price_item_id' => '3',
-            'quantity' => '2',
-            'price_overall' => '400000',
+            'medicine_group_id' => '4',
             'status_paid_off' => '0',
-            'user_id' => '1',
-            'medicine_group_id' => '1',
-            'created_at' => '2021-02-26',
+            'created_at' => '2021-07-22',
         ]);
 
-        DB::table('detail_item_patients')->insert([
+        DB::table('detail_medicine_group_check_up_results')->insert([
             'check_up_result_id' => '1',
-            'price_item_id' => '2',
-            'quantity' => '2',
-            'price_overall' => '400000',
+            'medicine_group_id' => '4',
             'status_paid_off' => '0',
-            'user_id' => '1',
-            'medicine_group_id' => '1',
-            'created_at' => '2021-02-26',
+            'created_at' => '2021-07-22',
         ]);
 
-        DB::table('detail_item_patients')->insert([
-            'check_up_result_id' => '1',
-            'price_item_id' => '1',
-            'quantity' => '2',
-            'price_overall' => '400000',
-            'status_paid_off' => '0',
-            'user_id' => '2',
-            'medicine_group_id' => '1',
-            'created_at' => '2021-02-26',
-        ]);
+        // //     // // //detail service patient
+            DB::table('detail_service_patients')->insert([
+                'check_up_result_id' => '1',
+                'price_service_id' => '2',
+                'quantity' => '1',
+                'price_overall' => '120000',
+                'status_paid_off' => '0',
+                'user_id' => '1',
+                'created_at' => '2021-07-22',
+            ]);
 
-        DB::table('detail_item_patients')->insert([
-            'check_up_result_id' => '2',
-            'price_item_id' => '2',
-            'quantity' => '2',
-            'price_overall' => '400000',
-            'status_paid_off' => '1',
-            'user_id' => '1',
-            'medicine_group_id' => '2',
-            'created_at' => '2021-02-26',
-        ]);
+        //     DB::table('detail_service_patients')->insert([
+        //         'check_up_result_id' => '2',
+        //         'price_service_id' => '1',
+        //         'quantity' => '1',
+        //         'price_overall' => '100000',
+        //         'status_paid_off' => '0',
+        //         'user_id' => '3',
+        //         'created_at' => '2021-02-26',
+        //     ]);
 
-        DB::table('detail_item_patients')->insert([
-            'check_up_result_id' => '2',
-            'price_item_id' => '1',
-            'quantity' => '1',
-            'price_overall' => '200000',
-            'status_paid_off' => '1',
-            'user_id' => '1',
-            'medicine_group_id' => '2',
-            'created_at' => '2021-02-26',
-        ]);
+        //     DB::table('detail_service_patients')->insert([
+        //         'check_up_result_id' => '3',
+        //         'price_service_id' => '1',
+        //         'quantity' => '1',
+        //         'price_overall' => '100000',
+        //         'status_paid_off' => '0',
+        //         'user_id' => '3',
+        //         'created_at' => '2021-02-26',
+        //     ]);
 
-        DB::table('detail_item_patients')->insert([
-            'check_up_result_id' => '3',
-            'price_item_id' => '2',
-            'quantity' => '1',
-            'price_overall' => '200000',
-            'status_paid_off' => '0',
-            'user_id' => '3',
-            'medicine_group_id' => '3',
-            'created_at' => '2021-02-26',
-        ]);
-
-        DB::table('detail_item_patients')->insert([
-            'check_up_result_id' => '3',
-            'price_item_id' => '3',
-            'quantity' => '1',
-            'price_overall' => '200000',
-            'status_paid_off' => '0',
-            'user_id' => '3',
-            'medicine_group_id' => '3',
-            'created_at' => '2021-02-26',
-        ]);
-
-        // // //detail service patient
-        DB::table('detail_service_patients')->insert([
-            'check_up_result_id' => '1',
-            'price_service_id' => '1',
-            'quantity' => '1',
-            'price_overall' => '100000',
-            'status_paid_off' => '0',
-            'user_id' => '1',
-            'created_at' => '2021-02-26',
-        ]);
-
-        DB::table('detail_service_patients')->insert([
-            'check_up_result_id' => '2',
-            'price_service_id' => '1',
-            'quantity' => '1',
-            'price_overall' => '100000',
-            'status_paid_off' => '0',
-            'user_id' => '3',
-            'created_at' => '2021-02-26',
-        ]);
-
-        DB::table('detail_service_patients')->insert([
-            'check_up_result_id' => '3',
-            'price_service_id' => '1',
-            'quantity' => '1',
-            'price_overall' => '100000',
-            'status_paid_off' => '0',
-            'user_id' => '3',
-            'created_at' => '2021-02-26',
-        ]);
+        //images_check_up_results
+        DB::table('images_check_up_results')->insert([
+          'check_up_result_id' => '1',
+          'image' => '/image_check_up_result/gRLBl3DHHElcHjwmk4jgdd7orpcMAwWpAousdO0I.jpg',
+          'user_id' => '1',
+          'created_at' => '2021-07-22',
+      ]);
 
         //medicine group
 
