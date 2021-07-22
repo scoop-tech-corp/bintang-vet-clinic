@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CheckUpResult;
 use App\Models\DetailItemPatient;
 use App\Models\DetailServicePatient;
+use App\Models\Detail_medicine_group_check_up_result;
 use App\Models\HistoryItemMovement;
 use App\Models\ImagesCheckUpResults;
 use App\Models\InPatient;
@@ -34,7 +35,8 @@ class HasilPemeriksaanController extends Controller
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
             ->select('check_up_results.id', 'registrations.id_number as registration_number', 'patients.id as patient_id', 'patients.id_member as patient_number', 'patients.pet_category', 'patients.pet_name',
                 'patients.owner_name', 'registrations.complaint', 'check_up_results.status_finish', 'check_up_results.status_outpatient_inpatient', 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"));
+                DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"))
+            ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
             $data = $data->where('users.id', '=', $request->user()->id);
@@ -186,13 +188,13 @@ class HasilPemeriksaanController extends Controller
 
             }
 
-            if (count($keys) != count($result_item)) {
+            // if (count($keys) != count($result_item)) {
 
-                return response()->json([
-                    'message' => 'The data was invalid.',
-                    'errors' => ['Data Kelompok Obat terdapat duplikat!'],
-                ], 422);
-            }
+            //     return response()->json([
+            //         'message' => 'The data was invalid.',
+            //         'errors' => ['Data Kelompok Obat terdapat duplikat!'],
+            //     ], 422);
+            // }
 
             foreach ($result_item as $res_group) {
 
@@ -443,6 +445,13 @@ class HasilPemeriksaanController extends Controller
 
             foreach ($result_item as $res_group) {
 
+                $group_list = Detail_medicine_group_check_up_result::create([
+                    'check_up_result_id' => $item->id,
+                    'medicine_group_id' => $res_group['medicine_group_id'],
+                    'status_paid_off' => 0,
+                    'user_id' => $request->user()->id,
+                ]);
+
                 foreach ($res_group['list_of_medicine'] as $value_item) {
 
                     // foreach ($result_item as $value_item) {
@@ -525,7 +534,6 @@ class HasilPemeriksaanController extends Controller
     public function detail(Request $request)
     {
         $data = CheckUpResult::find($request->id);
-        //, 'registration', 'user' 'service', 'service_inpatient', 'item', 'item_inpatient'
 
         if (is_null($data)) {
 
@@ -569,14 +577,18 @@ class HasilPemeriksaanController extends Controller
 
         $data['services'] = $services;
 
-        $item = DB::table('detail_item_patients')
-            ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
+        $item = DB::table('detail_medicine_group_check_up_results')
+            ->join('price_medicine_groups', 'detail_medicine_group_check_up_results.medicine_group_id', '=', 'price_medicine_groups.id')
             ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
             ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-            ->select('price_medicine_groups.id as price_medicine_group_id', DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"), 'detail_item_patients.medicine_group_id as medicine_group_id',
-                'medicine_groups.group_name', 'branches.id as branch_id', 'branches.branch_name')
-            ->where('detail_item_patients.check_up_result_id', '=', $data->id)
-            ->groupBy('price_medicine_groups.id', 'price_medicine_groups.selling_price', 'detail_item_patients.medicine_group_id', 'medicine_groups.group_name', 'branches.id', 'branches.branch_name')
+            ->select('detail_medicine_group_check_up_results.id as id',
+                'price_medicine_groups.id as price_medicine_group_id',
+                DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
+                'detail_medicine_group_check_up_results.medicine_group_id as medicine_group_id',
+                'medicine_groups.group_name',
+                'branches.id as branch_id',
+                'branches.branch_name')
+            ->where('detail_medicine_group_check_up_results.check_up_result_id', '=', $data->id)
             ->get();
 
         foreach ($item as $value) {
@@ -590,10 +602,10 @@ class HasilPemeriksaanController extends Controller
                 ->select('detail_item_patients.id as detail_item_patients_id', 'list_of_items.id as list_of_item_id', 'price_items.id as price_item_id', 'list_of_items.item_name', 'detail_item_patients.quantity',
                     DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"), 'unit_item.unit_name',
                     'category_item.category_name', DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
-                    'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"), 'detail_item_patients.status_paid_off')
-                ->where('detail_item_patients.check_up_result_id', '=', $data->id)
-                ->where('detail_item_patients.medicine_group_id', '=', $value->medicine_group_id)
-                ->orderBy('detail_item_patients.id', 'desc')
+                    'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"))
+                //->where('detail_item_patients.check_up_result_id', '=', $data->id)
+                ->where('detail_item_patients.detail_medicine_group_id', '=', $value->id)
+                ->orderBy('detail_item_patients.id', 'asc')
                 ->get();
 
             $value->list_of_medicine = $detail_item;
