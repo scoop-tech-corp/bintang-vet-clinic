@@ -2080,26 +2080,26 @@ class HasilPemeriksaanController extends Controller
 
         $data['services'] = $services;
 
+        // $item = DB::table('detail_medicine_group_check_up_results as dmg')
+        //     ->join('price_medicine_groups', 'dmg.medicine_group_id', '=', 'price_medicine_groups.id')
+        //     ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
+        //     ->join('users', 'dmg.user_id', '=', 'users.id')
+        //     ->select(
+        //         'dmg.id as id',
+        //         'dmg.check_up_result_id',
+        //         'dmg.medicine_group_id',
+        //         'medicine_groups.group_name',
+        //         DB::raw("TRIM(price_medicine_groups.selling_price)+0 as each_price"),
+        //         DB::raw("TRIM(price_medicine_groups.selling_price)+0 as price_overall"),
+        //         'users.fullname as created_by',
+        //         DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+        //     ->where('dmg.check_up_result_id', '=', $data->id)
+        //     ->orderBy('dmg.id', 'asc')
+        //     ->get();
+
+        // $data['item'] = $item;
+
         $item = DB::table('detail_medicine_group_check_up_results as dmg')
-            ->join('price_medicine_groups', 'dmg.medicine_group_id', '=', 'price_medicine_groups.id')
-            ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
-            ->join('users', 'dmg.user_id', '=', 'users.id')
-            ->select(
-                'dmg.id as id',
-                'dmg.check_up_result_id',
-                'dmg.medicine_group_id',
-                'medicine_groups.group_name',
-                DB::raw("TRIM(price_medicine_groups.selling_price)+0 as each_price"),
-                DB::raw("TRIM(price_medicine_groups.selling_price)+0 as price_overall"),
-                'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
-            ->where('dmg.check_up_result_id', '=', $data->id)
-            ->orderBy('dmg.id', 'asc')
-            ->get();
-
-        $data['item'] = $item;
-
-        $payment_item = DB::table('detail_medicine_group_check_up_results as dmg')
             ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
             ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
             ->join('users', 'dmg.user_id', '=', 'users.id')
@@ -2118,7 +2118,7 @@ class HasilPemeriksaanController extends Controller
             ->orderBy('dmg.id', 'asc')
             ->get();
 
-        $data['payment_item'] = $payment_item;
+        $data['item'] = $item;
 
         $inpatient = DB::table('in_patients')
             ->join('users', 'in_patients.user_id', '=', 'users.id')
