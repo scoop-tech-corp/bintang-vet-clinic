@@ -149,21 +149,59 @@ class PembayaranController extends Controller
 
         $data['services'] = $services;
 
-        $item = DB::table('detail_item_patients')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
-            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-            ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
-            ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
-            ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
-            ->select('detail_item_patients.id as detail_item_patients_id', 'list_of_items.id as list_of_item_id', 'price_items.id as price_item_id', 'list_of_items.item_name', 'detail_item_patients.quantity',
-                DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"), 'unit_item.unit_name',
-                'category_item.category_name', DB::raw("TRIM(price_items.selling_price)+0 as selling_price"), 'detail_item_patients.medicine_group_id as medicine_group_id',
-                'medicine_groups.group_name', 'detail_item_patients.status_paid_off', 'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"))
-            ->where('detail_item_patients.check_up_result_id', '=', $data->check_up_result_id)
-            ->orderBy('detail_item_patients.id', 'desc')
+        // DB::table('detail_medicine_group_check_up_results as dmg')
+        //     ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+        //     ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+        //     ->join('users', 'dmg.user_id', '=', 'users.id')
+        //     ->select(
+        //         'dmg.id as id',
+        //         'dmg.check_up_result_id',
+        //         'dmg.medicine_group_id',
+        //         'medicine_groups.group_name',
+        //         DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+        //         DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
+        //         DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+        //         'users.fullname as created_by',
+        //         DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+        //     ->where('dmg.check_up_result_id', '=', $data->id)
+        //     ->groupby('dmg.medicine_group_id')
+        //     ->orderBy('dmg.id', 'asc')
+        //     ->get();
+
+        $item = DB::table('detail_medicine_group_check_up_results as dmg')
+            ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+            ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+            ->join('users', 'dmg.user_id', '=', 'users.id')
+            ->select(
+                'dmg.id as id',
+                'dmg.check_up_result_id',
+                'dmg.medicine_group_id',
+                'medicine_groups.group_name',
+                DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
+                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+                'dmg.status_paid_off',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+            ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
+            ->groupby('dmg.medicine_group_id')
+            ->orderBy('dmg.id', 'asc')
             ->get();
+        // $item = DB::table('detail_item_patients')
+        //     ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
+        //     ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
+        //     ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+        //     ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+        //     ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
+        //     ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
+        //     ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
+        //     ->select('detail_item_patients.id as detail_item_patients_id', 'list_of_items.id as list_of_item_id', 'price_items.id as price_item_id', 'list_of_items.item_name', 'detail_item_patients.quantity',
+        //         DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"), 'unit_item.unit_name',
+        //         'category_item.category_name', DB::raw("TRIM(price_items.selling_price)+0 as selling_price"), 'detail_item_patients.medicine_group_id as medicine_group_id',
+        //         'medicine_groups.group_name', 'detail_item_patients.status_paid_off', 'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"))
+        //     ->where('detail_item_patients.check_up_result_id', '=', $data->check_up_result_id)
+        //     ->orderBy('detail_item_patients.id', 'desc')
+        //     ->get();
 
         $data['item'] = $item;
 
@@ -187,25 +225,57 @@ class PembayaranController extends Controller
 
         $data['paid_services'] = $paid_services;
 
-        $paid_item = DB::table('list_of_payment_items')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
-            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-            ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
-            ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
-            ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
-            ->select('list_of_payment_items.id as list_of_payment_item_id', 'detail_item_patients.id as detail_item_patients_id',
-                'list_of_items.id as list_of_item_id', 'price_items.id as price_item_id', 'list_of_items.item_name',
-                'detail_item_patients.quantity', DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"), 'unit_item.unit_name',
-                'category_item.category_name', DB::raw("TRIM(price_items.selling_price)+0 as selling_price"), 'detail_item_patients.medicine_group_id as medicine_group_id',
-                'medicine_groups.group_name', 'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"),
-                DB::raw("DATE_FORMAT(list_of_payment_items.created_at, '%d %b %Y') as paid_date"))
-            ->where('detail_item_patients.check_up_result_id', '=', $data->check_up_result_id)
-            ->where('detail_item_patients.status_paid_off', '=', 1)
-            ->orderBy('list_of_payment_items.id', 'desc')
+        // return $data->check_up_result_id;
+        // check_up_result_id = 1
+        $paid_item = DB::table('list_of_payment_items as lop')
+            ->join('detail_medicine_group_check_up_results as dmg', 'lop.check_up_result_id', '=', 'dmg.check_up_result_id')
+            ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+            ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
+            ->select(
+                'dmg.id as id',
+                'dmg.check_up_result_id',
+                'dmg.medicine_group_id',
+                'medicine_groups.group_name',
+                DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
+                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+                'dmg.status_paid_off',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
+            ->where('dmg.status_paid_off', '=', 1)
+            ->orderBy('lop.id', 'desc')
             ->get();
+        // $paid_item = DB::table('list_of_payment_items')
+        //     ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
+        //     ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
+        //     ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
+        //     ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+        //     ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+        //     ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
+        //     ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
+        //     ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
+        //     ->select('list_of_payment_items.id as list_of_payment_item_id',
+        //         'detail_item_patients.id as detail_item_patients_id',
+        //         'list_of_items.id as list_of_item_id',
+        //         'price_items.id as price_item_id',
+        //         'list_of_items.item_name',
+        //         'detail_item_patients.quantity',
+        //         DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"),
+        //         'unit_item.unit_name',
+        //         'category_item.category_name',
+        //         DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
+        //         'detail_item_patients.medicine_group_id as medicine_group_id',
+        //         'medicine_groups.group_name',
+        //         'users.fullname as created_by',
+        //         DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"),
+        //         DB::raw("DATE_FORMAT(list_of_payment_items.created_at, '%d %b %Y') as paid_date"))
+        //     ->where('detail_item_patients.check_up_result_id', '=', $data->check_up_result_id)
+        //     ->where('detail_item_patients.status_paid_off', '=', 1)
+        //     ->orderBy('list_of_payment_items.id', 'desc')
+        //     ->get();
 
         $data['paid_item'] = $paid_item;
 
@@ -248,7 +318,8 @@ class PembayaranController extends Controller
         }
 
         $services = $request->service_payment;
-        $result_services = $services; //json_decode($services, true);
+        $result_services = json_decode($services, true);
+        //$services
 
         if (count($result_services) != 0) {
 
@@ -294,7 +365,8 @@ class PembayaranController extends Controller
         }
 
         $items = $request->item_payment;
-        $result_item = $items; //json_decode($items, true);
+        $result_item = json_decode($items, true);
+        //$items;
 
         if (count($result_item) != 0) {
 
@@ -393,12 +465,6 @@ class PembayaranController extends Controller
                     ->where('check_up_result_id', '=', $request->check_up_result_id)
                     ->update(['status_paid_off' => 1, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
 
-                // $check_medicine_group_check_up = DetailItemPatient::find($value_item['detail_item_patient_id']);
-
-                // $check_medicine_group_check_up->status_paid_off = 1;
-                // $check_medicine_group_check_up->user_update_id = $request->user()->id;
-                // $check_medicine_group_check_up->updated_at = \Carbon\Carbon::now();
-                // $check_medicine_group_check_up->save();
             }
         }
 
@@ -463,18 +529,18 @@ class PembayaranController extends Controller
             ], 422);
         }
 
-        // $check_up_result = DB::table('check_up_results')
-        //     ->select('status_paid_off')
-        //     ->where('id', '=', $request->check_up_result_id)
-        //     ->first();
+        $check_up_result = DB::table('detail_medicine_group_check_up_results')
+            ->select('status_paid_off')
+            ->where('check_up_result_id', '=', $request->check_up_result_id)
+            ->first();
 
-        // if ($check_up_result->status_paid_off == 1) {
+        if ($check_up_result->status_paid_off == 1) {
 
-        //     return response()->json([
-        //         'message' => 'The given data was invalid.',
-        //         'errors' => ['Data Pemeriksaan ini sudah pernah dilunaskan!'],
-        //     ], 422);
-        // }
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => ['Data ini sudah pernah dilunaskan!'],
+            ], 422);
+        }
 
         $services = $request->service_payment;
         $result_services = json_decode(json_encode($services), true);
@@ -745,14 +811,6 @@ class PembayaranController extends Controller
                 $values = Detail_medicine_group_check_up_result::where('check_up_result_id', '=', $item['check_up_result_id'])
                     ->where('medicine_group_id', '=', $item['medicine_group_id'])
                     ->update(['status_paid_off' => false, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
-
-                // $check_item = Detail_medicine_group_check_up_result::where('check_up_result_id', $item['detail_item_patient_id'])
-                //     ->where('medicine_group_id', '=', $item['medicine_group_id']);
-
-                // $check_item->status_paid_off = 0;
-                // $check_item->user_update_id = $request->user()->id;
-                // $check_item->updated_at = \Carbon\Carbon::now();
-                // $check_item->save();
             }
 
             $check_payment_item = DB::table('list_of_payment_items')
@@ -930,21 +988,23 @@ class PembayaranController extends Controller
 
     public function print_pdf(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
+        if ($request->user()->role == 'dokter') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
 
         $res_service = "";
-        $res_item = "";
+        $res_medicine_group_id = "";
+        $res_check_up_result_id = "";
 
-        $res_num_service = 0;
-        $res_num_item = 0;
+        // $res_num_service = 0;
+        // $res_num_item = 0;
 
         $services = $request->service_payment;
-        $result_service = json_decode($services, true);
+        $result_service = $services;
+        //json_decode($services, true);
 
         if ($result_service) {
 
@@ -952,7 +1012,7 @@ class PembayaranController extends Controller
                 $res_service = $res_service . (string) $dat['detail_service_patient_id'] . ",";
 
                 if ($dat['detail_service_patient_id']) {
-                    $res_num_service++;
+                    //$res_num_service++;
                 }
 
             }
@@ -963,41 +1023,91 @@ class PembayaranController extends Controller
         $myArray_service = explode(',', $res_service);
 
         $items = $request->item_payment;
-        $result_item = json_decode($items, true);
+        $result_item = $items;
+        //json_decode($items, true);
 
         if ($result_item) {
 
             foreach ($result_item as $key) {
-                $res_item = $res_item . (string) $key['detail_item_patient_id'] . ",";
+                $res_medicine_group_id = $res_medicine_group_id . (string) $key['medicine_group_id'] . ",";
+                $res_check_up_result_id = $res_check_up_result_id . (string) $key['check_up_result_id'] . ",";
 
-                if ($key['detail_item_patient_id']) {
-                    $res_num_item++;
-                }
+                // if ($key['detail_item_patient_id']) {
+                //     $res_num_item++;
+                // }
 
             }
         }
 
-        $res_num = $res_num_item + $res_num_service;
+        //$res_num = $res_num_item + $res_num_service;
 
-        $res_item = rtrim($res_item, ", ");
+        $res_medicine_group_id = rtrim($res_medicine_group_id, ", ");
+        $myArray_medicine_group_id = explode(',', $res_medicine_group_id);
+        //------------------------------------------------
 
-        $myArray_item = explode(',', $res_item);
+        $res_check_up_result_id = rtrim($res_check_up_result_id, ", ");
+        $myArray_check_up_result_id = explode(',', $res_check_up_result_id);
 
-        $data_item = DB::table('list_of_payment_items')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
-            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-            ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
-            ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
-            ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
-            ->select('list_of_items.item_name',
-                'detail_item_patients.quantity',
-                DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
-                DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"))
-            ->whereIn('detail_item_patients.id', $myArray_item)
+        // DB::table('list_of_payment_items as lop')
+        //     ->join('detail_medicine_group_check_up_results as dmg', 'lop.check_up_result_id', '=', 'dmg.check_up_result_id')
+        //     ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+        //     ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+        //     ->join('users', 'lop.user_id', '=', 'users.id')
+        //     ->select(
+        //         'dmg.id as id',
+        //         'dmg.check_up_result_id',
+        //         'dmg.medicine_group_id',
+        //         'medicine_groups.group_name',
+        //         DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+        //         DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
+        //         DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+        //         'dmg.status_paid_off',
+        //         'users.fullname as created_by',
+        //         DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at")
+        //     )
+        //     ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
+        //     ->where('dmg.status_paid_off', '=', 1)
+        //     ->orderBy('lop.id', 'desc')
+        //     ->get();
+
+        $data_item = DB::table('list_of_payment_items as lop')
+            ->join('detail_medicine_group_check_up_results as dmg', 'lop.check_up_result_id', '=', 'dmg.check_up_result_id')
+            ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+            ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
+            ->select(
+                'dmg.id as id',
+                'dmg.check_up_result_id',
+                'dmg.medicine_group_id',
+                'medicine_groups.group_name',
+                DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
+                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+                'dmg.status_paid_off',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('dmg.check_up_result_id', '=', $myArray_check_up_result_id)
+            ->where('dmg.medicine_group_id', '=', $myArray_medicine_group_id)
+            ->where('dmg.status_paid_off', '=', 1)
+            ->orderBy('lop.id', 'desc')
             ->get();
+
+        // $data_item = DB::table('list_of_payment_items')
+        //     ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
+        //     ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
+        //     ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
+        //     ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+        //     ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+        //     ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
+        //     ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
+        //     ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
+        //     ->select('list_of_items.item_name',
+        //         'detail_item_patients.quantity',
+        //         DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
+        //         DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"))
+        //     ->whereIn('detail_item_patients.id', $myArray_medicine_group_id)
+        //     ->get();
 
         $data_service = DB::table('list_of_payment_services')
             ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
@@ -1019,11 +1129,19 @@ class PembayaranController extends Controller
             ->groupby('detail_service_patients.id')
             ->first();
 
-        $price_overall_item = DB::table('detail_item_patients')
+        $price_overall_item = DB::table('detail_medicine_group_check_up_results as dmg')
+            ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
             ->select(
-                DB::raw("TRIM(SUM(detail_item_patients.price_overall))+0 as price_overall"))
-            ->whereIn('detail_item_patients.id', $myArray_item)
+                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"))
+            ->whereIn('dmg.check_up_result_id', $myArray_check_up_result_id)
+            ->whereIn('dmg.medicine_group_id', $myArray_medicine_group_id)
             ->first();
+
+        // $price_overall_item = DB::table('detail_item_patients')
+        //     ->select(
+        //         DB::raw("TRIM(SUM(detail_item_patients.price_overall))+0 as price_overall"))
+        //     ->whereIn('detail_item_patients.id', $myArray_item)
+        //     ->first();
 
         $price_service = 0;
         $price_item = 0;
@@ -1064,7 +1182,7 @@ class PembayaranController extends Controller
 
         $data = ['data_item' => $data_item,
             'data_service' => $data_service,
-            'quantity_total' => $res_num,
+            //'quantity_total' => $res_num,
             'price_overall' => $price_overall,
             'address' => $address->address,
             'registration_number' => $data_patient[0]->id_number,
