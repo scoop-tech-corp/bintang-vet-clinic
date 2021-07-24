@@ -1156,17 +1156,17 @@ class DataDummySeeder extends Seeder
             'created_at' => '2021-07-22',
         ]);
 
-        // //     // DB::table('check_up_results')->insert([
-        // //     //     'patient_registration_id' => '3',
-        // //     //     'anamnesa' => 'Ini adalah contoh anamnesa',
-        // //     //     'sign' => 'Ini adalah contoh sign',
-        // //     //     'diagnosa' => 'Ini adalah contoh diagnosa',
-        // //     //     'status_outpatient_inpatient' => '0',
-        // //     //     'status_finish' => '1',
-        // //     //     'status_paid_off' => '0',
-        // //     //     'user_id' => '1',
-        // //     //     'created_at' => '2021-02-26',
-        // //     // ]);
+            DB::table('check_up_results')->insert([
+                'patient_registration_id' => '1',
+                'anamnesa' => 'Ini adalah contoh anamnesa',
+                'sign' => 'Ini adalah contoh sign',
+                'diagnosa' => 'Ini adalah contoh diagnosa',
+                'status_outpatient_inpatient' => '0',
+                'status_finish' => '1',
+                'status_paid_off' => '0',
+                'user_id' => '1',
+                'created_at' => '2021-02-26',
+            ]);
 
         // //     // DB::table('check_up_results')->insert([
         // //     //     'patient_registration_id' => '4',
@@ -1180,52 +1180,150 @@ class DataDummySeeder extends Seeder
         // //     //     'created_at' => '2021-02-26',
         // //     // ]);
 
+
+
         //     // //detail item patient
-            DB::table('detail_item_patients')->insert([
-                'check_up_result_id' => '1',
-                'price_item_id' => '2',
-                'quantity' => '1',
-                'price_overall' => '200000',
-                'user_id' => '1',
-                'detail_medicine_group_id' => '1',
-                'created_at' => '2021-07-22',
-            ]);
+        DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>1,
+          'price_item_id'=>2,
+          'quantity'=>1,
+          'price_overall'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-21 17:00:00',
+          'updated_at'=>NULL,
+          'detail_medicine_group_id'=>1
+          ] );
 
-            DB::table('detail_item_patients')->insert([
-                'check_up_result_id' => '1',
-                'price_item_id' => '3',
-                'quantity' => '1',
-                'price_overall' => '200000',
-                'user_id' => '1',
-                'detail_medicine_group_id' => '1',
-                'created_at' => '2021-07-22',
-            ]);
+          DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>1,
+          'price_item_id'=>3,
+          'quantity'=>1,
+          'price_overall'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-21 17:00:00',
+          'updated_at'=>NULL,
+          'detail_medicine_group_id'=>1
+          ] );
 
-            DB::table('detail_item_patients')->insert([
-                'check_up_result_id' => '1',
-                'price_item_id' => '1',
-                'quantity' => '2',
-                'price_overall' => '400000',
-                'user_id' => '1',
-                'detail_medicine_group_id' => '2',
-                'created_at' => '2021-07-22',
-            ]);
+          DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>1,
+          'price_item_id'=>1,
+          'quantity'=>2,
+          'price_overall'=>'400000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-21 17:00:00',
+          'updated_at'=>NULL,
+          'detail_medicine_group_id'=>2
+          ] );
 
-            DB::table('detail_item_patients')->insert([
-              'check_up_result_id' => '1',
-              'price_item_id' => '2',
-              'quantity' => '1',
-              'price_overall' => '200000',
-              'user_id' => '1',
-              'detail_medicine_group_id' => '2',
-              'created_at' => '2021-07-22',
-          ]);
+          DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>1,
+          'price_item_id'=>2,
+          'quantity'=>1,
+          'price_overall'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-21 17:00:00',
+          'updated_at'=>NULL,
+          'detail_medicine_group_id'=>2
+          ] );
+
+          DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>2,
+          'price_item_id'=>2,
+          'quantity'=>1,
+          'price_overall'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>1,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-23 09:44:19',
+          'updated_at'=>'2021-07-23 09:53:47',
+          'detail_medicine_group_id'=>3
+          ] );
+
+          DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>2,
+          'price_item_id'=>3,
+          'quantity'=>1,
+          'price_overall'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>1,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-23 09:44:19',
+          'updated_at'=>'2021-07-23 09:53:47',
+          'detail_medicine_group_id'=>3
+          ] );
+
+          DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>2,
+          'price_item_id'=>2,
+          'quantity'=>1,
+          'price_overall'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>1,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-23 09:44:19',
+          'updated_at'=>'2021-07-23 09:53:48',
+          'detail_medicine_group_id'=>4
+          ] );
+
+          DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>2,
+          'price_item_id'=>1,
+          'quantity'=>1,
+          'price_overall'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>1,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-23 09:44:19',
+          'updated_at'=>'2021-07-23 09:53:48',
+          'detail_medicine_group_id'=>4
+          ] );
+
+          DB::table('detail_item_patients')->insert([
+          'check_up_result_id'=>2,
+          'price_item_id'=>1,
+          'quantity'=>1,
+          'price_overall'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-23 09:53:47',
+          'updated_at'=>'2021-07-23 09:53:47',
+          'detail_medicine_group_id'=>4
+          ] );
 
         // //     //detail_medicine_group_check_up_results
         DB::table('detail_medicine_group_check_up_results')->insert([
             'check_up_result_id' => '1',
             'medicine_group_id' => '4',
             'status_paid_off' => '0',
+            'user_id' => '1',
             'created_at' => '2021-07-22',
         ]);
 
@@ -1233,152 +1331,215 @@ class DataDummySeeder extends Seeder
             'check_up_result_id' => '1',
             'medicine_group_id' => '4',
             'status_paid_off' => '0',
+            'user_id' => '1',
             'created_at' => '2021-07-22',
         ]);
 
-        // //     // // //detail service patient
-            DB::table('detail_service_patients')->insert([
-                'check_up_result_id' => '1',
-                'price_service_id' => '2',
-                'quantity' => '1',
-                'price_overall' => '120000',
-                'status_paid_off' => '0',
-                'user_id' => '1',
-                'created_at' => '2021-07-22',
-            ]);
-
-        //     DB::table('detail_service_patients')->insert([
-        //         'check_up_result_id' => '2',
-        //         'price_service_id' => '1',
-        //         'quantity' => '1',
-        //         'price_overall' => '100000',
-        //         'status_paid_off' => '0',
-        //         'user_id' => '3',
-        //         'created_at' => '2021-02-26',
-        //     ]);
-
-        //     DB::table('detail_service_patients')->insert([
-        //         'check_up_result_id' => '3',
-        //         'price_service_id' => '1',
-        //         'quantity' => '1',
-        //         'price_overall' => '100000',
-        //         'status_paid_off' => '0',
-        //         'user_id' => '3',
-        //         'created_at' => '2021-02-26',
-        //     ]);
-
-        //images_check_up_results
-        DB::table('images_check_up_results')->insert([
-          'check_up_result_id' => '1',
-          'image' => '/image_check_up_result/gRLBl3DHHElcHjwmk4jgdd7orpcMAwWpAousdO0I.jpg',
+        DB::table('detail_medicine_group_check_up_results')->insert([
+          'check_up_result_id' => '2',
+          'medicine_group_id' => '4',
+          'status_paid_off' => '0',
           'user_id' => '1',
           'created_at' => '2021-07-22',
       ]);
 
+      DB::table('detail_medicine_group_check_up_results')->insert([
+          'check_up_result_id' => '2',
+          'medicine_group_id' => '1',
+          'status_paid_off' => '0',
+          'user_id' => '1',
+          'created_at' => '2021-07-22',
+      ]);
+
+        // //     // // //detail service patient
+        DB::table('detail_service_patients')->insert([
+            'check_up_result_id' => '1',
+            'price_service_id' => '2',
+            'quantity' => '1',
+            'price_overall' => '120000',
+            'status_paid_off' => '0',
+            'user_id' => '1',
+            'created_at' => '2021-07-22',
+        ]);
+
+        DB::table('detail_service_patients')->insert([
+          'check_up_result_id' => '2',
+          'price_service_id' => '2',
+          'quantity' => '1',
+          'price_overall' => '120000',
+          'status_paid_off' => '0',
+          'user_id' => '1',
+          'created_at' => '2021-07-22',
+      ]);
+
+        //images_check_up_results
+        DB::table('images_check_up_results')->insert([
+            'check_up_result_id' => '1',
+            'image' => '/image_check_up_result/gRLBl3DHHElcHjwmk4jgdd7orpcMAwWpAousdO0I.jpg',
+            'user_id' => '1',
+            'created_at' => '2021-07-22',
+        ]);
+
         //medicine group
 
         DB::table('medicine_groups')->insert([
-            'group_name' => 'anti diare 1',
+            'group_name' => 'Anti Diare',
             'branch_id' => '1',
             'user_id' => '1',
-            'created_at' => '2021-03-13',
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('medicine_groups')->insert([
-            'group_name' => 'anti diare 2',
+            'group_name' => 'Pasca Operasi',
+            'branch_id' => '2',
+            'user_id' => '1',
+            'created_at' => '2021-07-23',
+        ]);
+
+        DB::table('medicine_groups')->insert([
+            'group_name' => 'Pasca Hamil',
+            'branch_id' => '3',
+            'user_id' => '1',
+            'created_at' => '2021-07-23',
+        ]);
+
+        DB::table('medicine_groups')->insert([
+            'group_name' => 'Paket Pilek',
             'branch_id' => '1',
             'user_id' => '1',
-            'created_at' => '2021-03-13',
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('medicine_groups')->insert([
-            'group_name' => 'anti diare 1',
+            'group_name' => 'Paket Tetanus',
             'branch_id' => '2',
             'user_id' => '1',
-            'created_at' => '2021-03-13',
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('medicine_groups')->insert([
-            'group_name' => 'anti diare 2',
+            'group_name' => 'Anti Tetanus',
+            'branch_id' => '3',
+            'user_id' => '1',
+            'created_at' => '2021-07-23',
+        ]);
+
+        DB::table('medicine_groups')->insert([
+            'group_name' => 'Imunitas',
+            'branch_id' => '1',
+            'user_id' => '1',
+            'created_at' => '2021-07-23',
+        ]);
+
+        DB::table('medicine_groups')->insert([
+            'group_name' => 'Anti Diare',
             'branch_id' => '2',
             'user_id' => '1',
-            'created_at' => '2021-03-13',
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('medicine_groups')->insert([
-            'group_name' => 'anti diare 1',
+            'group_name' => 'Imunitas',
             'branch_id' => '3',
             'user_id' => '1',
-            'created_at' => '2021-03-13',
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('medicine_groups')->insert([
-            'group_name' => 'anti diare 2',
+            'group_name' => 'Anti Diare',
+            'branch_id' => '1',
+            'user_id' => '1',
+            'created_at' => '2021-07-23',
+        ]);
+
+        DB::table('medicine_groups')->insert([
+            'group_name' => 'Anti Radang',
+            'branch_id' => '2',
+            'user_id' => '1',
+            'created_at' => '2021-07-23',
+        ]);
+
+        DB::table('medicine_groups')->insert([
+            'group_name' => 'Anti Parvo',
             'branch_id' => '3',
             'user_id' => '1',
-            'created_at' => '2021-03-13',
+            'created_at' => '2021-07-23',
+        ]);
+
+        DB::table('medicine_groups')->insert([
+            'group_name' => 'Paket Operasi',
+            'branch_id' => '1',
+            'user_id' => '1',
+            'created_at' => '2021-07-23',
+        ]);
+
+        DB::table('medicine_groups')->insert([
+            'group_name' => 'Paket Steril',
+            'branch_id' => '2',
+            'user_id' => '1',
+            'created_at' => '2021-07-23',
         ]);
 
         //price medicine group
 
         DB::table('price_medicine_groups')->insert([
-            'medicine_group_id' => '1',
-            'selling_price' => 100000,
-            'capital_price' => 0,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 30000,
-            'user_id' => '1',
-            'created_at' => '2021-03-27',
+            'medicine_group_id' => 3,
+            'selling_price' => 500000.00,
+            'capital_price' => 100000.00,
+            'doctor_fee' => 100000.00,
+            'petshop_fee' => 300000.00,
+            'user_id' => 1,
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('price_medicine_groups')->insert([
-            'medicine_group_id' => '2',
-            'selling_price' => 100000,
-            'capital_price' => 0,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 30000,
-            'user_id' => '1',
-            'created_at' => '2021-03-27',
+            'medicine_group_id' => 6,
+            'selling_price' => 1000000.00,
+            'capital_price' => 400000.00,
+            'doctor_fee' => 400000.00,
+            'petshop_fee' => 200000.00,
+            'user_id' => 1,
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('price_medicine_groups')->insert([
-            'medicine_group_id' => '3',
-            'selling_price' => 100000,
-            'capital_price' => 0,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 30000,
-            'user_id' => '1',
-            'created_at' => '2021-03-27',
+            'medicine_group_id' => 4,
+            'selling_price' => 200000.00,
+            'capital_price' => 50000.00,
+            'doctor_fee' => 50000.00,
+            'petshop_fee' => 100000.00,
+            'user_id' => 1,
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('price_medicine_groups')->insert([
-            'medicine_group_id' => '4',
-            'selling_price' => 100000,
-            'capital_price' => 0,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 30000,
-            'user_id' => '1',
-            'created_at' => '2021-03-27',
+            'medicine_group_id' => 13,
+            'selling_price' => 1000000.00,
+            'capital_price' => 200000.00,
+            'doctor_fee' => 400000.00,
+            'petshop_fee' => 400000.00,
+            'user_id' => 1,
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('price_medicine_groups')->insert([
-            'medicine_group_id' => '5',
-            'selling_price' => 100000,
-            'capital_price' => 0,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 30000,
-            'user_id' => '1',
-            'created_at' => '2021-03-27',
+            'medicine_group_id' => 11,
+            'selling_price' => 150000.00,
+            'capital_price' => 25000.00,
+            'doctor_fee' => 50000.00,
+            'petshop_fee' => 75000.00,
+            'user_id' => 1,
+            'created_at' => '2021-07-23',
         ]);
 
         DB::table('price_medicine_groups')->insert([
-            'medicine_group_id' => '6',
-            'selling_price' => 100000,
-            'capital_price' => 0,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 30000,
-            'user_id' => '1',
-            'created_at' => '2021-03-27',
+            'medicine_group_id' => 14,
+            'selling_price' => 1300000.00,
+            'capital_price' => 200000.00,
+            'doctor_fee' => 500000.00,
+            'petshop_fee' => 600000.00,
+            'user_id' => 1,
+            'created_at' => '2021-07-23',
         ]);
 
         // DB::table('detail_service_patients')->insert([
