@@ -93,9 +93,6 @@
                 <th>Tanggal</th>
                 <th>Dibuat Oleh</th>
                 <th>Kelompok Obat</th>
-                <th>Nama Barang</th>
-                <th>Kategori Barang</th>
-                <th>Satuan Barang</th>
                 <th>Jumlah</th>
                 <th>Harga Satuan</th>
                 <th>Harga Keseluruhan</th>
@@ -154,9 +151,6 @@
               <th>Tanggal</th>
               <th>Dibuat Oleh</th>
               <th>Kelompok Obat</th>
-              <th>Nama Barang</th>
-              <th>Kategori Barang</th>
-              <th>Satuan Barang</th>
               <th>Jumlah</th>
               <th>Harga Satuan</th>
               <th>Harga Keseluruhan</th>
