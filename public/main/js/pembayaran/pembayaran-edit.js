@@ -196,11 +196,8 @@ $(document).ready(function() {
         + `<td>${lb.created_at}</td>`
         + `<td>${lb.created_by}</td>`
         + `<td>${lb.group_name}</td>`
-        + `<td>${lb.item_name}</td>`
-        + `<td>${lb.category_name}</td>`
-        + `<td>${lb.unit_name}</td>`
         + `<td>${lb.quantity}</td>`
-        + `<td>${typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${ lb.status_paid_off && lb.isRevert ? '<span style="text-decoration: line-through;">Lunas</span>'
               : lb.status_paid_off && !lb.isRevert ? 'Lunas' 
@@ -224,10 +221,10 @@ $(document).ready(function() {
       if (this.checked) {
         selectedListBarang[idx].checked = true;
         listTagihanBarang.push(getDetailBarang);
-        calculationPay.push({ id: getDetailBarang.detail_item_patients_id, type: 'barang', price: getDetailBarang.price_overall, isRevert: false });
+        calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, type: 'barang', price: getDetailBarang.price_overall, isRevert: false });
       } else {
-        const getIdxTagihanBarang = listTagihanJasa.findIndex(i => i.detail_item_patients_id == getDetailBarang.detail_item_patients_id);
-        const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.detail_item_patients_id));
+        const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
+        const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
 
         selectedListBarang[idx].checked = false;
         listTagihanBarang.splice(getIdxTagihanBarang, 1);
@@ -245,10 +242,10 @@ $(document).ready(function() {
       processAppendListSelectedBarang();
 
       const getDetailBarang = selectedListBarang[getIdx];
-      const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.detail_item_patients_id == getDetailBarang.detail_item_patients_id);
+      const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
 
       listTagihanBarang[getIdxTagihanBarang].isRevert = true;
-      calculationPay.push({ id: getDetailBarang.detail_item_patients_id, type: 'barang', price: getDetailBarang.price_overall, isRevert: true });
+      calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, type: 'barang', price: getDetailBarang.price_overall, isRevert: true });
 
       processAppendListTagihanBarang();
       validationForm();
@@ -260,8 +257,8 @@ $(document).ready(function() {
       processAppendListSelectedBarang();
 
       const getDetailBarang = selectedListBarang[getIdx];
-      const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.detail_item_patients_id == getDetailBarang.detail_item_patients_id);
-      const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.detail_item_patients_id));
+      const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
+      const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
 
       listTagihanBarang[getIdxTagihanBarang].isRevert = false;
       calculationPay[getIdxCalculation].isRevert = null;
@@ -285,11 +282,8 @@ $(document).ready(function() {
             + `<td>${lb.created_at}</td>`
             + `<td>${lb.created_by}</td>`
             + `<td>${lb.group_name}</td>`
-            + `<td>${lb.item_name}</td>`
-            + `<td>${lb.category_name}</td>`
-            + `<td>${lb.unit_name}</td>`
             + `<td>${lb.quantity}</td>`
-            + `<td>${typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
             + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
             + `</tr>`;
             ++no;
@@ -321,15 +315,15 @@ $(document).ready(function() {
         } else if (dt.isRevert === false) { finalSelectedJasa.push({ detail_service_patient_id: dt.id, status: null }); }
       } else {
         if (dt.isRevert === true) {
-          finalSelectedBarang.push({ detail_item_patient_id: dt.id, status: 'del'});
-        } else if (dt.isRevert === false) { finalSelectedBarang.push({ detail_item_patient_id: dt.id, status: null }); }
+          finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, status: 'del'});
+        } else if (dt.isRevert === false) { finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, status: null }); }
       }
     });
 
     const datas = {
       check_up_result_id: getCheckUpResultId,
       service_payment: finalSelectedJasa.length ? finalSelectedJasa : [{detail_service_patient_id: null, status: null}],
-      item_payment: finalSelectedBarang.length ? finalSelectedBarang : [{detail_item_patient_id: null, status: null}]
+      item_payment: finalSelectedBarang.length ? finalSelectedBarang : [{medicine_group_id: null, status: null}]
     };
 
     $.ajax({
