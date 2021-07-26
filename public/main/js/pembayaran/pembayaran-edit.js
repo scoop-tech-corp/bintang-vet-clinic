@@ -170,7 +170,6 @@ $(document).ready(function() {
           rowListTagihanJasa += `<tr>`
             + `<td>${no}</td>`
             + `${'<td>'+(lj.paid_date ? lj.paid_date : '-')+'</td>'}`
-            + `<td>${lj.created_at}</td>`
             + `<td>${lj.created_by}</td>`
             + `<td>${lj.category_name}</td>`
             + `<td>${lj.service_name}</td>`
@@ -221,7 +220,8 @@ $(document).ready(function() {
       if (this.checked) {
         selectedListBarang[idx].checked = true;
         listTagihanBarang.push(getDetailBarang);
-        calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, type: 'barang', price: getDetailBarang.price_overall, isRevert: false });
+        calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, quantity: getDetailBarang.quantity,
+           type: 'barang', price: getDetailBarang.price_overall, isRevert: false });
       } else {
         const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
         const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
@@ -279,7 +279,6 @@ $(document).ready(function() {
           rowListTagihanBarang += `<tr>`
             + `<td>${no}</td>`
             + `${'<td>'+(lb.paid_date ? lb.paid_date : '-')+'</td>'}`
-            + `<td>${lb.created_at}</td>`
             + `<td>${lb.created_by}</td>`
             + `<td>${lb.group_name}</td>`
             + `<td>${lb.quantity}</td>`
@@ -315,15 +314,15 @@ $(document).ready(function() {
         } else if (dt.isRevert === false) { finalSelectedJasa.push({ detail_service_patient_id: dt.id, status: null }); }
       } else {
         if (dt.isRevert === true) {
-          finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, status: 'del'});
-        } else if (dt.isRevert === false) { finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, status: null }); }
+          finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity, status: 'del'});
+        } else if (dt.isRevert === false) { finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity, status: null }); }
       }
     });
 
     const datas = {
       check_up_result_id: getCheckUpResultId,
       service_payment: finalSelectedJasa.length ? finalSelectedJasa : [{detail_service_patient_id: null, status: null}],
-      item_payment: finalSelectedBarang.length ? finalSelectedBarang : [{medicine_group_id: null, status: null}]
+      item_payment: finalSelectedBarang.length ? finalSelectedBarang : [{medicine_group_id: null, quantity: null, status: null}]
     };
 
     $.ajax({

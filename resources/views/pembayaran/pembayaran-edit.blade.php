@@ -129,7 +129,6 @@
             <tr>
               <th>No</th>
               <th>Tanggal Bayar</th>
-              <th>Tanggal Dibuat</th>
               <th>Dibuat Oleh</th>
               <th>Jenis Layanan</th>
               <th>Kategori Jasa</th>
@@ -152,7 +151,6 @@
             <tr>
               <th>No</th>
               <th>Tanggal Bayar</th>
-              <th>Tanggal Dibuat</th>
               <th>Dibuat Oleh</th>
               <th>Kelompok Obat</th>
               <th>Jumlah</th>
