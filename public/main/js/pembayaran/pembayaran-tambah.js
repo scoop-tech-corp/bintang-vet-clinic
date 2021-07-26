@@ -82,12 +82,12 @@ $(document).ready(function () {
       if (dt.type == 'jasa') {
         finalSelectedJasa.push({ detail_service_patient_id: dt.id });
       } else {
-        finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId });
+        finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity });
       }
     });
     fd.append('service_payment', JSON.stringify(finalSelectedJasa));
     fd.append('item_payment', JSON.stringify(finalSelectedBarang));
-
+    
     $.ajax({
       url: $('.baseUrl').val() + '/api/pembayaran',
       type: 'POST',
@@ -218,7 +218,8 @@ $(document).ready(function () {
 
       if (this.checked) {
         listTagihanBarang.push(getDetailBarang);
-        calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, type: 'barang', price: getDetailBarang.price_overall });
+        calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, type: 'barang',
+        quantity: getDetailBarang.quantity, price: getDetailBarang.price_overall });
       } else {
         const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
         const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
