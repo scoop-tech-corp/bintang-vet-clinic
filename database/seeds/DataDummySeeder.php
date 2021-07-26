@@ -1106,7 +1106,7 @@ class DataDummySeeder extends Seeder
             'registrant' => 'agus',
             'user_id' => '1',
             'doctor_user_id' => '3',
-            'acceptance_status' => '0',
+            'acceptance_status' => '1',
             'created_at' => '2020-12-30',
         ]);
 

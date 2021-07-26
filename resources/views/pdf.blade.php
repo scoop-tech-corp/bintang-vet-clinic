@@ -168,9 +168,9 @@
             @if ($data_item)
                 @foreach ($data_item as $item)
                     <tr>
-                        <td>{{ $item->item_name }}</td>
+                        <td>{{ $item->group_name }}</td>
                         <td>{{ $item->quantity }}</td>
-                        <td>{{ number_format($item->selling_price) }}</td>
+                        <td>{{ number_format($item->each_price) }}</td>
                         <td>{{ number_format($item->price_overall) }}</td>
                     </tr>
                 @endforeach
