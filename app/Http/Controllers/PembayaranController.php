@@ -215,7 +215,7 @@ class PembayaranController extends Controller
             ->select('list_of_payment_services.id as list_of_payment_service_id',
                 'list_of_services.id as detail_service_patient_id',
                 DB::raw("DATE_FORMAT(list_of_payment_services.created_at, '%d %b %Y') as paid_date"),
-                //DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at"),
+                DB::raw("DATE_FORMAT(list_of_payment_services.created_at, '%d %b %Y') as created_at"),
                 'users.fullname as created_by', 'list_of_services.service_name',
                 'detail_service_patients.quantity', DB::raw("TRIM(detail_service_patients.price_overall)+0 as price_overall"),
                 'service_categories.category_name', DB::raw("TRIM(price_services.selling_price)+0 as selling_price"))
@@ -238,6 +238,7 @@ class PembayaranController extends Controller
                 'lop.id as id',
                 'lop.check_up_result_id',
                 'lop.medicine_group_id',
+                'lop.detail_medicine_group_check_up_result_id',
                 'medicine_groups.group_name',
                 DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
                 //DB::raw("COUNT() as quantity"),
@@ -245,7 +246,7 @@ class PembayaranController extends Controller
                 DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
                 //'dmg.status_paid_off',
                 'users.fullname as created_by',
-                //DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"),
+                DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at"),
                 DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as paid_date"),
             )
         // ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
@@ -423,6 +424,11 @@ class PembayaranController extends Controller
 
         if (count($result_item) != 0) {
 
+            $detail_medicine_group = DB::table('detail_medicine_group_check_up_results as dmg')
+                ->where('dmg.check_up_result_id', '=', $request->check_up_result_id)
+                ->where('dmg.medicine_group_id', '=', $value_item['medicine_group_id'])
+                ->first();
+
             //simpan data barang
             foreach ($result_item as $value_item) {
 
@@ -431,6 +437,7 @@ class PembayaranController extends Controller
                     'medicine_group_id' => $value_item['medicine_group_id'],
                     'list_of_payment_id' => $list_of_payment->id,
                     'quantity' => $value_item['quantity'],
+                    'detail_medicine_group_check_up_result_id' => $detail_medicine_group->id,
                     'user_id' => $request->user()->id,
                 ]);
 
@@ -667,11 +674,17 @@ class PembayaranController extends Controller
 
                 if ($value_item['medicine_group_id'] && is_null($value_item['status'])) {
 
+                    $detail_medicine_group = DB::table('detail_medicine_group_check_up_results as dmg')
+                        ->where('dmg.check_up_result_id', '=', $request->check_up_result_id)
+                        ->where('dmg.medicine_group_id', '=', $value_item['medicine_group_id'])
+                        ->first();
+
                     $item = ListofPaymentItem::create([
                         'check_up_result_id' => $request->check_up_result_id,
                         'medicine_group_id' => $value_item['medicine_group_id'],
                         'list_of_payment_id' => $data_list_of_payment->id,
                         'quantity' => $value_item['quantity'],
+                        'detail_medicine_group_check_up_result_id' => $detail_medicine_group->id,
                         'user_id' => $request->user()->id,
                     ]);
 
@@ -984,7 +997,7 @@ class PembayaranController extends Controller
         // $res_num_item = 0;
 
         $services = $request->service_payment;
-        $result_service = json_decode(json_encode($services), true);
+        $result_service = json_decode($services, true);
         //$services;
         //json_decode($services, true);
 
@@ -1005,7 +1018,7 @@ class PembayaranController extends Controller
         $myArray_service = explode(',', $res_service);
 
         $items = $request->item_payment;
-        $result_item = json_decode(json_encode($items), true);
+        $result_item = json_decode($items, true);
         //json_decode($items, true);
         //$items;
         //
