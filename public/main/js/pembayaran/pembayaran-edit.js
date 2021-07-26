@@ -242,7 +242,7 @@ $(document).ready(function() {
       processAppendListSelectedBarang();
 
       const getDetailBarang = selectedListBarang[getIdx];
-      const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
+      const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.detail_medicine_group_check_up_result_id == getDetailBarang.id);
 
       listTagihanBarang[getIdxTagihanBarang].isRevert = true;
       calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, type: 'barang', price: getDetailBarang.price_overall, isRevert: true });
@@ -257,7 +257,7 @@ $(document).ready(function() {
       processAppendListSelectedBarang();
 
       const getDetailBarang = selectedListBarang[getIdx];
-      const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
+      const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.detail_medicine_group_check_up_result_id == getDetailBarang.id);
       const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
 
       listTagihanBarang[getIdxTagihanBarang].isRevert = false;
