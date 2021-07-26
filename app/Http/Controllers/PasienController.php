@@ -281,6 +281,7 @@ class PasienController extends Controller
 
         $data_check = DB::table('check_up_results')
             ->select('check_up_results.patient_registration_id')
+            ->where('isDeleted', '=', 0)
             ->get();
 
         $res = "";

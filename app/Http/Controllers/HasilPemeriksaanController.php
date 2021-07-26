@@ -1471,7 +1471,7 @@ class HasilPemeriksaanController extends Controller
                         'user_id' => $request->user()->id,
                     ]);
 
-                    $this->update_item($res_group['list_of_medicine']);
+                    $this->update_item($res_group['list_of_medicine'], $add_parent, $check_up_result, $request);
 
                 }
 
@@ -1498,7 +1498,7 @@ class HasilPemeriksaanController extends Controller
 
     }
 
-    private function update_item($list_of_medicine)
+    private function update_item($list_of_medicine, $add_parent, $check_up_result, $request)
     {
         foreach ($list_of_medicine as $value_item) {
 
