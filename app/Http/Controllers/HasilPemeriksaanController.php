@@ -75,26 +75,52 @@ class HasilPemeriksaanController extends Controller
             ], 403);
         }
 
-        $message_patient = [
-            'patient_registration_id.unique' => 'Registrasi Pasien ini sudah pernah di input sebelumnya',
-        ];
+        $check_up_result = CheckUpResult::where('patient_registration_id', '=', $request->patient_registration_id)
+            ->where('isdeleted', '=', 1)
+            ->first();
 
-        $validate = Validator::make($request->all(), [
-            'patient_registration_id' => 'required|numeric|unique:check_up_results,patient_registration_id',
-            'anamnesa' => 'required|string|min:10',
-            'sign' => 'required|string|min:10',
-            'diagnosa' => 'required|string|min:10',
-            'status_finish' => 'required|bool',
-            'status_outpatient_inpatient' => 'required|bool',
-        ], $message_patient);
+        if ($check_up_result) {
 
-        if ($validate->fails()) {
-            $errors = $validate->errors()->all();
+            $validate = Validator::make($request->all(), [
+                'patient_registration_id' => 'required|numeric',
+                'anamnesa' => 'required|string|min:10',
+                'sign' => 'required|string|min:10',
+                'diagnosa' => 'required|string|min:10',
+                'status_finish' => 'required|bool',
+                'status_outpatient_inpatient' => 'required|bool',
+            ]);
 
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $errors,
-            ], 422);
+            if ($validate->fails()) {
+                $errors = $validate->errors()->all();
+
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => $errors,
+                ], 422);
+            }
+
+        } else {
+            $message_patient = [
+                'patient_registration_id.unique' => 'Registrasi Pasien ini sudah pernah di input sebelumnya',
+            ];
+
+            $validate = Validator::make($request->all(), [
+                'patient_registration_id' => 'required|numeric|unique:check_up_results,patient_registration_id',
+                'anamnesa' => 'required|string|min:10',
+                'sign' => 'required|string|min:10',
+                'diagnosa' => 'required|string|min:10',
+                'status_finish' => 'required|bool',
+                'status_outpatient_inpatient' => 'required|bool',
+            ], $message_patient);
+
+            if ($validate->fails()) {
+                $errors = $validate->errors()->all();
+
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => $errors,
+                ], 422);
+            }
         }
 
         if ($request->status_outpatient_inpatient == true && $request->inpatient != "") {
@@ -1743,6 +1769,7 @@ class HasilPemeriksaanController extends Controller
                         ->select('detail_item_patients.quantity as quantity')
                         ->where('list_of_items.id', '=', $check_list_of_item->id)
                         ->where('price_items.id', '=', $datas->price_item_id)
+                        ->where('detail_item_patients.detail_medicine_group_id', '=', $resdata->id)
                         ->first();
 
                     $res_total_item = $check_list_of_item->total_item + $find_prev_stock->quantity;
@@ -1761,13 +1788,15 @@ class HasilPemeriksaanController extends Controller
                     ]);
 
                     $values = DetailItemPatient::where('id', '=', $datas->id)
-                        ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
+                        ->delete();
+                    //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
                 }
 
             }
 
             $val_medicine_group = Detail_medicine_group_check_up_result::where('id', '=', $resdata->id)
-                ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
+                ->delete();
+            //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
         }
 
         $detail_service = DetailServicePatient::where('check_up_result_id', '=', $request->id)->get();
@@ -1780,7 +1809,8 @@ class HasilPemeriksaanController extends Controller
         }
 
         $delete_detail_service_patients = DetailServicePatient::where('check_up_result_id', '=', $request->id)
-            ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
+            ->delete();
+        //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
 
         $inpatient = InPatient::where('check_up_result_id', '=', $request->id)->get();
 
@@ -1792,7 +1822,8 @@ class HasilPemeriksaanController extends Controller
         }
 
         $delete_inpatient = InPatient::where('check_up_result_id', '=', $request->id)
-            ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
+            ->delete();
+        //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
 
         $find_images = DB::table('images_check_up_results')
             ->select('images_check_up_results.id', 'images_check_up_results.image')
@@ -1810,17 +1841,27 @@ class HasilPemeriksaanController extends Controller
                     // $delete = DB::table('images_check_up_results')
                     //     ->where('id', $image->id)->delete();
                     $delete = ImagesCheckUpResults::where('id', '=', $image->id)
-                        ->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
+                        ->delete();
+                    //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
                 }
             }
 
         }
 
+        if ($check_up_result->status_finish == true) {
+
+          $registration = Registration::find($check_up_result->patient_registration_id);
+          $registration->user_update_id = $request->user()->id;
+          $registration->acceptance_status = 1;
+          $registration->updated_at = \Carbon\Carbon::now();
+          $registration->save();
+      }
+
         $check_up_result = CheckUpResult::find($request->id);
-        $check_up_result->isDeleted = true;
-        $check_up_result->deleted_by = $request->user()->fullname;
-        $check_up_result->deleted_at = \Carbon\Carbon::now();
-        $check_up_result->save();
+        // $check_up_result->isDeleted = true;
+        // $check_up_result->deleted_by = $request->user()->fullname;
+        // $check_up_result->deleted_at = \Carbon\Carbon::now();
+        $check_up_result->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Data',
