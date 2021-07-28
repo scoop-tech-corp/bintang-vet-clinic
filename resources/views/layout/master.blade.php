@@ -32,12 +32,12 @@
 
 	<link rel="stylesheet" type='text/css' href="{{ asset('main/css/input-custom.css') }}">
 	<link rel="stylesheet" type='text/css' href="{{ asset('main/css/global.css') }}">
-	@yield('css-content')	
+	@yield('css-content')
 
   <!-- Google Font -->
   <link rel="stylesheet"
 		href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
-		
+
 	<!-- jQuery 3 -->
 	<script src="{{ asset('bower_components/jquery/dist/jquery.min.js') }}"></script>
 	<!-- Bootstrap 3.3.7 -->
@@ -141,8 +141,7 @@
 			<div class="pull-right hidden-xs">
 				<b>Version</b> 1.0
 			</div>
-			<strong>Copyright &copy; <script>document.write(new Date().getFullYear())</script> <a href="#">Vet Clinic</a>.</strong> All rights
-			reserved.
+			<strong>Copyright &copy; <script>document.write(new Date().getFullYear())</script> <a href="/">Bintang Vet Clinic</a></strong> | Powered by Scoop Tech
 		</footer>
 
 		<!-- Control Sidebar -->

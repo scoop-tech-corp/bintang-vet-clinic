@@ -414,7 +414,7 @@ class DataDummySeeder extends Seeder
         //cabang alam sutera
         DB::table('list_of_items')->insert([
             'item_name' => 'Vosea',
-            'total_item' => '3',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '1',
             'branch_id' => '1',
@@ -424,7 +424,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Kaotin',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '4',
             'category_item_id' => '1',
             'branch_id' => '1',
@@ -434,7 +434,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Loperamide',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '1',
             'branch_id' => '1',
@@ -444,7 +444,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Metronidazole',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '1',
@@ -454,7 +454,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Cefixime',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '1',
@@ -464,7 +464,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Doxy',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '1',
@@ -474,7 +474,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Zinc',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '1',
@@ -484,7 +484,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Imboost',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '1',
@@ -494,7 +494,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Fish Oil',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '1',
@@ -504,7 +504,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Betadine',
-            'total_item' => '8',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '1',
@@ -514,7 +514,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Alkohol',
-            'total_item' => '8',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '1',
@@ -524,7 +524,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'H2O2',
-            'total_item' => '10',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '1',
@@ -534,7 +534,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Metil Prednisolone',
-            'total_item' => '2',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '5',
             'branch_id' => '1',
@@ -544,7 +544,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Dexa',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '5',
             'branch_id' => '1',
@@ -554,7 +554,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Revolution',
-            'total_item' => '2',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '6',
             'branch_id' => '1',
@@ -564,7 +564,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Caniverm',
-            'total_item' => '9',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '6',
             'branch_id' => '1',
@@ -574,7 +574,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Itraconazole',
-            'total_item' => '11',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '1',
@@ -584,7 +584,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'GRISEOFULVIN',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '1',
@@ -594,7 +594,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'TEOPILIN',
-            'total_item' => '4',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '1',
@@ -605,7 +605,7 @@ class DataDummySeeder extends Seeder
         //cabang kembangan
         DB::table('list_of_items')->insert([
             'item_name' => 'Vosea',
-            'total_item' => '3',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '1',
             'branch_id' => '2',
@@ -615,7 +615,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Kaotin',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '4',
             'category_item_id' => '1',
             'branch_id' => '2',
@@ -625,7 +625,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Loperamide',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '1',
             'branch_id' => '2',
@@ -635,7 +635,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Metronidazole',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '2',
@@ -645,7 +645,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Cefixime',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '2',
@@ -655,7 +655,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Doxy',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '2',
@@ -665,7 +665,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Zinc',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '2',
@@ -675,7 +675,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Imboost',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '2',
@@ -685,7 +685,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Fish Oil',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '2',
@@ -695,7 +695,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Betadine',
-            'total_item' => '8',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '2',
@@ -705,7 +705,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Alkohol',
-            'total_item' => '8',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '2',
@@ -715,7 +715,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'H2O2',
-            'total_item' => '10',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '2',
@@ -725,7 +725,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Metil Prednisolone',
-            'total_item' => '2',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '5',
             'branch_id' => '2',
@@ -735,7 +735,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Dexa',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '5',
             'branch_id' => '2',
@@ -745,7 +745,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Revolution',
-            'total_item' => '2',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '6',
             'branch_id' => '2',
@@ -755,7 +755,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Caniverm',
-            'total_item' => '9',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '6',
             'branch_id' => '2',
@@ -765,7 +765,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Itraconazole',
-            'total_item' => '11',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '2',
@@ -775,7 +775,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'GRISEOFULVIN',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '2',
@@ -785,7 +785,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'TEOPILIN',
-            'total_item' => '4',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '2',
@@ -796,7 +796,7 @@ class DataDummySeeder extends Seeder
         //cabang tanjung duren
         DB::table('list_of_items')->insert([
             'item_name' => 'Vosea',
-            'total_item' => '3',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '1',
             'branch_id' => '3',
@@ -806,7 +806,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Kaotin',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '4',
             'category_item_id' => '1',
             'branch_id' => '3',
@@ -816,7 +816,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Loperamide',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '1',
             'branch_id' => '3',
@@ -826,7 +826,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Metronidazole',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '3',
@@ -836,7 +836,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Cefixime',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '3',
@@ -846,7 +846,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Doxy',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '2',
             'branch_id' => '3',
@@ -856,7 +856,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Zinc',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '3',
@@ -866,7 +866,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Imboost',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '3',
@@ -876,7 +876,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Fish Oil',
-            'total_item' => '5',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '3',
             'branch_id' => '3',
@@ -886,7 +886,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Betadine',
-            'total_item' => '8',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '3',
@@ -896,7 +896,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Alkohol',
-            'total_item' => '8',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '3',
@@ -906,7 +906,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'H2O2',
-            'total_item' => '10',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '4',
             'branch_id' => '3',
@@ -916,7 +916,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Metil Prednisolone',
-            'total_item' => '2',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '5',
             'branch_id' => '3',
@@ -926,7 +926,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Dexa',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '5',
             'branch_id' => '3',
@@ -936,7 +936,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Revolution',
-            'total_item' => '2',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '6',
             'branch_id' => '3',
@@ -946,7 +946,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Caniverm',
-            'total_item' => '9',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '6',
             'branch_id' => '3',
@@ -956,7 +956,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'Itraconazole',
-            'total_item' => '11',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '3',
@@ -966,7 +966,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'GRISEOFULVIN',
-            'total_item' => '7',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '3',
@@ -976,7 +976,7 @@ class DataDummySeeder extends Seeder
 
         DB::table('list_of_items')->insert([
             'item_name' => 'TEOPILIN',
-            'total_item' => '4',
+            'total_item' => '30',
             'unit_item_id' => '3',
             'category_item_id' => '7',
             'branch_id' => '3',
@@ -1068,35 +1068,890 @@ class DataDummySeeder extends Seeder
         ]);
 
         //price_items
-        DB::table('price_items')->insert([
-            'list_of_items_id' => '1',
-            'selling_price' => 200000,
-            'capital_price' => 60000,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 70000,
-            'user_id' => '1',
-            'created_at' => '2020-12-30',
-        ]);
+        // DB::table('price_items')->insert([
+        //     'list_of_items_id' => '1',
+        //     'selling_price' => 200000,
+        //     'capital_price' => 60000,
+        //     'doctor_fee' => 70000,
+        //     'petshop_fee' => 70000,
+        //     'user_id' => '1',
+        //     'created_at' => '2020-12-30',
+        // ]);
+
+        // DB::table('price_items')->insert([
+        //     'list_of_items_id' => '2',
+        //     'selling_price' => 200000,
+        //     'capital_price' => 60000,
+        //     'doctor_fee' => 70000,
+        //     'petshop_fee' => 70000,
+        //     'user_id' => '1',
+        //     'created_at' => '2020-12-30',
+        // ]);
+
+        // DB::table('price_items')->insert([
+        //     'list_of_items_id' => '3',
+        //     'selling_price' => 200000,
+        //     'capital_price' => 60000,
+        //     'doctor_fee' => 70000,
+        //     'petshop_fee' => 70000,
+        //     'user_id' => '1',
+        //     'created_at' => '2020-12-30',
+        // ]);
 
         DB::table('price_items')->insert([
-            'list_of_items_id' => '2',
-            'selling_price' => 200000,
-            'capital_price' => 60000,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 70000,
-            'user_id' => '1',
-            'created_at' => '2020-12-30',
-        ]);
+          'list_of_items_id'=>1,
+          'selling_price'=>'900000.00',
+          'capital_price'=>'300000.00',
+          'doctor_fee'=>'300000.00',
+          'petshop_fee'=>'300000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
 
-        DB::table('price_items')->insert([
-            'list_of_items_id' => '3',
-            'selling_price' => 200000,
-            'capital_price' => 60000,
-            'doctor_fee' => 70000,
-            'petshop_fee' => 70000,
-            'user_id' => '1',
-            'created_at' => '2020-12-30',
-        ]);
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>2,
+          'selling_price'=>'800000.00',
+          'capital_price'=>'100000.00',
+          'doctor_fee'=>'300000.00',
+          'petshop_fee'=>'400000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>3,
+          'selling_price'=>'700000.00',
+          'capital_price'=>'150000.00',
+          'doctor_fee'=>'300000.00',
+          'petshop_fee'=>'250000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>4,
+          'selling_price'=>'600000.00',
+          'capital_price'=>'200000.00',
+          'doctor_fee'=>'200000.00',
+          'petshop_fee'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>5,
+          'selling_price'=>'500000.00',
+          'capital_price'=>'100000.00',
+          'doctor_fee'=>'125000.00',
+          'petshop_fee'=>'275000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>6,
+          'selling_price'=>'400000.00',
+          'capital_price'=>'50000.00',
+          'doctor_fee'=>'150000.00',
+          'petshop_fee'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>7,
+          'selling_price'=>'300000.00',
+          'capital_price'=>'100000.00',
+          'doctor_fee'=>'100000.00',
+          'petshop_fee'=>'100000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>8,
+          'selling_price'=>'200000.00',
+          'capital_price'=>'50000.00',
+          'doctor_fee'=>'50000.00',
+          'petshop_fee'=>'100000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>9,
+          'selling_price'=>'100000.00',
+          'capital_price'=>'25000.00',
+          'doctor_fee'=>'25000.00',
+          'petshop_fee'=>'50000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>10,
+          'selling_price'=>'90000.00',
+          'capital_price'=>'30000.00',
+          'doctor_fee'=>'30000.00',
+          'petshop_fee'=>'30000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>11,
+          'selling_price'=>'80000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'30000.00',
+          'petshop_fee'=>'30000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>12,
+          'selling_price'=>'70000.00',
+          'capital_price'=>'15000.00',
+          'doctor_fee'=>'25000.00',
+          'petshop_fee'=>'30000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>13,
+          'selling_price'=>'60000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'20000.00',
+          'petshop_fee'=>'20000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>14,
+          'selling_price'=>'500000.00',
+          'capital_price'=>'200000.00',
+          'doctor_fee'=>'100000.00',
+          'petshop_fee'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>15,
+          'selling_price'=>'50000.00',
+          'capital_price'=>'15000.00',
+          'doctor_fee'=>'10000.00',
+          'petshop_fee'=>'25000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>16,
+          'selling_price'=>'40000.00',
+          'capital_price'=>'10000.00',
+          'doctor_fee'=>'10000.00',
+          'petshop_fee'=>'20000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>17,
+          'selling_price'=>'30000.00',
+          'capital_price'=>'5000.00',
+          'doctor_fee'=>'10000.00',
+          'petshop_fee'=>'15000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>18,
+          'selling_price'=>'20000.00',
+          'capital_price'=>'5000.00',
+          'doctor_fee'=>'5000.00',
+          'petshop_fee'=>'10000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>19,
+          'selling_price'=>'10000.00',
+          'capital_price'=>'2500.00',
+          'doctor_fee'=>'2500.00',
+          'petshop_fee'=>'5000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>20,
+          'selling_price'=>'20000.00',
+          'capital_price'=>'5000.00',
+          'doctor_fee'=>'5000.00',
+          'petshop_fee'=>'10000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>21,
+          'selling_price'=>'30000.00',
+          'capital_price'=>'10000.00',
+          'doctor_fee'=>'10000.00',
+          'petshop_fee'=>'10000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>22,
+          'selling_price'=>'40000.00',
+          'capital_price'=>'10000.00',
+          'doctor_fee'=>'10000.00',
+          'petshop_fee'=>'20000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>23,
+          'selling_price'=>'50000.00',
+          'capital_price'=>'15000.00',
+          'doctor_fee'=>'10000.00',
+          'petshop_fee'=>'25000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>24,
+          'selling_price'=>'60000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'20000.00',
+          'petshop_fee'=>'20000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>25,
+          'selling_price'=>'80000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'20000.00',
+          'petshop_fee'=>'40000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>26,
+          'selling_price'=>'70000.00',
+          'capital_price'=>'30000.00',
+          'doctor_fee'=>'20000.00',
+          'petshop_fee'=>'20000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>27,
+          'selling_price'=>'80000.00',
+          'capital_price'=>'25000.00',
+          'doctor_fee'=>'15000.00',
+          'petshop_fee'=>'40000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>28,
+          'selling_price'=>'90000.00',
+          'capital_price'=>'30000.00',
+          'doctor_fee'=>'30000.00',
+          'petshop_fee'=>'30000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>29,
+          'selling_price'=>'10000.00',
+          'capital_price'=>'3000.00',
+          'doctor_fee'=>'3000.00',
+          'petshop_fee'=>'4000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>30,
+          'selling_price'=>'20000.00',
+          'capital_price'=>'5000.00',
+          'doctor_fee'=>'5000.00',
+          'petshop_fee'=>'10000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>31,
+          'selling_price'=>'50000.00',
+          'capital_price'=>'15000.00',
+          'doctor_fee'=>'25000.00',
+          'petshop_fee'=>'10000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>32,
+          'selling_price'=>'60000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'20000.00',
+          'petshop_fee'=>'20000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>33,
+          'selling_price'=>'800000.00',
+          'capital_price'=>'200000.00',
+          'doctor_fee'=>'200000.00',
+          'petshop_fee'=>'400000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>34,
+          'selling_price'=>'70000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'20000.00',
+          'petshop_fee'=>'30000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>35,
+          'selling_price'=>'75000.00',
+          'capital_price'=>'25000.00',
+          'doctor_fee'=>'25000.00',
+          'petshop_fee'=>'25000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>36,
+          'selling_price'=>'65000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'15000.00',
+          'petshop_fee'=>'30000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>37,
+          'selling_price'=>'87000.00',
+          'capital_price'=>'29000.00',
+          'doctor_fee'=>'29000.00',
+          'petshop_fee'=>'29000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>38,
+          'selling_price'=>'85000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'25000.00',
+          'petshop_fee'=>'40000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>39,
+          'selling_price'=>'65000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'25000.00',
+          'petshop_fee'=>'20000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>40,
+          'selling_price'=>'80000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'25000.00',
+          'petshop_fee'=>'35000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>41,
+          'selling_price'=>'9000.00',
+          'capital_price'=>'3000.00',
+          'doctor_fee'=>'3000.00',
+          'petshop_fee'=>'3000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>42,
+          'selling_price'=>'36000.00',
+          'capital_price'=>'12000.00',
+          'doctor_fee'=>'12000.00',
+          'petshop_fee'=>'12000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>43,
+          'selling_price'=>'545000.00',
+          'capital_price'=>'100000.00',
+          'doctor_fee'=>'245000.00',
+          'petshop_fee'=>'200000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>44,
+          'selling_price'=>'66000.00',
+          'capital_price'=>'22000.00',
+          'doctor_fee'=>'22000.00',
+          'petshop_fee'=>'22000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>45,
+          'selling_price'=>'50000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'20000.00',
+          'petshop_fee'=>'10000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>46,
+          'selling_price'=>'650000.00',
+          'capital_price'=>'200000.00',
+          'doctor_fee'=>'200000.00',
+          'petshop_fee'=>'250000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>47,
+          'selling_price'=>'98000.00',
+          'capital_price'=>'30000.00',
+          'doctor_fee'=>'38000.00',
+          'petshop_fee'=>'30000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>48,
+          'selling_price'=>'78000.00',
+          'capital_price'=>'26000.00',
+          'doctor_fee'=>'26000.00',
+          'petshop_fee'=>'26000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>49,
+          'selling_price'=>'81000.00',
+          'capital_price'=>'27000.00',
+          'doctor_fee'=>'27000.00',
+          'petshop_fee'=>'27000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>50,
+          'selling_price'=>'65000.00',
+          'capital_price'=>'20000.00',
+          'doctor_fee'=>'20000.00',
+          'petshop_fee'=>'25000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>51,
+          'selling_price'=>'960000.00',
+          'capital_price'=>'320000.00',
+          'doctor_fee'=>'320000.00',
+          'petshop_fee'=>'320000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>52,
+          'selling_price'=>'850000.00',
+          'capital_price'=>'300000.00',
+          'doctor_fee'=>'250000.00',
+          'petshop_fee'=>'300000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>53,
+          'selling_price'=>'622000.00',
+          'capital_price'=>'200000.00',
+          'doctor_fee'=>'200000.00',
+          'petshop_fee'=>'222000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>54,
+          'selling_price'=>'540000.00',
+          'capital_price'=>'180000.00',
+          'doctor_fee'=>'180000.00',
+          'petshop_fee'=>'180000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>55,
+          'selling_price'=>'540000.00',
+          'capital_price'=>'180000.00',
+          'doctor_fee'=>'180000.00',
+          'petshop_fee'=>'180000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>56,
+          'selling_price'=>'870000.00',
+          'capital_price'=>'290000.00',
+          'doctor_fee'=>'290000.00',
+          'petshop_fee'=>'290000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
+
+          DB::table('price_items')->insert([
+          'list_of_items_id'=>57,
+          'selling_price'=>'120000.00',
+          'capital_price'=>'40000.00',
+          'doctor_fee'=>'40000.00',
+          'petshop_fee'=>'40000.00',
+          'isDeleted'=>0,
+          'user_id'=>1,
+          'user_update_id'=>NULL,
+          'deleted_by'=>NULL,
+          'deleted_at'=>NULL,
+          'created_at'=>'2021-07-27 06:05:09',
+          'updated_at'=>'2021-07-27 06:05:09'
+          ] );
 
         //registrations
         DB::table('registrations')->insert([
@@ -1305,7 +2160,7 @@ class DataDummySeeder extends Seeder
 
           DB::table('detail_item_patients')->insert([
           'check_up_result_id'=>2,
-          'price_item_id'=>1,
+          'price_item_id'=>3,
           'quantity'=>1,
           'price_overall'=>'200000.00',
           'isDeleted'=>0,
