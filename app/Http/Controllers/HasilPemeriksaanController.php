@@ -629,7 +629,6 @@ class HasilPemeriksaanController extends Controller
                     DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"), 'unit_item.unit_name',
                     'category_item.category_name', DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
                     'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"))
-            //->where('detail_item_patients.check_up_result_id', '=', $data->id)
                 ->where('detail_item_patients.detail_medicine_group_id', '=', $value->id)
                 ->orderBy('detail_item_patients.id', 'asc')
                 ->get();
