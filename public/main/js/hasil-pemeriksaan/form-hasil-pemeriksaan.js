@@ -239,7 +239,8 @@ $(document).ready(function() {
     });
 
     arrayKelompokObatDelete.forEach(ko => {
-      let newObj = {medicine_group_id: null, list_of_medicine: [], status: 'del'};
+      let newObj = {id: null, medicine_group_id: null, list_of_medicine: [], status: 'del'};
+      newObj.id = ko.id;
       newObj.medicine_group_id = ko.kelompokObatId;
 
       ko.deletedUpdateListBarang.forEach(dul => {
@@ -254,7 +255,8 @@ $(document).ready(function() {
     });
 
     arrayKelompokObat.forEach(ko => {
-      let newObj = {medicine_group_id: null, list_of_medicine: [], status: ''};
+      let newObj = {id: null, medicine_group_id: null, list_of_medicine: [], status: ''};
+      newObj.id = ko.id;
       newObj.medicine_group_id = ko.kelompokObatId;
 
       ko.deletedUpdateListBarang.forEach(dul => {
@@ -491,7 +493,7 @@ $(document).ready(function() {
         if (getData.item.length) {
           getData.item.forEach(item => {
             let newObj = { id: null, kelompokObatId: null, selectDropdownBarang: [], selectedListBarang: [], deletedUpdateListBarang: [] };
-            newObj.id = item.medicine_group_id; // untuk membedakan data lama dan baru
+            newObj.id = item.id; // untuk membedakan data lama dan baru
             newObj.kelompokObatId = item.medicine_group_id;
             item.list_of_medicine.forEach(lom => {
               newObj.selectDropdownBarang.push(lom.price_item_id);

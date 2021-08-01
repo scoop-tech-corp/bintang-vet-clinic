@@ -12,6 +12,5 @@ class ListofPaymentItem extends Model
 
     protected $guarded = ['id'];
 
-    protected $fillable = ['detail_item_patient_id', 'check_up_result_id',
-        'user_id'];
+    protected $fillable = ['list_of_payment_medicine_group_id', 'price_item_id', 'price_overall', 'quantity', 'user_id'];
 }

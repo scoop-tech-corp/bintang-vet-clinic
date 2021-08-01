@@ -264,13 +264,27 @@ class PasienController extends Controller
             ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
             ->join('branches', 'patients.branch_id', '=', 'branches.id')
-            ->select('registrations.id as registration_id', 'registrations.id_number as registration_number', 'registrations.patient_id',
-                'patients.id_member as id_number_patient', 'patients.pet_category', 'patients.pet_name', 'patients.pet_gender',
-                'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address',
-                'patients.owner_phone_number', 'complaint', 'registrant', 'user_doctor.id as user_doctor_id',
-                'user_doctor.username as username_doctor', 'users.fullname as created_by', 'registrations.acceptance_status',
-                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"), 'users.branch_id as user_branch_id',
-                'branches.id as branch_id', 'branches.branch_name as branch_name')
+            ->select('registrations.id as registration_id',
+                'registrations.id_number as registration_number',
+                'registrations.patient_id',
+                'patients.id_member as id_number_patient',
+                'patients.pet_category', 'patients.pet_name',
+                'patients.pet_gender',
+                'patients.pet_year_age',
+                'patients.pet_month_age',
+                'patients.owner_name',
+                'patients.owner_address',
+                'patients.owner_phone_number',
+                'registrations.complaint',
+                'registrations.registrant',
+                'user_doctor.id as user_doctor_id',
+                'user_doctor.username as username_doctor',
+                'users.fullname as created_by',
+                'registrations.acceptance_status',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"),
+                'users.branch_id as user_branch_id',
+                'branches.id as branch_id',
+                'branches.branch_name as branch_name')
             ->where('registrations.acceptance_status', '=', '1');
 
         if ($request->user()->role == 'dokter') {
@@ -281,6 +295,7 @@ class PasienController extends Controller
 
         $data_check = DB::table('check_up_results')
             ->select('check_up_results.patient_registration_id')
+            ->where('isDeleted', '=', 0)
             ->get();
 
         $res = "";
@@ -381,14 +396,50 @@ class PasienController extends Controller
 
         $data->services = $services;
 
-        $item = DB::table('detail_item_patients')
-            ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
+        // $item = DB::table('detail_item_patients')
+        //     ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
+        //     ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
+        //     ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+        //     ->select('price_medicine_groups.id as price_medicine_group_id', DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"), 'detail_item_patients.medicine_group_id as medicine_group_id',
+        //         'medicine_groups.group_name', 'branches.id as branch_id', 'branches.branch_name')
+        //     ->where('detail_item_patients.check_up_result_id', '=', $data->check_up_result_id)
+        //     ->groupBy('price_medicine_groups.id', 'price_medicine_groups.selling_price', 'detail_item_patients.medicine_group_id', 'medicine_groups.group_name', 'branches.id', 'branches.branch_name')
+        //     ->get();
+
+        // foreach ($item as $value) {
+
+        //     $detail_item = DB::table('detail_item_patients')
+        //         ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
+        //         ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
+        //         ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+        //         ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+        //         ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
+        //         ->select('detail_item_patients.id as detail_item_patients_id', 'list_of_items.id as list_of_item_id', 'price_items.id as price_item_id', 'list_of_items.item_name', 'detail_item_patients.quantity',
+        //             DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"), 'unit_item.unit_name',
+        //             'category_item.category_name', DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
+        //             'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"))
+        //         ->where('detail_item_patients.check_up_result_id', '=', $data->check_up_result_id)
+        //         ->where('detail_item_patients.medicine_group_id', '=', $value->medicine_group_id)
+        //         ->orderBy('detail_item_patients.id', 'desc')
+        //         ->get();
+
+        //     $value->list_of_medicine = $detail_item;
+        // }
+
+        // $data->item = $item;
+
+        $item = DB::table('detail_medicine_group_check_up_results')
+            ->join('price_medicine_groups', 'detail_medicine_group_check_up_results.medicine_group_id', '=', 'price_medicine_groups.id')
             ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
             ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-            ->select('price_medicine_groups.id as price_medicine_group_id', DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"), 'detail_item_patients.medicine_group_id as medicine_group_id',
-                'medicine_groups.group_name', 'branches.id as branch_id', 'branches.branch_name')
-            ->where('detail_item_patients.check_up_result_id', '=', $data->check_up_result_id)
-            ->groupBy('price_medicine_groups.id', 'price_medicine_groups.selling_price', 'detail_item_patients.medicine_group_id', 'medicine_groups.group_name', 'branches.id', 'branches.branch_name')
+            ->select('detail_medicine_group_check_up_results.id as id',
+                'price_medicine_groups.id as price_medicine_group_id',
+                DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
+                'detail_medicine_group_check_up_results.medicine_group_id as medicine_group_id',
+                'medicine_groups.group_name',
+                'branches.id as branch_id',
+                'branches.branch_name')
+            ->where('detail_medicine_group_check_up_results.check_up_result_id', '=', $data->check_up_result_id)
             ->get();
 
         foreach ($item as $value) {
@@ -403,9 +454,9 @@ class PasienController extends Controller
                     DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"), 'unit_item.unit_name',
                     'category_item.category_name', DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
                     'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"))
-                ->where('detail_item_patients.check_up_result_id', '=', $data->check_up_result_id)
-                ->where('detail_item_patients.medicine_group_id', '=', $value->medicine_group_id)
-                ->orderBy('detail_item_patients.id', 'desc')
+            //->where('detail_item_patients.check_up_result_id', '=', $data->id)
+                ->where('detail_item_patients.detail_medicine_group_id', '=', $value->id)
+                ->orderBy('detail_item_patients.id', 'asc')
                 ->get();
 
             $value->list_of_medicine = $detail_item;

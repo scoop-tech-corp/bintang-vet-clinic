@@ -109,11 +109,8 @@ $(document).ready(function() {
         + `<td>${lb.created_at}</td>`
         + `<td>${lb.created_by}</td>`
         + `<td>${lb.group_name}</td>`
-        + `<td>${lb.item_name}</td>`
-        + `<td>${lb.category_name}</td>`
-        + `<td>${lb.unit_name}</td>`
         + `<td>${lb.quantity}</td>`
-        + `<td>${typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${lb.status_paid_off ? 'Lunas' : 'Belum Lunas'}</td>`
         + `</tr>`;
@@ -134,11 +131,8 @@ $(document).ready(function() {
           + `<td>${lb.created_at}</td>`
           + `<td>${lb.created_by}</td>`
           + `<td>${lb.group_name}</td>`
-          + `<td>${lb.item_name}</td>`
-          + `<td>${lb.category_name}</td>`
-          + `<td>${lb.unit_name}</td>`
           + `<td>${lb.quantity}</td>`
-          + `<td>${typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
           + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
           + `</tr>`;
           ++no;

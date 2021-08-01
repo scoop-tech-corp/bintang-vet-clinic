@@ -82,12 +82,12 @@ $(document).ready(function () {
       if (dt.type == 'jasa') {
         finalSelectedJasa.push({ detail_service_patient_id: dt.id });
       } else {
-        finalSelectedBarang.push({ detail_item_patient_id: dt.id });
+        finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity });
       }
     });
     fd.append('service_payment', JSON.stringify(finalSelectedJasa));
     fd.append('item_payment', JSON.stringify(finalSelectedBarang));
-
+    
     $.ajax({
       url: $('.baseUrl').val() + '/api/pembayaran',
       type: 'POST',
@@ -203,11 +203,8 @@ $(document).ready(function () {
         + `<td>${lb.created_at}</td>`
         + `<td>${lb.created_by}</td>`
         + `<td>${lb.group_name}</td>`
-        + `<td>${lb.item_name}</td>`
-        + `<td>${lb.category_name}</td>`
-        + `<td>${lb.unit_name}</td>`
         + `<td>${lb.quantity}</td>`
-        + `<td>${typeof (lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${typeof (lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td><input type="checkbox" index=${idx} class="isBayarBarang"/></td>`
         + `</tr>`;
@@ -221,10 +218,11 @@ $(document).ready(function () {
 
       if (this.checked) {
         listTagihanBarang.push(getDetailBarang);
-        calculationPay.push({ id: getDetailBarang.detail_item_patients_id, type: 'barang', price: getDetailBarang.price_overall });
+        calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, type: 'barang',
+        quantity: getDetailBarang.quantity, price: getDetailBarang.price_overall });
       } else {
-        const getIdxTagihanBarang = listTagihanJasa.findIndex(i => i.detail_item_patients_id == getDetailBarang.detail_item_patients_id);
-        const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.detail_item_patients_id));
+        const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
+        const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
 
         listTagihanBarang.splice(getIdxTagihanBarang, 1);
         calculationPay.splice(getIdxCalculation, 1);
@@ -249,11 +247,8 @@ $(document).ready(function () {
           + `<td>${lb.created_at}</td>`
           + `<td>${lb.created_by}</td>`
           + `<td>${lb.group_name}</td>`
-          + `<td>${lb.item_name}</td>`
-          + `<td>${lb.category_name}</td>`
-          + `<td>${lb.unit_name}</td>`
           + `<td>${lb.quantity}</td>`
-          + `<td>${typeof (lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
           + `<td>${typeof (lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
           + `</tr>`;
         ++no;
