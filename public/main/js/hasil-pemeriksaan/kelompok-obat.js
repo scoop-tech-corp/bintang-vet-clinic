@@ -60,6 +60,7 @@ function drawListKelompokObat() {
   $('.selectedKelompokObat').on('select2:select', function (e) {
     const getIdx = parseInt(e.target.getAttribute('idx'));
     arrayKelompokObat[getIdx].kelompokObatId = parseInt(e.params.data.id);
+    validationForm();
   });
 
   $('.selectedBarang').on('select2:select', function (e) {

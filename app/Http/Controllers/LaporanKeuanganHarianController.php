@@ -18,26 +18,32 @@ class LaporanKeuanganHarianController extends Controller
             ], 403);
         }
 
-        $item = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+        $item = DB::table('list_of_payments as lop')
+            ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+            ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+            ->join('list_of_payment_items as lipi', 'lipi.list_of_payment_medicine_group_id', '=', 'lopm.id')
+            ->join('price_items as pi', 'lipi.price_item_id', '=', 'pi.id')
+            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+            ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+            ->join('users', 'cur.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
 
-            ->select('list_of_payments.id as list_of_payment_id', 'list_of_payments.check_up_result_id as check_up_result_id',
-                'registrations.id_number as registration_number',
-                'patients.id_member as patient_number', 'patients.pet_category', 'patients.pet_name', 'registrations.complaint',
-                DB::raw("TRIM(SUM(detail_item_patients.price_overall))+0 as price_overall"),
-                DB::raw("TRIM(SUM(price_items.capital_price * detail_item_patients.quantity))+0 as capital_price"),
-                DB::raw("TRIM(SUM(price_items.doctor_fee * detail_item_patients.quantity))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(price_items.petshop_fee * detail_item_patients.quantity))+0 as petshop_fee"),
-                'users.fullname as created_by', 'list_of_payments.created_at as created_at',
+            ->select(
+                'lop.id as list_of_payment_id',
+                'lop.check_up_result_id as check_up_result_id',
+                'reg.id_number as registration_number',
+                'pa.id_member as patient_number',
+                'pa.pet_category',
+                'pa.pet_name',
+                'reg.complaint',
+                DB::raw("TRIM(SUM(lipi.price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(pi.capital_price * lipi.quantity))+0 as capital_price"),
+                DB::raw("TRIM(SUM(pi.doctor_fee * lipi.quantity))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(pi.petshop_fee * lipi.quantity))+0 as petshop_fee"),
+                'users.fullname as created_by',
+                'lop.updated_at as created_at',
                 'branches.id as branchId')
-            ->groupBy('list_of_payments.check_up_result_id');
+            ->groupBy('lop.check_up_result_id');
 
         $service = DB::table('list_of_payments')
             ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
@@ -56,7 +62,7 @@ class LaporanKeuanganHarianController extends Controller
                 DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
                 DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
                 DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
-                'users.fullname as created_by', 'list_of_payments.created_at as created_at',
+                'users.fullname as created_by', 'list_of_payments.updated_at as created_at',
                 'branches.id as branchId')
             ->groupBy('list_of_payments.check_up_result_id')
             ->union($item);
@@ -90,23 +96,21 @@ class LaporanKeuanganHarianController extends Controller
         $data = $data->groupBy('check_up_result_id')
             ->get();
 
-        $price_overall_item = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-
-            ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+        $price_overall_item = DB::table('list_of_payments as lop')
+            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+            ->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
+            ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(detail_item_patients.price_overall))+0 as price_overall"));
+                DB::raw("TRIM(SUM(lopi.price_overall))+0 as price_overall"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
         }
 
         if ($request->date) {
-            $price_overall_item = $price_overall_item->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $request->date);
+            $price_overall_item = $price_overall_item->where(DB::raw('DATE(lop.updated_at)'), '=', $request->date);
         }
         $price_overall_item = $price_overall_item->first();
 
@@ -126,29 +130,27 @@ class LaporanKeuanganHarianController extends Controller
         }
 
         if ($request->date) {
-            $price_overall_service = $price_overall_service->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $request->date);
+            $price_overall_service = $price_overall_service->where(DB::raw('DATE(list_of_payments.updated_at)'), '=', $request->date);
         }
         $price_overall_service = $price_overall_service->first();
 
         $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall;
 
-        $capital_price_item = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-
-            ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+        $capital_price_item = DB::table('list_of_payments as lop')
+            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+            ->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
+            ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(price_items.capital_price * detail_item_patients.quantity))+0 as capital_price"));
+                DB::raw("TRIM(SUM(price_items.capital_price * lopi.quantity))+0 as capital_price"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
         }
 
         if ($request->date) {
-            $capital_price_item = $capital_price_item->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $request->date);
+            $capital_price_item = $capital_price_item->where(DB::raw('DATE(lop.updated_at)'), '=', $request->date);
         }
         $capital_price_item = $capital_price_item->first();
 
@@ -167,29 +169,27 @@ class LaporanKeuanganHarianController extends Controller
         }
 
         if ($request->date) {
-            $capital_price_service = $capital_price_service->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $request->date);
+            $capital_price_service = $capital_price_service->where(DB::raw('DATE(list_of_payments.updated_at)'), '=', $request->date);
         }
         $capital_price_service = $capital_price_service->first();
 
         $capital_price = $capital_price_service->capital_price + $capital_price_item->capital_price;
 
-        $doctor_fee_item = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-
-            ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+        $doctor_fee_item = DB::table('list_of_payments as lop')
+            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+            ->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
+            ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(price_items.doctor_fee * detail_item_patients.quantity))+0 as doctor_fee"));
+                DB::raw("TRIM(SUM(price_items.doctor_fee * lopi.quantity))+0 as doctor_fee"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
         }
 
         if ($request->date) {
-            $doctor_fee_item = $doctor_fee_item->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $request->date);
+            $doctor_fee_item = $doctor_fee_item->where(DB::raw('DATE(lop.updated_at)'), '=', $request->date);
         }
         $doctor_fee_item = $doctor_fee_item->first();
 
@@ -208,28 +208,27 @@ class LaporanKeuanganHarianController extends Controller
         }
 
         if ($request->date) {
-            $doctor_fee_service = $doctor_fee_service->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $request->date);
+            $doctor_fee_service = $doctor_fee_service->where(DB::raw('DATE(list_of_payments.updated_at)'), '=', $request->date);
         }
         $doctor_fee_service = $doctor_fee_service->first();
 
         $doctor_fee = $doctor_fee_item->doctor_fee + $doctor_fee_service->doctor_fee;
 
-        $petshop_fee_item = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+        $petshop_fee_item = DB::table('list_of_payments as lop')
+            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+            ->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
+            ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(price_items.petshop_fee * detail_item_patients.quantity))+0 as petshop_fee"));
+                DB::raw("TRIM(SUM(price_items.petshop_fee * lopi.quantity))+0 as petshop_fee"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
         }
 
         if ($request->date) {
-            $petshop_fee_item = $petshop_fee_item->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $request->date);
+            $petshop_fee_item = $petshop_fee_item->where(DB::raw('DATE(lop.updated_at)'), '=', $request->date);
         }
         $petshop_fee_item = $petshop_fee_item->first();
 
@@ -248,7 +247,7 @@ class LaporanKeuanganHarianController extends Controller
         }
 
         if ($request->date) {
-            $petshop_fee_service = $petshop_fee_service->where(DB::raw('DATE(list_of_payments.created_at)'), '=', $request->date);
+            $petshop_fee_service = $petshop_fee_service->where(DB::raw('DATE(list_of_payments.updated_at)'), '=', $request->date);
         }
         $petshop_fee_service = $petshop_fee_service->first();
 
@@ -328,38 +327,44 @@ class LaporanKeuanganHarianController extends Controller
 
         $data['list_of_payment_services'] = $list_of_payment_services;
 
-        $item = DB::table('list_of_payment_items')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_medicine_groups', 'detail_item_patients.medicine_group_id', '=', 'price_medicine_groups.id')
-            ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
+        $item = DB::table('list_of_payment_medicine_groups as lopm')
+            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+            ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
             ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-            ->select('price_medicine_groups.id as price_medicine_group_id', DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"), 'detail_item_patients.medicine_group_id as medicine_group_id',
-                'medicine_groups.group_name', 'branches.id as branch_id', 'branches.branch_name')
-            ->where('list_of_payment_items.check_up_result_id', '=', $data->check_up_result_id)
-            ->groupBy('price_medicine_groups.id', 'price_medicine_groups.selling_price', 'detail_item_patients.medicine_group_id', 'medicine_groups.group_name', 'branches.id', 'branches.branch_name')
+            ->select('lopm.id as id',
+                'pmg.id as price_medicine_group_id',
+                DB::raw("TRIM(pmg.selling_price)+0 as selling_price"),
+                'lopm.medicine_group_id as medicine_group_id',
+                'medicine_groups.group_name',
+                'branches.id as branch_id',
+                'branches.branch_name')
+            ->where('lopm.list_of_payment_id', '=', $data->id)
             ->get();
 
         foreach ($item as $value) {
 
-            $detail_item = DB::table('list_of_payment_items')
-                ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-                ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
+            $detail_item = DB::table('list_of_payment_items as lopi')
+                ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
                 ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
                 ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
                 ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-                ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
-                ->select('detail_item_patients.id as detail_item_patients_id', 'list_of_items.id as list_of_item_id', 'price_items.id as price_item_id', 'list_of_items.item_name', 'detail_item_patients.quantity',
+                ->join('users', 'lopi.user_id', '=', 'users.id')
+                ->select('lopi.id as detail_item_patients_id',
+                    'list_of_items.id as list_of_item_id',
+                    'price_items.id as price_item_id',
+                    'list_of_items.item_name',
+                    'lopi.quantity',
+                    DB::raw("TRIM(lopi.price_overall)+0 as price_overall"),
                     'unit_item.unit_name',
                     'category_item.category_name',
-                    DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"),
                     DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
-                    DB::raw("TRIM(price_items.capital_price * detail_item_patients.quantity)+0 as capital_price"),
-                    DB::raw("TRIM(price_items.doctor_fee * detail_item_patients.quantity)+0 as doctor_fee"),
-                    DB::raw("TRIM(price_items.petshop_fee * detail_item_patients.quantity)+0 as petshop_fee"),
-                    'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"))
-                ->where('list_of_payment_items.check_up_result_id', '=', $data->check_up_result_id)
-                ->where('detail_item_patients.medicine_group_id', '=', $value->medicine_group_id)
-                ->orderBy('detail_item_patients.id', 'desc')
+                    DB::raw("TRIM(price_items.capital_price)+0 as capital_price"),
+                    DB::raw("TRIM(price_items.doctor_fee)+0 as doctor_fee"),
+                    DB::raw("TRIM(price_items.petshop_fee)+0 as petshop_fee"),
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(lopi.created_at, '%d %b %Y') as created_at"))
+                ->where('lopi.list_of_payment_medicine_group_id', '=', $value->id)
+                ->orderBy('lopi.id', 'asc')
                 ->get();
 
             $value->list_of_medicine = $detail_item;

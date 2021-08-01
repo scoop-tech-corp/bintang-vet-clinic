@@ -33,29 +33,31 @@ class DataLaporanKeuanganMingguan implements FromCollection, ShouldAutoSize, Wit
     {
         DB::statement(DB::raw('set @rownum=0'));
 
-        $item_sum = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+        $item_sum = DB::table('list_of_payments as lop')
+            ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+            ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+            ->join('list_of_payment_items as lipi', 'lipi.list_of_payment_medicine_group_id', '=', 'lopm.id')
+            ->join('price_items as pi', 'lipi.price_item_id', '=', 'pi.id')
+            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+            ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+            ->join('users', 'cur.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
 
             ->select(
-                DB::raw("TRIM(SUM(detail_item_patients.price_overall))+0 as price_overall"),
-                DB::raw("TRIM(SUM(price_items.capital_price * detail_item_patients.quantity))+0 as capital_price"),
-                DB::raw("TRIM(SUM(price_items.doctor_fee * detail_item_patients.quantity))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(price_items.petshop_fee * detail_item_patients.quantity))+0 as petshop_fee"));
+                DB::raw("TRIM(SUM(lipi.price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(pi.capital_price * lipi.quantity))+0 as capital_price"),
+                DB::raw("TRIM(SUM(pi.doctor_fee * lipi.quantity))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(pi.petshop_fee * lipi.quantity))+0 as petshop_fee"));
 
         if ($this->branch_id) {
             $item_sum = $item_sum->where('branches.id', '=', $this->branch_id);
         }
 
         if ($this->date_from && $this->date_to) {
-            $item_sum = $item_sum->whereBetween(DB::raw('DATE(list_of_payments.created_at)'), [$this->date_from, $this->date_to]);
+            $item_sum = $item_sum->whereBetween(DB::raw('DATE(lop.updated_at)'), [$this->date_from, $this->date_to]);
         }
 
-        $item_sum = $item_sum->groupBy('list_of_payments.check_up_result_id');
+        $item_sum = $item_sum->groupBy('lop.check_up_result_id');
 
         $service_sum = DB::table('list_of_payments')
             ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
@@ -76,7 +78,7 @@ class DataLaporanKeuanganMingguan implements FromCollection, ShouldAutoSize, Wit
         }
 
         if ($this->date_from && $this->date_to) {
-            $service_sum = $service_sum->whereBetween(DB::raw('DATE(list_of_payments.created_at)'), [$this->date_from, $this->date_to]);
+            $service_sum = $service_sum->whereBetween(DB::raw('DATE(list_of_payments.updated_at)'), [$this->date_from, $this->date_to]);
         }
 
         $service_sum = $service_sum->groupBy('list_of_payments.check_up_result_id')
@@ -99,26 +101,34 @@ class DataLaporanKeuanganMingguan implements FromCollection, ShouldAutoSize, Wit
                 DB::raw('null as created_at'),
                 DB::raw('"Total" as status_outpatient_inpatient'));
 
-        $item = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_items', 'check_up_results.id', '=', 'list_of_payment_items.check_up_result_id')
-            ->join('detail_item_patients', 'list_of_payment_items.detail_item_patient_id', '=', 'detail_item_patients.id')
-            ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+        $item = DB::table('list_of_payments as lop')
+            ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+            ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+            ->join('list_of_payment_items as lipi', 'lipi.list_of_payment_medicine_group_id', '=', 'lopm.id')
+            ->join('price_items as pi', 'lipi.price_item_id', '=', 'pi.id')
+            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+            ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+            ->join('users', 'cur.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
 
-            ->select(DB::raw('@rownum  := @rownum  + 1 AS rownum'), 'list_of_payments.id as list_of_payment_id', 'list_of_payments.check_up_result_id as check_up_result_id',
-                'registrations.id_number as registration_number',
-                'patients.id_member as patient_number', 'patients.pet_category', 'patients.pet_name', 'registrations.complaint',
-                DB::raw("TRIM(SUM(detail_item_patients.price_overall))+0 as price_overall"),
-                DB::raw("TRIM(SUM(price_items.capital_price * detail_item_patients.quantity))+0 as capital_price"),
-                DB::raw("TRIM(SUM(price_items.doctor_fee * detail_item_patients.quantity))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(price_items.petshop_fee * detail_item_patients.quantity))+0 as petshop_fee"),
-                'users.fullname as created_by', 'list_of_payments.created_at as created_at',
-                'branches.id as branchId', 'check_up_results.status_outpatient_inpatient')
-            ->groupBy('list_of_payments.check_up_result_id');
+            ->select(
+                DB::raw('@rownum  := @rownum  + 1 AS rownum'),
+                'lop.id as list_of_payment_id',
+                'lop.check_up_result_id as check_up_result_id',
+                'reg.id_number as registration_number',
+                'pa.id_member as patient_number',
+                'pa.pet_category',
+                'pa.pet_name',
+                'reg.complaint',
+                DB::raw("TRIM(SUM(lipi.price_overall))+0 as price_overall"),
+                DB::raw("TRIM(SUM(pi.capital_price * lipi.quantity))+0 as capital_price"),
+                DB::raw("TRIM(SUM(pi.doctor_fee * lipi.quantity))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(pi.petshop_fee * lipi.quantity))+0 as petshop_fee"),
+                'users.fullname as created_by',
+                'lop.updated_at as created_at',
+                'branches.id as branchId',
+                'cur.status_outpatient_inpatient')
+            ->groupBy('lop.check_up_result_id');
 
         $service = DB::table('list_of_payments')
             ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
@@ -137,7 +147,7 @@ class DataLaporanKeuanganMingguan implements FromCollection, ShouldAutoSize, Wit
                 DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
                 DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
                 DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
-                'users.fullname as created_by', 'list_of_payments.created_at as created_at',
+                'users.fullname as created_by', 'list_of_payments.updated_at as created_at',
                 'branches.id as branchId', 'check_up_results.status_outpatient_inpatient as status_outpatient_inpatient')
             ->groupBy('list_of_payments.check_up_result_id')
             ->union($item);
@@ -204,10 +214,10 @@ class DataLaporanKeuanganMingguan implements FromCollection, ShouldAutoSize, Wit
                 $list_of_payments->pet_name,
                 $list_of_payments->complaint,
                 $list_of_payments->status_outpatient_inpatient,
-                $list_of_payments->price_overall,
-                $list_of_payments->capital_price,
-                $list_of_payments->doctor_fee,
-                $list_of_payments->petshop_fee,
+                number_format($list_of_payments->price_overall, 2, ".", ","),
+                number_format($list_of_payments->capital_price, 2, ".", ","),
+                number_format($list_of_payments->doctor_fee, 2, ".", ","),
+                number_format($list_of_payments->petshop_fee, 2, ".", ","),
                 $list_of_payments->created_by,
                 $list_of_payments->created_at,
             ],
