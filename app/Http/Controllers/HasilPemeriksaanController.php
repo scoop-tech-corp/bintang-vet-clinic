@@ -1257,7 +1257,7 @@ class HasilPemeriksaanController extends Controller
             $result_item = json_decode(json_encode($temp_item), true);
 
             foreach ($result_item as $res_group) {
-
+                //jika kelompok obat terdapat status delete maka kelompok obat dan semua obat akan dihapus
                 if ($res_group['status'] == 'del' && $res_group['id']) {
 
                     $parent = DB::table('detail_medicine_group_check_up_results')
@@ -1311,7 +1311,7 @@ class HasilPemeriksaanController extends Controller
                         ->where('id', $res_group['id'])->delete();
 
                 } else if (is_null($res_group['status']) && $res_group['id']) {
-
+                    info("masuk else pertama");
                     $detail_medicine_group = Detail_medicine_group_check_up_result::find($res_group['id']);
 
                     $detail_medicine_group->medicine_group_id = $res_group['medicine_group_id'];
@@ -1488,10 +1488,10 @@ class HasilPemeriksaanController extends Controller
                         }
                     }
                 } elseif (is_null($res_group['status']) && is_null($res_group['id'])) {
-
+                  info("masuk else kedua");
                     $add_parent = Detail_medicine_group_check_up_result::create([
                         'check_up_result_id' => $check_up_result->id,
-                        'medicine_group_id' => $value_item['price_item_id'],
+                        'medicine_group_id' => $res_group['medicine_group_id'],
                         'status_paid_off' => 0,
                         'user_id' => $request->user()->id,
                     ]);
