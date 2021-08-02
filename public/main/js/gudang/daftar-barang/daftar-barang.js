@@ -237,7 +237,15 @@ $(document).ready(function() {
 
 				}, complete: function() { $('#loading-screen').hide(); }
 				, error: function(err) {
-					if (err.status == 401) {
+          if (err.status === 422) {
+            let errText = ''; $('#beErr').empty(); 
+            $('#modal-confirmation').modal('toggle');
+            $('#btnSubmitDaftarBarang').attr('disabled', true);
+            $.each(err.responseJSON.errors, function(idx, v) {
+              errText += v + ((idx !== err.responseJSON.errors.length - 1) ? '<br/>' : '');
+            });
+            $('#beErr').append(errText); isBeErr = true;
+          } else if (err.status == 401) {
 						localStorage.removeItem('vet-clinic');
 						location.href = $('.baseUrl').val() + '/masuk';
 					}
@@ -355,6 +363,7 @@ $(document).ready(function() {
 		
 		$('#namaBarang').keyup(function () { validationForm(); });
 		$('#jumlahBarang').keyup(function () { validationForm(); });
+    $('#jumlahBarang').change(function() { validationForm(); });
 		$('#selectedSatuanBarang').change(function() { validationForm(); });
 		$('#hargaSatuanBarang').keyup(function () { validationForm(); });
 		$('#selectedKategoriBarang').change(function () { validationForm(); });
