@@ -67,7 +67,7 @@ class DaftarBarangController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nama_barang' => 'required|string|min:3|max:50',
-            'jumlah_barang' => 'required|numeric|min:1',
+            'jumlah_barang' => 'required|numeric|min:0',
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
             'cabang' => 'required|string|max:50',
@@ -122,7 +122,7 @@ class DaftarBarangController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nama_barang' => 'required|string|min:3|max:50',
-            'jumlah_barang' => 'required|numeric|min:1',
+            'jumlah_barang' => 'required|numeric|min:0',
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
             'cabang' => 'required|string|max:50',
