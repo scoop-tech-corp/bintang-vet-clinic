@@ -21,11 +21,12 @@ class LaporanKeuanganHarianController extends Controller
         $item = DB::table('list_of_payments as lop')
             ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
             ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
-            ->join('list_of_payment_items as lipi', 'lipi.list_of_payment_medicine_group_id', '=', 'lopm.id')
-            ->join('price_items as pi', 'lipi.price_item_id', '=', 'pi.id')
+            //->join('list_of_payment_items as lipi', 'lipi.list_of_payment_medicine_group_id', '=', 'lopm.id')
+            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+            //->join('price_items as pi', 'lipi.price_item_id', '=', 'pi.id')
             ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
             ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
-            ->join('users', 'cur.user_id', '=', 'users.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
 
             ->select(
@@ -36,10 +37,15 @@ class LaporanKeuanganHarianController extends Controller
                 'pa.pet_category',
                 'pa.pet_name',
                 'reg.complaint',
-                DB::raw("TRIM(SUM(lipi.price_overall))+0 as price_overall"),
-                DB::raw("TRIM(SUM(pi.capital_price * lipi.quantity))+0 as capital_price"),
-                DB::raw("TRIM(SUM(pi.doctor_fee * lipi.quantity))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(pi.petshop_fee * lipi.quantity))+0 as petshop_fee"),
+                // DB::raw("TRIM(SUM(lipi.price_overall))+0 as price_overall"),
+                // DB::raw("TRIM(SUM(pi.capital_price * lipi.quantity))+0 as capital_price"),
+                // DB::raw("TRIM(SUM(pi.doctor_fee * lipi.quantity))+0 as doctor_fee"),
+                // DB::raw("TRIM(SUM(pi.petshop_fee * lipi.quantity))+0 as petshop_fee"),
+
+                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+                DB::raw("TRIM(SUM(pmg.capital_price))+0 as capital_price"),
+                DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as doctor_fee"),
+                DB::raw("TRIM(SUM(pmg.petshop_fee))+0 as petshop_fee"),
                 'users.fullname as created_by',
                 'lop.updated_at as created_at',
                 'branches.id as branchId')
@@ -98,12 +104,13 @@ class LaporanKeuanganHarianController extends Controller
 
         $price_overall_item = DB::table('list_of_payments as lop')
             ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
-            ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
+            //->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
+            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+            // ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(lopi.price_overall))+0 as price_overall"));
+                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
@@ -137,13 +144,14 @@ class LaporanKeuanganHarianController extends Controller
         $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall;
 
         $capital_price_item = DB::table('list_of_payments as lop')
-            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
-            ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
+        ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+        //->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
+        ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+        // ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
+        ->join('users', 'lop.user_id', '=', 'users.id')
+        ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(price_items.capital_price * lopi.quantity))+0 as capital_price"));
+                DB::raw("TRIM(SUM(pmg.capital_price))+0 as capital_price"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
@@ -176,13 +184,14 @@ class LaporanKeuanganHarianController extends Controller
         $capital_price = $capital_price_service->capital_price + $capital_price_item->capital_price;
 
         $doctor_fee_item = DB::table('list_of_payments as lop')
-            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
-            ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
+        ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+        //->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
+        ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+        // ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
+        ->join('users', 'lop.user_id', '=', 'users.id')
+        ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(price_items.doctor_fee * lopi.quantity))+0 as doctor_fee"));
+                DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as doctor_fee"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
@@ -215,13 +224,14 @@ class LaporanKeuanganHarianController extends Controller
         $doctor_fee = $doctor_fee_item->doctor_fee + $doctor_fee_service->doctor_fee;
 
         $petshop_fee_item = DB::table('list_of_payments as lop')
-            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
-            ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
+        ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+        //->join('list_of_payment_items as lopi', 'lopm.id', '=', 'lopi.list_of_payment_medicine_group_id')
+        ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+        // ->join('price_items', 'lopi.price_item_id', '=', 'price_items.id')
+        ->join('users', 'lop.user_id', '=', 'users.id')
+        ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(price_items.petshop_fee * lopi.quantity))+0 as petshop_fee"));
+                DB::raw("TRIM(SUM(pmg.petshop_fee))+0 as petshop_fee"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
