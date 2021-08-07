@@ -11,9 +11,9 @@ $(document).ready(function () {
 
   let isBeErr = false;
 
-  if (role.toLowerCase() == 'dokter') {
-    window.location.href = $('.baseUrl').val() + `/unauthorized`;
-  }
+  // if (role.toLowerCase() == 'dokter') {
+  //   window.location.href = $('.baseUrl').val() + `/unauthorized`;
+  // }
 
   loadPasien();
   refreshText();
@@ -87,7 +87,7 @@ $(document).ready(function () {
     });
     fd.append('service_payment', JSON.stringify(finalSelectedJasa));
     fd.append('item_payment', JSON.stringify(finalSelectedBarang));
-    
+
     $.ajax({
       url: $('.baseUrl').val() + '/api/pembayaran',
       type: 'POST',

@@ -1,7 +1,7 @@
 $(document).ready(function() {
 
-  if (role.toLowerCase() != 'admin') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
+  if (role.toLowerCase() == 'resepsionis') {
+		window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	} else {
     const url = window.location.pathname;
     const stuff = url.split('/');
@@ -24,9 +24,9 @@ $(document).ready(function() {
       success: function(data) {
       const getData = data;
 
-      $('#nomorRegistrasiDetailTxt').text(getData.registration.registration_number); $('#nomorPasienDetailTxt').text(getData.registration.patient_number); 
-      $('#jenisHewanDetailTxt').text(getData.registration.pet_category); $('#namaHewanDetailTxt').text(getData.registration.pet_name); 
-      $('#jenisKelaminDetailTxt').text(getData.registration.pet_gender); 
+      $('#nomorRegistrasiDetailTxt').text(getData.registration.registration_number); $('#nomorPasienDetailTxt').text(getData.registration.patient_number);
+      $('#jenisHewanDetailTxt').text(getData.registration.pet_category); $('#namaHewanDetailTxt').text(getData.registration.pet_name);
+      $('#jenisKelaminDetailTxt').text(getData.registration.pet_gender);
       $('#usiaHewanTahunDetailTxt').text(`${getData.registration.pet_year_age} Tahun`); $('#usiaHewanBulanDetailTxt').text(`${getData.registration.pet_month_age} Bulan`);
       $('#namaPemilikDetailTxt').text(getData.registration.owner_name); $('#alamatPemilikDetailTxt').text(getData.registration.owner_address);
       $('#nomorHpPemilikDetailTxt').text(getData.registration.owner_phone_number);
@@ -159,13 +159,13 @@ $(document).ready(function() {
     } else {
       rowSelectedListBarang += '<tr><td colspan="9" class="text-center">Tidak ada data.</td></tr>';
     }
-  
+
     return rowSelectedListBarang;
   }
 
   function refreshText() {
-    $('#nomorRegistrasiDetailTxt').text('-'); $('#nomorPasienDetailTxt').text('-'); 
-    $('#jenisHewanDetailTxt').text('-'); $('#namaHewanDetailTxt').text('-'); 
+    $('#nomorRegistrasiDetailTxt').text('-'); $('#nomorPasienDetailTxt').text('-');
+    $('#jenisHewanDetailTxt').text('-'); $('#namaHewanDetailTxt').text('-');
     $('#jenisKelaminDetailTxt').text('-'); $('#nomorHpPemilikDetailTxt').text('-');
     $('#usiaHewanTahunDetailTxt').text(`- Tahun`); $('#usiaHewanBulanDetailTxt').text(`- Bulan`);
     $('#namaPemilikDetailTxt').text('-'); $('#alamatPemilikDetailTxt').text('-');

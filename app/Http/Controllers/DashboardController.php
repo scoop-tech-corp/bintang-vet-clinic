@@ -9,7 +9,7 @@ class DashboardController extends Controller
 {
     public function BarChartPatient(Request $request)
     {
-        if ($request->user()->role == 'resepsionis' && $request->user()->role == 'dokter') {
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
             return response()->json([
                 'message' => 'The user role was invalid.',
                 'errors' => ['Akses User tidak diizinkan!'],
