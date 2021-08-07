@@ -11,7 +11,7 @@ class LaporanKeuanganBulananController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role == 'resepsionis' && $request->user()->role == 'dokter') {
+        if ($request->user()->role == 'resepsionis') {
             return response()->json([
                 'message' => 'The user role was invalid.',
                 'errors' => ['Akses User tidak diizinkan!'],
@@ -85,6 +85,8 @@ class LaporanKeuanganBulananController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $data = $data->where('branchId', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $data = $data->where('branchId', '=', $request->user()->branch_id);
         }
 
         if ($request->month && $request->year) {
@@ -282,7 +284,7 @@ class LaporanKeuanganBulananController extends Controller
 
     public function detail(Request $request)
     {
-        if ($request->user()->role == 'resepsionis' && $request->user()->role == 'dokter') {
+        if ($request->user()->role == 'resepsionis') {
             return response()->json([
                 'message' => 'The user role was invalid.',
                 'errors' => ['Akses User tidak diizinkan!'],
@@ -404,13 +406,21 @@ class LaporanKeuanganBulananController extends Controller
 
     public function download_excel(Request $request)
     {
-        if ($request->user()->role == 'resepsionis' && $request->user()->role == 'dokter') {
+        if ($request->user()->role == 'resepsionis') {
             return response()->json([
                 'message' => 'The user role was invalid.',
                 'errors' => ['Akses User tidak diizinkan!'],
             ], 403);
         }
 
-        return (new LaporanKeuanganBulanan($request->orderby, $request->column, $request->month, $request->year, $request->branch_id))->download('Laporan Keuangan Bulanan.xlsx');
+        $branch = "";
+
+        if ($request->user()->role == 'admin') {
+            $branch = $request->branch_id;
+        } else {
+            $branch = $request->user()->branch_id;
+        }
+
+        return (new LaporanKeuanganBulanan($request->orderby, $request->column, $request->month, $request->year, $branch, $request->user()->role))->download('Laporan Keuangan Bulanan.xlsx');
     }
 }
