@@ -12,9 +12,9 @@ $(document).ready(function() {
   let listTagihanBarang = [];
   let calculationPay = [];
 
-  if (role.toLowerCase() == 'dokter') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
-	}
+  // if (role.toLowerCase() == 'dokter') {
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	// }
 
   $('#totalBayarTxt').text('-');
   $('.btn-back-to-list .text, #btnKembali').click(function() {
@@ -33,7 +33,7 @@ $(document).ready(function() {
     $('#modal-confirmation .box-body').text('Anda yakin ingin merubah Pembayaran ini? Data yang akan anda tambahkan tidak dapat diubah kembali.');
     $('#modal-confirmation').modal('show');
   });
-  
+
 
   $.ajax({
     url     : $('.baseUrl').val() + '/api/pembayaran/detail',
@@ -91,13 +91,13 @@ $(document).ready(function() {
         + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${ lj.status_paid_off && lj.isRevert ? '<span style="text-decoration: line-through;">Lunas</span>'
-              : lj.status_paid_off && !lj.isRevert ? 'Lunas' 
+              : lj.status_paid_off && !lj.isRevert ? 'Lunas'
               : `<input type="checkbox" index=${idx} class="isBayarJasa" ${lj.checked ? 'checked' : ''}/>`}</td>`
         + `<td>
-              <button type="button" class="btn btn-danger cancelPembayaranJasa ${lj.status_paid_off && lj.isRevert ? 'd-none':'d-block'}" title="Membatalkan Pembayaran" 
+              <button type="button" class="btn btn-danger cancelPembayaranJasa ${lj.status_paid_off && lj.isRevert ? 'd-none':'d-block'}" title="Membatalkan Pembayaran"
               ${role.toLowerCase() != 'admin' || !lj.status_paid_off ? 'disabled' : ''} index=${idx}><i class="fa fa-close" aria-hidden="true"></i></button>
-              <button type="button" class="btn btn-success revertPembayaranJasa 
-              ${(lj.status_paid_off && !lj.isRevert) || !lj.status_paid_off ? 'd-none':'d-block'}" title="Mengembalikan Pelunasan" 
+              <button type="button" class="btn btn-success revertPembayaranJasa
+              ${(lj.status_paid_off && !lj.isRevert) || !lj.status_paid_off ? 'd-none':'d-block'}" title="Mengembalikan Pelunasan"
               ${role.toLowerCase() != 'admin' || !lj.status_paid_off ? 'disabled' : ''} index=${idx}><i class="fa fa-undo" aria-hidden="true"></i></button>
           </td>`
         + `</tr>`;
@@ -119,7 +119,7 @@ $(document).ready(function() {
 
         selectedListJasa[idx].checked = false;
         listTagihanJasa.splice(getIdxTagihanJasa, 1);
-        calculationPay.splice(getIdxCalculation, 1);        
+        calculationPay.splice(getIdxCalculation, 1);
       }
 
       processAppendListTagihanJasa();
@@ -199,13 +199,13 @@ $(document).ready(function() {
         + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td>${ lb.status_paid_off && lb.isRevert ? '<span style="text-decoration: line-through;">Lunas</span>'
-              : lb.status_paid_off && !lb.isRevert ? 'Lunas' 
+              : lb.status_paid_off && !lb.isRevert ? 'Lunas'
               : `<input type="checkbox" index=${idx} class="isBayarBarang" ${lb.checked ? 'checked' : ''}/>`}</td>`
         + `<td>
-            <button type="button" class="btn btn-danger cancelPembayaranBarang ${lb.status_paid_off && lb.isRevert ? 'd-none':'d-block'}" title="Membatalkan Pembayaran" 
+            <button type="button" class="btn btn-danger cancelPembayaranBarang ${lb.status_paid_off && lb.isRevert ? 'd-none':'d-block'}" title="Membatalkan Pembayaran"
             ${role.toLowerCase() != 'admin' || !lb.status_paid_off ? 'disabled' : ''} index=${idx}><i class="fa fa-close" aria-hidden="true"></i></button>
-            <button type="button" class="btn btn-success revertPembayaranBarang 
-            ${(lb.status_paid_off && !lb.isRevert) || !lb.status_paid_off ? 'd-none':'d-block'}" title="Mengembalikan Pelunasan" 
+            <button type="button" class="btn btn-success revertPembayaranBarang
+            ${(lb.status_paid_off && !lb.isRevert) || !lb.status_paid_off ? 'd-none':'d-block'}" title="Mengembalikan Pelunasan"
             ${role.toLowerCase() != 'admin' || !lb.status_paid_off ? 'disabled' : ''} index=${idx}><i class="fa fa-undo" aria-hidden="true"></i></button>
           </td>`
         + `</tr>`;
@@ -273,7 +273,7 @@ $(document).ready(function() {
     let no = 1;
     $('#list-tagihan-barang tr').remove();
 
-    if (listTagihanBarang.length) { 
+    if (listTagihanBarang.length) {
       listTagihanBarang.forEach((lb) => {
         if (!lb.isRevert) {
           rowListTagihanBarang += `<tr>`

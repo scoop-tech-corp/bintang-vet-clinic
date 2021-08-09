@@ -9,9 +9,26 @@ $(document).ready(function() {
     branchId: ''
   };
 
-  if (role.toLowerCase() != 'admin') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
-	} else {
+  if (role.toLowerCase() == 'resepsionis') {
+		window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	} else if(role.toLowerCase() == 'dokter'){
+    $('#filterCabang').hide();
+
+    loadLaporanKeuanganMingguan();
+
+    const openDatePicker = (window.innerWidth < 768) ? 'left' : 'right';
+
+    $('#datepicker').daterangepicker({
+      autoUpdateInput: false,
+      opens: openDatePicker,
+      applyClass: 'btn-info',
+      // showDropdowns: true,
+      dateLimit: { days: 7 },
+      drops: 'auto',
+      locale: {format: 'YYYY-MM-DD', cancelLabel: 'Clear'}
+    });
+	}
+  else{
     loadCabang();
     $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
 
@@ -28,15 +45,14 @@ $(document).ready(function() {
       drops: 'auto',
       locale: {format: 'YYYY-MM-DD', cancelLabel: 'Clear'}
     });
-
-	}
+  }
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
 
   $('input[id="datepicker"]').on('apply.daterangepicker', function(ev, picker) {
     const getStartDate = picker.startDate.format('YYYY-MM-DD');
-    const getEndDate   = picker.endDate.format('YYYY-MM-DD'); 
+    const getEndDate   = picker.endDate.format('YYYY-MM-DD');
     $(this).val(getStartDate + ' - ' + getEndDate);
 
     paramUrlSetup.date_from = getStartDate; paramUrlSetup.date_to   = getEndDate;
@@ -118,7 +134,7 @@ $(document).ready(function() {
         const getData = resp.data;
 				let listLaporanKeuanganMingguan = '';
 
-				$('#list-laporan-keuangan-mingguan tr').remove();        
+				$('#list-laporan-keuangan-mingguan tr').remove();
 
 				if (getData.length) {
 					$.each(getData, function(idx, v) {
@@ -153,7 +169,7 @@ $(document).ready(function() {
         $('#harga-modal-txt').text(`Rp. ${capitalPrice}`);
         $('#fee-dokter-txt').text(`Rp. ${docterFee}`);
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
-        
+
         $('.openDetail').click(function() {
           // const getObj = data.find(x => x.id == $(this).val());
 					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-mingguan/detail/${$(this).val()}`;
@@ -177,7 +193,7 @@ $(document).ready(function() {
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
 				optCabang += `<option value=''>Cabang</option>`
-	
+
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;

@@ -17,12 +17,12 @@ class PembayaranController extends Controller
 {
     public function DropDownPatient(Request $request)
     {
-        if ($request->user()->role == 'dokter') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'dokter') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $data_check = DB::table('list_of_payments')
             ->select('list_of_payments.check_up_result_id')
@@ -60,12 +60,12 @@ class PembayaranController extends Controller
 
     public function index(Request $request)
     {
-        if ($request->user()->role == 'dokter') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'dokter') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $data = DB::table('list_of_payments')
             ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
@@ -95,12 +95,12 @@ class PembayaranController extends Controller
 
     public function detail(Request $request)
     {
-        if ($request->user()->role == 'dokter') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'dokter') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $data = ListofPayments::find($request->list_of_payment_id);
 
@@ -224,12 +224,12 @@ class PembayaranController extends Controller
 
     public function create(Request $request)
     {
-        if ($request->user()->role == 'dokter') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'dokter') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         //validasi
         $check_list_of_payment = DB::table('list_of_payments')
@@ -438,12 +438,12 @@ class PembayaranController extends Controller
 
     public function update(Request $request)
     {
-        if ($request->user()->role == 'dokter') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'dokter') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         //validasi
         $check_list_of_payment = DB::table('list_of_payments')
@@ -770,12 +770,12 @@ class PembayaranController extends Controller
 
     public function delete(Request $request)
     {
-        if ($request->user()->role == 'dokter') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'dokter') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $check_payment = ListofPayments::find($request->list_of_payment_id);
 
@@ -871,12 +871,12 @@ class PembayaranController extends Controller
 
     function print(Request $request) {
 
-        if ($request->user()->role == 'dokter') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'dokter') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $res_service = "";
         $res_item = "";

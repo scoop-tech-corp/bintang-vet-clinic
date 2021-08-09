@@ -14,7 +14,7 @@ $(document).ready(function() {
     location.href = $('.baseUrl').val() + '/masuk';
   } else {
     getAuthUser = JSON.parse(getAuthUser);
-    
+
     username     = getAuthUser.username;
     fullname     = getAuthUser.fullname;
     role         = getAuthUser.role.toLowerCase();
@@ -52,7 +52,8 @@ $(document).ready(function() {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
       $('.menuKunjungan').show(); $('.menuPeriksa').show();
-      $('.menuPendaftaran').show();
+      $('.menuPendaftaran').show(); $('.menuKeuangan').show();
+      $('.menuPembayaran').show();
     }
   }
 
@@ -79,7 +80,7 @@ $(document).ready(function() {
       }
     } else {
       // additional custom url
-      if (Value['href'] ==  origin + '/pembayaran' 
+      if (Value['href'] ==  origin + '/pembayaran'
         && (pathName == '/pembayaran/tambah' || pathName.includes('/pembayaran/edit') || pathName.includes('/pembayaran/detail'))) {
         $(Value).parent().addClass('active');
       } else if (Value['href'] ==  origin + '/pasien' && pathName.includes('/riwayat-pameriksaan')) {
@@ -141,7 +142,7 @@ $(document).ready(function() {
 
     if (curr_hour == 0) { curr_hour = 12; }
     if (curr_hour > 12) { curr_hour = curr_hour - 12; }
-    
+
     curr_hour = checkTime(curr_hour);
     curr_minute = checkTime(curr_minute);
     curr_second = checkTime(curr_second);
@@ -150,17 +151,17 @@ $(document).ready(function() {
     let newDay = nowDay + ', ' + day + ' ' + months[month] + ' ' + year;
 
     // document.getElementById('time').innerHTML= ;
-    
+
     $('#time-text').text(newDay + ' ' + newTime);
   }
-        
+
   function checkTime(i) {
     if (i < 10) { i = "0" + i; }
     return i;
   }
-  setInterval(showTime, 500); 
+  setInterval(showTime, 500);
 });
 
 // <script type='text/javascript'>
-                       
+
 // 		</script>
