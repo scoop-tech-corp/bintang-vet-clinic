@@ -8,24 +8,44 @@ $(document).ready(function() {
     branchId: ''
   };
 
-  if (role.toLowerCase() != 'admin') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
+  if (role.toLowerCase() == 'resepsionis') {
+		window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	} else {
-    loadCabang();
-    $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
+    if(role.toLowerCase() == 'dokter'){
+      $('#filterCabang').hide();
 
-		loadLaporanKeuanganHarian();
-    //Date picker
-    $('#datepicker').datepicker({
+      loadLaporanKeuanganHarian();
+      //Date picker
+      $('#datepicker').datepicker({
       autoclose: true,
-			clearBtn: true,
-			format: 'yyyy-mm-dd',
-			todayHighlight: true,
-    }).on('changeDate', function(e) {
-			paramUrlSetup.date = e.format();
-			loadLaporanKeuanganHarian();
-		});
+      clearBtn: true,
+      format: 'yyyy-mm-dd',
+      todayHighlight: true,
+      }).on('changeDate', function(e) {
+      paramUrlSetup.date = e.format();
+      loadLaporanKeuanganHarian();
+      });
+    } else{
+
+      loadCabang();
+      $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
+
+      loadLaporanKeuanganHarian();
+      //Date picker
+      $('#datepicker').datepicker({
+      autoclose: true,
+      clearBtn: true,
+      format: 'yyyy-mm-dd',
+      todayHighlight: true,
+      }).on('changeDate', function(e) {
+      paramUrlSetup.date = e.format();
+      loadLaporanKeuanganHarian();
+      });
+    }
+
 	}
+
+
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
@@ -99,7 +119,7 @@ $(document).ready(function() {
         const getData = resp.data;
 				let listLaporanKeuanganHarian = '';
 
-				$('#list-laporan-keuangan-harian tr').remove();        
+				$('#list-laporan-keuangan-harian tr').remove();
 
 				if (getData.length) {
 					$.each(getData, function(idx, v) {
@@ -134,7 +154,7 @@ $(document).ready(function() {
         $('#harga-modal-txt').text(`Rp. ${capitalPrice}`);
         $('#fee-dokter-txt').text(`Rp. ${docterFee}`);
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
-        
+
         $('.openDetail').click(function() {
           // const getObj = data.find(x => x.id == $(this).val());
 					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-harian/detail/${$(this).val()}`;
@@ -158,7 +178,7 @@ $(document).ready(function() {
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
 				optCabang += `<option value=''>Cabang</option>`
-	
+
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;

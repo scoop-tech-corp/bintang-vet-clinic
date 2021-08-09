@@ -9,11 +9,10 @@ $(document).ready(function() {
     branchId: ''
   };
 
-  if (role.toLowerCase() != 'admin') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
-	} else {
-    loadCabang();
-    $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
+  if (role.toLowerCase() == 'resepsionis') {
+		window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	} else if(role.toLowerCase() == 'dokter'){
+    $('#filterCabang').hide();
 
 		loadLaporanKeuanganBulanan();
     //Date picker
@@ -22,7 +21,7 @@ $(document).ready(function() {
 			clearBtn: true,
 			format: 'mm-yyyy',
 			todayHighlight: true,
-      startView: 'months', 
+      startView: 'months',
       minViewMode: 'months'
     }).on('changeDate', function(e) {
       const getDate = e.format();
@@ -32,7 +31,29 @@ $(document).ready(function() {
       paramUrlSetup.year  = getYear;
 			loadLaporanKeuanganBulanan();
 		});
-	}
+    } else{
+
+      loadCabang();
+      $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
+
+      loadLaporanKeuanganBulanan();
+      //Date picker
+      $('#datepicker').datepicker({
+        autoclose: true,
+        clearBtn: true,
+        format: 'mm-yyyy',
+        todayHighlight: true,
+        startView: 'months',
+        minViewMode: 'months'
+      }).on('changeDate', function(e) {
+        const getDate = e.format();
+        const getMonth = getDate.split('-')[0];
+        const getYear = getDate.split('-')[1];
+        paramUrlSetup.month = getMonth;
+        paramUrlSetup.year  = getYear;
+        loadLaporanKeuanganBulanan();
+      });
+    }
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
@@ -106,7 +127,7 @@ $(document).ready(function() {
         const getData = resp.data;
 				let listLaporanKeuanganBulanan = '';
 
-				$('#list-laporan-keuangan-bulanan tr').remove();        
+				$('#list-laporan-keuangan-bulanan tr').remove();
 
 				if (getData.length) {
 					$.each(getData, function(idx, v) {
@@ -141,7 +162,7 @@ $(document).ready(function() {
         $('#harga-modal-txt').text(`Rp. ${capitalPrice}`);
         $('#fee-dokter-txt').text(`Rp. ${docterFee}`);
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
-        
+
         $('.openDetail').click(function() {
           // const getObj = data.find(x => x.id == $(this).val());
 					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-bulanan/detail/${$(this).val()}`;
@@ -165,7 +186,7 @@ $(document).ready(function() {
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
 				optCabang += `<option value=''>Cabang</option>`
-	
+
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;

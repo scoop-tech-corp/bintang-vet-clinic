@@ -8,16 +8,16 @@ $(document).ready(function() {
   };
   let getId = null;
 
-	if (role.toLowerCase() == 'dokter') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
-	} else {
+	// if (role.toLowerCase() == 'dokter') {
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	// } else {
 		if (role.toLowerCase() != 'admin') {
       $('#filterCabang').hide();
     } else {
       loadCabang();
       $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
     }
-	}
+	//}
 
   loadPembayaran();
 
@@ -87,7 +87,7 @@ $(document).ready(function() {
               + `<td>
                   <button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-warning openFormEdit" value=${v.list_of_payment_id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-danger openFormDelete" 
+                  <button type="button" class="btn btn-danger openFormDelete"
                     ${role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.list_of_payment_id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 </td>`
               + `</tr>`;
@@ -99,13 +99,13 @@ $(document).ready(function() {
 				$('#list-pembayaran').append(listPembayaran);
 
         $('.openDetail').click(function() {
-					window.location.href = $('.baseUrl').val() + `/pembayaran/detail/${$(this).val()}`;					
+					window.location.href = $('.baseUrl').val() + `/pembayaran/detail/${$(this).val()}`;
         });
 
 				$('.openFormEdit').click(function() {
-					window.location.href = $('.baseUrl').val() + `/pembayaran/edit/${$(this).val()}`;	
+					window.location.href = $('.baseUrl').val() + `/pembayaran/edit/${$(this).val()}`;
 				});
-			
+
 				$('.openFormDelete').click(function() {
           getId = $(this).val();
 
@@ -134,7 +134,7 @@ $(document).ready(function() {
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
 				optCabang += `<option value=''>Cabang</option>`
-	
+
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;

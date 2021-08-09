@@ -10,9 +10,9 @@ $(document).ready(function() {
   let listTagihanBarang = [];
   let calculationPay = [];
 
-  if (role.toLowerCase() == 'dokter') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
-	}
+  // if (role.toLowerCase() == 'dokter') {
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	// }
 
   $('.btn-back-to-list .text, #btnKembali').click(function() {
     window.location.href = $('.baseUrl').val() + '/pembayaran';
@@ -124,7 +124,7 @@ $(document).ready(function() {
     let no = 1;
     $('#list-tagihan-barang tr').remove();
 
-    if (listTagihanBarang.length) { 
+    if (listTagihanBarang.length) {
       listTagihanBarang.forEach((lb) => {
         rowListTagihanBarang += `<tr>`
           + `<td>${no}</td>`
