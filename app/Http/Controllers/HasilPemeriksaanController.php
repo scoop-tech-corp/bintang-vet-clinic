@@ -2069,12 +2069,6 @@ class HasilPemeriksaanController extends Controller
 
     public function payment(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
 
         $data = CheckUpResult::find($request->id);
 
