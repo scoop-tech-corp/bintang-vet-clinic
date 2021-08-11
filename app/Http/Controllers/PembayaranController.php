@@ -17,13 +17,6 @@ class PembayaranController extends Controller
 {
     public function DropDownPatient(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
-
         $data_check = DB::table('list_of_payments')
             ->select('list_of_payments.check_up_result_id')
             ->get();
@@ -49,7 +42,7 @@ class PembayaranController extends Controller
 
         $data = $data->whereNotIn('check_up_results.id', $myArray);
 
-        if ($request->user()->role == 'resepsionis') {
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
             $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
         }
 
@@ -78,7 +71,7 @@ class PembayaranController extends Controller
                 'check_up_results.status_outpatient_inpatient', 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"));
 
-        if ($request->user()->role == 'resepsionis') {
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
             $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
         }
 
@@ -95,12 +88,6 @@ class PembayaranController extends Controller
 
     public function detail(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
 
         $data = ListofPayments::find($request->list_of_payment_id);
 
@@ -224,12 +211,6 @@ class PembayaranController extends Controller
 
     public function create(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
 
         //validasi
         $check_list_of_payment = DB::table('list_of_payments')
@@ -438,13 +419,6 @@ class PembayaranController extends Controller
 
     public function update(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
-
         //validasi
         $check_list_of_payment = DB::table('list_of_payments')
             ->where('check_up_result_id', '=', $request->check_up_result_id)
@@ -770,13 +744,6 @@ class PembayaranController extends Controller
 
     public function delete(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
-
         $check_payment = ListofPayments::find($request->list_of_payment_id);
 
         if (is_null($check_payment)) {
@@ -824,15 +791,8 @@ class PembayaranController extends Controller
 
             if ($check_payment_item) {
 
-                // $data_item = [];
-
-                // $data_item = $check_payment_item;
-
-                // foreach ($data_item as $item) {
-
                 $values = Detail_medicine_group_check_up_result::where('id', '=', $val->detail_medicine_group_check_up_result_id)
                     ->update(['status_paid_off' => false, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
-                // }
 
                 $check_payment_item = DB::table('list_of_payment_items')
                     ->where('list_of_payment_medicine_group_id', $val->id)
