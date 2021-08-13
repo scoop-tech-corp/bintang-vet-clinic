@@ -115,6 +115,8 @@ class LaporanKeuanganMingguanController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->date_from && $request->date_to) {
@@ -134,6 +136,8 @@ class LaporanKeuanganMingguanController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->date_from && $request->date_to) {
@@ -155,6 +159,8 @@ class LaporanKeuanganMingguanController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $capital_price_item = $capital_price_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->date_from && $request->date_to) {
@@ -174,6 +180,8 @@ class LaporanKeuanganMingguanController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $capital_price_service = $capital_price_service->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $capital_price_service = $capital_price_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->date_from && $request->date_to) {
@@ -195,6 +203,8 @@ class LaporanKeuanganMingguanController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->date_from && $request->date_to) {
@@ -214,6 +224,8 @@ class LaporanKeuanganMingguanController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->date_from && $request->date_to) {
@@ -235,6 +247,8 @@ class LaporanKeuanganMingguanController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->date_from && $request->date_to) {
@@ -254,6 +268,8 @@ class LaporanKeuanganMingguanController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->date_from && $request->date_to) {
