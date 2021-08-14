@@ -33,13 +33,23 @@ class HasilPemeriksaanController extends Controller
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
             ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select('check_up_results.id', 'registrations.id_number as registration_number', 'patients.id as patient_id', 'patients.id_member as patient_number', 'patients.pet_category', 'patients.pet_name',
-                'patients.owner_name', 'registrations.complaint', 'check_up_results.status_finish', 'check_up_results.status_outpatient_inpatient', 'users.fullname as created_by',
+            ->select(
+                'check_up_results.id',
+                'registrations.id_number as registration_number',
+                'patients.id as patient_id',
+                'patients.id_member as patient_number',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.owner_name',
+                'registrations.complaint',
+                'check_up_results.status_finish',
+                'check_up_results.status_outpatient_inpatient',
+                'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"))
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.id', '=', $request->user()->id);
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
         }
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -47,7 +57,8 @@ class HasilPemeriksaanController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->orwhere('registrations.id_number', 'like', '%' . $request->keyword . '%')
+          info($request->keyword);
+            $data = $data->where('registrations.id_number', 'like', '%' . $request->keyword . '%')
                 ->orwhere('patients.pet_category', 'like', '%' . $request->keyword . '%')
                 ->orwhere('patients.pet_name', 'like', '%' . $request->keyword . '%')
                 ->orwhere('registrations.complaint', 'like', '%' . $request->keyword . '%')
@@ -1488,7 +1499,7 @@ class HasilPemeriksaanController extends Controller
                         }
                     }
                 } elseif (is_null($res_group['status']) && is_null($res_group['id'])) {
-                  info("masuk else kedua");
+                    info("masuk else kedua");
                     $add_parent = Detail_medicine_group_check_up_result::create([
                         'check_up_result_id' => $check_up_result->id,
                         'medicine_group_id' => $res_group['medicine_group_id'],
@@ -1849,12 +1860,12 @@ class HasilPemeriksaanController extends Controller
 
         if ($check_up_result->status_finish == true) {
 
-          $registration = Registration::find($check_up_result->patient_registration_id);
-          $registration->user_update_id = $request->user()->id;
-          $registration->acceptance_status = 1;
-          $registration->updated_at = \Carbon\Carbon::now();
-          $registration->save();
-      }
+            $registration = Registration::find($check_up_result->patient_registration_id);
+            $registration->user_update_id = $request->user()->id;
+            $registration->acceptance_status = 1;
+            $registration->updated_at = \Carbon\Carbon::now();
+            $registration->save();
+        }
 
         $check_up_result = CheckUpResult::find($request->id);
         // $check_up_result->isDeleted = true;
