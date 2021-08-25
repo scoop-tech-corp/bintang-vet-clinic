@@ -225,26 +225,30 @@ $(document).ready(function() {
 				let listPendaftaranPasien = '';
 				$('#list-pendaftaran-pasien tr').remove();
 
-				$.each(data, function(idx, v) {
-					listPendaftaranPasien += `<tr>`
-						+ `<td>${++idx}</td>`
-						+ `<td>${v.id_number}</td>`
-						+ `<td>${v.id_number_patient}</td>`
-            + `<td>${v.pet_name}</td>`
-            + `<td>${v.complaint}</td>`
-            + `<td>${v.registrant}</td>`
-						+ `<td>${v.username_doctor}</td>`     
-						+ `<td>${generateBedge(v.acceptance_status)}</td>`
-						+ `<td>${v.created_by}</td>`
-						+ `<td>${v.created_at}</td>`
-						+ `<td>
-								<button type="button" class="btn btn-warning openFormEdit" 
-                  ${(v.acceptance_status == 1 || v.acceptance_status == 3) && role.toLowerCase() != 'admin'  ? 'disabled' : ''} value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
-								<button type="button" class="btn btn-danger openFormDelete" 
-                  ${(v.acceptance_status == 1 || v.acceptance_status == 3) && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-							</td>`
-						+ `</tr>`;
-				});
+        if(data.length) {
+          $.each(data, function(idx, v) {
+            listPendaftaranPasien += `<tr>`
+              + `<td>${++idx}</td>`
+              + `<td>${v.id_number}</td>`
+              + `<td>${v.id_number_patient}</td>`
+              + `<td>${v.pet_name}</td>`
+              + `<td>${v.complaint}</td>`
+              + `<td>${v.registrant}</td>`
+              + `<td>${v.username_doctor}</td>`     
+              + `<td>${generateBedge(v.acceptance_status)}</td>`
+              + `<td>${v.created_by}</td>`
+              + `<td>${v.created_at}</td>`
+              + `<td>
+                  <button type="button" class="btn btn-warning openFormEdit" 
+                    ${(v.acceptance_status == 1 || v.acceptance_status == 3) && role.toLowerCase() != 'admin'  ? 'disabled' : ''} value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-danger openFormDelete" 
+                    ${(v.acceptance_status == 1 || v.acceptance_status == 3) && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                </td>`
+              + `</tr>`;
+          });
+        } else {
+          listPendaftaranPasien += `<tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>`;
+        }
 				$('#list-pendaftaran-pasien').append(listPendaftaranPasien);
 
 				function generateBedge(status) {

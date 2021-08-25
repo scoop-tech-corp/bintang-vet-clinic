@@ -28,7 +28,9 @@
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>
-        <tbody id="list-kelompok-obat"></tbody>
+        <tbody id="list-kelompok-obat">
+          <tr class="text-center"><td colspan="6">Tidak ada data.</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
