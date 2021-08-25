@@ -33,7 +33,9 @@
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>
-        <tbody id="list-harga-jasa"></tbody>
+        <tbody id="list-harga-jasa">
+          <tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>
+        </tbody>
       </table>
     </div>
   </div>

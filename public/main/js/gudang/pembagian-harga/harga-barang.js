@@ -396,10 +396,10 @@ $(document).ready(function() {
           formConfigure();
 
 					getId = getObj.id;
-          $('#hargaJualOnBarang').val(getObj.selling_price);
-          $('#hargaModalOnBarang').val(getObj.capital_price);
-          $('#feeDokterOnBarang').val(getObj.doctor_fee);
-          $('#feePetshopOnBarang').val(getObj.petshop_fee);
+          $('#hargaJualOnBarang').val(getObj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#hargaModalOnBarang').val(getObj.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#feeDokterOnBarang').val(getObj.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#feePetshopOnBarang').val(getObj.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#selectedCabangOnBarang').val(getObj.branch_id); $('#selectedCabangOnBarang').trigger('change');
           $('#jumlahBarangTxt').text(getObj.total_item);
           $('#satuanBarangTxt').text(getObj.unit_name);

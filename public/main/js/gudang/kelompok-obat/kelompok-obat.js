@@ -293,19 +293,23 @@ $(document).ready(function() {
 				let listKelompokObat = '';
 				$('#list-kelompok-obat tr').remove();
 
-				$.each(data, function(idx, v) {
-					listKelompokObat += `<tr>`
-						+ `<td>${++idx}</td>`
-						+ `<td>${v.group_name}</td>`
-						+ `<td>${v.branch_name}</td>`
-						+ `<td>${v.created_by}</td>`
-						+ `<td>${v.created_at}</td>`
-						+ ((role.toLowerCase() != 'admin') ? `` : `<td>
-								<button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
-								<button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-							</td>`)
-						+ `</tr>`;
-				});
+        if (data.length) {
+          $.each(data, function(idx, v) {
+            listKelompokObat += `<tr>`
+              + `<td>${++idx}</td>`
+              + `<td>${v.group_name}</td>`
+              + `<td>${v.branch_name}</td>`
+              + `<td>${v.created_by}</td>`
+              + `<td>${v.created_at}</td>`
+              + ((role.toLowerCase() != 'admin') ? `` : `<td>
+                  <button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                </td>`)
+              + `</tr>`;
+          });
+        } else {
+          listKelompokObat += `<tr class="text-center"><td colspan="6">Tidak ada data.</td></tr>`;
+        }
 				$('#list-kelompok-obat').append(listKelompokObat);
 
 				$('.openFormEdit').click(function() {

@@ -29,7 +29,11 @@
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>
-        <tbody id="list-daftar-jasa"></tbody>
+        <tbody id="list-daftar-jasa">
+          <tr class="text-center">
+            <td colspan="7" >Tidak ada data.</td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>
