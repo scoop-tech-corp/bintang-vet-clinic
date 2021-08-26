@@ -21,10 +21,21 @@ $(document).ready(function() {
 
 	if (role.toLowerCase() != 'admin') {
 		$('.columnAction').hide(); $('#filterCabang').hide();
+
+    if (role.toLowerCase() == 'dokter') {
+      $('.section-left-box-title').append(
+        `<button type="button" class="btn btn-success btn-download-excel" title="Download Excel">
+          <i class="fa fa-file-excel-o" aria-hidden="true"></i>&nbsp;&nbsp;Download Excel
+        </button>`
+      );
+    }
 	} else {
 		$('.section-left-box-title').append(
 			`<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>
-			<button class="btn btn-info openFormUpload">Upload Sekaligus</button>`
+			<button class="btn btn-info openFormUpload m-r-10px">Upload Sekaligus</button>
+      <button type="button" class="btn btn-success btn-download-excel" title="Download Excel">
+        <i class="fa fa-file-excel-o" aria-hidden="true"></i>&nbsp;&nbsp;Download Excel
+      </button>`
 		);
 		$('.section-right-box-title').append(`<select id="filterCabang" style="width: 50%"></select>`);
 
@@ -83,6 +94,37 @@ $(document).ready(function() {
 		$('#modal-upload-daftar-barang').modal('show');
 		$('.validate-error').html('');
 	});
+
+  $('.btn-download-excel').click(function() {
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/daftar-barang/generate-excel',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
+      xhrFields: { responseType: 'blob' },
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data, status, xhr) {
+        let disposition = xhr.getResponseHeader('content-disposition');
+        let matches = /"([^"]*)"/.exec(disposition);
+        let filename = (matches != null && matches[1] ? matches[1] : 'file.xlsx');
+        let blob = new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        let downloadUrl = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+
+        a.href = downloadUrl;
+        a.download = filename
+        document.body.appendChild(a);
+        a.click();
+
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+  });
 
 	$('.btn-download-template').click(function() {
 		$.ajax({

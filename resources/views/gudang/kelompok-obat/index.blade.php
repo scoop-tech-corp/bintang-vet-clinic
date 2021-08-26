@@ -42,6 +42,9 @@
   @component('layout.message-box') @endcomponent
 </div>
 @endsection
+@section('css-content')
+  <link rel="stylesheet" type='text/css' href="{{ asset('main/css/kelompok-obat.css') }}">
+@endsection
 @section('script-content')
   <script src="{{ asset('plugins/jquery.ui.widget.js') }}"></script>
   <script src="{{ asset('plugins/jquery.iframe-transport.js') }}"></script>

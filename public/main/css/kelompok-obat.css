@@ -1,0 +1,13 @@
+
+
+@media (max-width: 768px) {
+
+  .openFormUpload {
+    margin-top: 10px;
+  }
+
+  .section-left-box-title {
+    width: 200px;
+    margin-right: 10px;
+  } 
+}

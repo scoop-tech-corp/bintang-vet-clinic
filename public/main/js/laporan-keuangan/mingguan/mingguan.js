@@ -11,28 +11,15 @@ $(document).ready(function() {
 
   if (role.toLowerCase() == 'resepsionis') {
 		window.location.href = $('.baseUrl').val() + `/unauthorized`;
-	} else if(role.toLowerCase() == 'dokter'){
-    $('#filterCabang').hide();
-
-    loadLaporanKeuanganMingguan();
-
-    const openDatePicker = (window.innerWidth < 768) ? 'left' : 'right';
-
-    $('#datepicker').daterangepicker({
-      autoUpdateInput: false,
-      opens: openDatePicker,
-      applyClass: 'btn-info',
-      // showDropdowns: true,
-      dateLimit: { days: 7 },
-      drops: 'auto',
-      locale: {format: 'YYYY-MM-DD', cancelLabel: 'Clear'}
-    });
-	}
-  else{
-    loadCabang();
-    $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
-
-		loadLaporanKeuanganMingguan();
+	} else {
+    if (role.toLowerCase() == 'dokter') {
+      $('#filterCabang').hide();
+      $('.section-right-box-title').css('width', 'unset');
+      $('.section-right-box-title .btn-download-excel').css('margin-right', 'unset');
+  	} else {
+      $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
+      loadCabang();
+    }
 
     const openDatePicker = (window.innerWidth < 768) ? 'left' : 'right';
 
@@ -46,6 +33,8 @@ $(document).ready(function() {
       locale: {format: 'YYYY-MM-DD', cancelLabel: 'Clear'}
     });
   }
+
+  loadLaporanKeuanganMingguan();
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
@@ -66,34 +55,39 @@ $(document).ready(function() {
   });
 
   $('.btn-download-excel').click(function() {
-		$.ajax({
-			url     : $('.baseUrl').val() + '/api/laporan-keuangan/mingguan/download',
-			headers : { 'Authorization': `Bearer ${token}` },
-			type    : 'GET',
-      data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, date_from: paramUrlSetup.date_from, date_to: paramUrlSetup.date_to, branch_id: paramUrlSetup.branchId },
-			xhrFields: { responseType: 'blob' },
-			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data, status, xhr) {
-				let disposition = xhr.getResponseHeader('content-disposition');
-				let matches = /"([^"]*)"/.exec(disposition);
-				let filename = (matches != null && matches[1] ? matches[1] : 'file.xlsx');
-				let blob = new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-				let downloadUrl = URL.createObjectURL(blob);
-				let a = document.createElement("a");
-
-				a.href = downloadUrl;
-				a.download = filename
-				document.body.appendChild(a);
-				a.click();
-
-			}, complete: function() { $('#loading-screen').hide(); },
-			error: function(err) {
-				if (err.status == 401) {
-					localStorage.removeItem('vet-clinic');
-					location.href = $('.baseUrl').val() + '/masuk';
-				}
-			}
-		});
+    if (paramUrlSetup.branchId) {
+      $.ajax({
+        url     : $('.baseUrl').val() + '/api/laporan-keuangan/mingguan/download',
+        headers : { 'Authorization': `Bearer ${token}` },
+        type    : 'GET',
+        data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, date_from: paramUrlSetup.date_from, date_to: paramUrlSetup.date_to, branch_id: paramUrlSetup.branchId },
+        xhrFields: { responseType: 'blob' },
+        beforeSend: function() { $('#loading-screen').show(); },
+        success: function(data, status, xhr) {
+          let disposition = xhr.getResponseHeader('content-disposition');
+          let matches = /"([^"]*)"/.exec(disposition);
+          let filename = (matches != null && matches[1] ? matches[1] : 'file.xlsx');
+          let blob = new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+          let downloadUrl = URL.createObjectURL(blob);
+          let a = document.createElement("a");
+  
+          a.href = downloadUrl;
+          a.download = filename
+          document.body.appendChild(a);
+          a.click();
+  
+        }, complete: function() { $('#loading-screen').hide(); },
+        error: function(err) {
+          if (err.status == 401) {
+            localStorage.removeItem('vet-clinic');
+            location.href = $('.baseUrl').val() + '/masuk';
+          }
+        }
+      });
+    } else {
+      $("#msg-box .modal-body").text('Pilih cabang dahulu!');
+      $('#msg-box').modal('show');
+    }
 
 	});
 

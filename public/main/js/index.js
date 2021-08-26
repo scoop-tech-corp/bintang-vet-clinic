@@ -1,8 +1,9 @@
 $(document).ready(function() {
+  let optCabang = '';
 
   widgetTotalPasien({month: null, year: null});
-  widgetJenisKelamin();
   widgetUmur();
+  loadCabang();
   let getAuthUser = localStorage.getItem('vet-clinic');
 
   if (!getAuthUser) {
@@ -13,8 +14,7 @@ $(document).ready(function() {
 
     if (role != 'admin') {
       $('.pasien').hide();
-      $('.kelamin').hide();
-      $('.umur').hide();
+      $('.rawat-inap').hide();
     }
   }
 
@@ -30,6 +30,16 @@ $(document).ready(function() {
     widgetTotalPasien({month: getMonth, year: getYear});
   });
 
+  $('#datepicker-rawat-inap').datepicker({
+    autoclose: true,
+    clearBtn: true,
+    format: 'yyyy-mm-dd',
+    todayHighlight: true,
+  }).on('changeDate', function(e) {
+    widgetUmur(e.format());
+  });
+
+  $('#filterCabangRawatInap').select2({ placeholder: 'Cabang', allowClear: true });
 
   function widgetTotalPasien(param) {
 
@@ -76,55 +86,9 @@ $(document).ready(function() {
     });
   }
 
-  function widgetJenisKelamin() {
-    Highcharts.chart('jenisKelaminWidget', {
-      chart: { type: 'pie' },
-      title: { text: '' },
-      plotOptions: {
-        pie: { cursor: 'pointer',
-        dataLabels: {
-          enabled: true,
-          format: '<b>{point.name}</b>: {point.y}'
-        } }
-      },
-      credits: { enabled: false },
-      series: [{
-          name: 'Brands',
-          colorByPoint: true,
-          data: [{
-              name: 'Chrome',
-              y: 61.41,
-          }, {
-              name: 'Internet Explorer',
-              y: 11.84
-          }, {
-              name: 'Firefox',
-              y: 10.85
-          }, {
-              name: 'Edge',
-              y: 4.67
-          }, {
-              name: 'Safari',
-              y: 4.18
-          }, {
-              name: 'Sogou Explorer',
-              y: 1.64
-          }, {
-              name: 'Opera',
-              y: 1.6
-          }, {
-              name: 'QQ',
-              y: 1.2
-          }, {
-              name: 'Other',
-              y: 2.61
-          }]
-      }]
-    });
-  }
 
-  function widgetUmur() {
-    Highcharts.chart('umurWidget', {
+  function widgetUmur(date) {
+    Highcharts.chart('rawatInapWidget', {
       chart: {
           type: 'area'
       },
@@ -157,5 +121,30 @@ $(document).ready(function() {
         }]
     });
   }
+
+  function loadCabang() {
+		$.ajax({
+			url     : $('.baseUrl').val() + '/api/cabang',
+			headers : { 'Authorization': `Bearer ${token}` },
+			type    : 'GET',
+			beforeSend: function() { $('#loading-screen').show(); },
+			success: function(data) {
+				optCabang += `<option value=''>Cabang</option>`
+
+				if (data.length) {
+					for (let i = 0 ; i < data.length ; i++) {
+						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
+					}
+				}
+				$('#filterCabangRawatInap').append(optCabang);
+			}, complete: function() { $('#loading-screen').hide(); },
+			error: function(err) {
+				if (err.status == 401) {
+					localStorage.removeItem('vet-clinic');
+					location.href = $('.baseUrl').val() + '/masuk';
+				}
+			}
+		});
+	}
 
 });
