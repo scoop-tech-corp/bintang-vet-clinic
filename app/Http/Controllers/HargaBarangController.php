@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Exports\MultipleSheetUploadHargaBarang;
+use App\Exports\RekapHargaBarang;
 use App\Imports\MultipleSheetImportHargaBarang;
+use App\Models\Branch;
 use App\Models\PriceItem;
 use DB;
 use Illuminate\Http\Request;
@@ -14,38 +16,6 @@ class HargaBarangController extends Controller
 {
     public function index(Request $request)
     {
-        $price_items = DB::table('price_items')
-            ->join('users', 'price_items.user_id', '=', 'users.id')
-            ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
-            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-            ->select('price_items.id',
-                'list_of_items.id as item_name_id',
-                'list_of_items.item_name',
-                'category_item.id as item_categories_id',
-                'category_item.category_name',
-                'list_of_items.unit_item_id as unit_item_id',
-                'unit_item.unit_name',
-                'list_of_items.total_item',
-                'branches.id as branch_id',
-                'branches.branch_name',
-                DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
-                DB::raw("TRIM(price_items.capital_price)+0 as capital_price"),
-                DB::raw("TRIM(price_items.doctor_fee)+0 as doctor_fee"),
-                DB::raw("TRIM(price_items.petshop_fee)+0 as petshop_fee"),
-                'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(price_items.created_at, '%d %b %Y') as created_at"))
-            ->where('price_items.isDeleted', '=', 0);
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $price_items = $price_items->where('branches.id', '=', $request->branch_id);
-        }
-
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $price_items = $price_items->where('branches.id', '=', $request->user()->branch_id);
-        }
-
         if ($request->keyword) {
 
             $res = $this->Search($request);
@@ -98,12 +68,6 @@ class HargaBarangController extends Controller
             $price_items = $price_items->get();
 
             return response()->json($price_items, 200);
-            // $price_items = $price_items
-            //     ->where('list_of_items.item_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('category_item.category_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('branches.branch_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('price_items.created_at', 'like', '%' . $request->keyword . '%');
         } else {
 
             $price_items = DB::table('price_items')
@@ -601,6 +565,20 @@ class HargaBarangController extends Controller
     public function generate_excel(Request $request)
     {
 
+        $date = \Carbon\Carbon::now()->format('d-m-y');
+
+        $listBranch = Branch::find($request->branch_id);
+
+        $filename = "";
+
+        if ($listBranch) {
+            $filename = 'Rekap Harga Barang Cabang ' . $branch . ' ' . $date . '.xlsx';
+        } else {
+            $filename = 'Rekap Harga Barang ' . $date . '.xlsx';
+        }
+
+        return (new RekapHargaBarang($request->orderby, $request->column, $request->keyword, $request->branch_id, $request->user()->role))
+            ->download($filename);
     }
 
 }

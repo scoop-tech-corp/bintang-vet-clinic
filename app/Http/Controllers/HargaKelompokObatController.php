@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\RekapHargakelompokObat;
+use App\Models\Branch;
 use App\Models\PriceMedicineGroup;
 use DB;
 use Illuminate\Http\Request;
@@ -230,6 +232,19 @@ class HargaKelompokObatController extends Controller
 
     public function generate_excel(Request $request)
     {
+        $date = \Carbon\Carbon::now()->format('d-m-y');
 
+        $listBranch = Branch::find($request->branch_id);
+
+        $filename = "";
+
+        if ($listBranch) {
+            $filename = 'Rekap Harga Kelompok Obat Cabang ' . $branch . ' ' . $date . '.xlsx';
+        } else {
+            $filename = 'Rekap Harga Kelompok Obat ' . $date . '.xlsx';
+        }
+
+        return (new RekapHargakelompokObat($request->orderby, $request->column, $request->keyword, $request->branch_id, $request->user()->role))
+            ->download($filename);
     }
 }
