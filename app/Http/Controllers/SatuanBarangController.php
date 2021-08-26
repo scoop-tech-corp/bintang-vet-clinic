@@ -18,13 +18,11 @@ class SatuanBarangController extends Controller
             ->where('unit_item.isDeleted', '=', 'false');
 
         if ($request->keyword) {
-            $unit_item = $unit_item->where('isDeleted', '=', 'false')
-                ->where('unit_name', 'like', '%' . $request->keyword . '%')
+            $unit_item = $unit_item->where('unit_name', 'like', '%' . $request->keyword . '%')
                 ->orwhere('created_by', 'like', '%' . $request->keyword . '%');
         }
 
-        if($request->orderby)
-        {
+        if ($request->orderby) {
             $unit_item = $unit_item->orderBy($request->column, $request->orderby);
         }
 

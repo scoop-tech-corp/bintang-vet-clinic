@@ -13,47 +13,207 @@ class PasienController extends Controller
     public function index(Request $request)
     {
 
-        $patient = DB::table('patients')
+        if ($request->keyword) {
+
+            $res = $this->Search($request);
+
+            $patient = DB::table('patients')
+                ->join('branches', 'patients.branch_id', '=', 'branches.id')
+                ->join('users', 'patients.user_id', '=', 'users.id')
+                ->select('patients.id', 'patients.branch_id', 'branches.branch_name', 'patients.id_member', 'patients.pet_category', 'patients.pet_name', 'patients.pet_gender'
+                    , 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address', 'patients.owner_phone_number'
+                    , 'branches.branch_name', 'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"))
+                ->where('patients.isDeleted', '=', 'false');
+
+            if ($res) {
+                $patient = $patient->where($res, 'like', '%' . $request->keyword . '%');
+            } else {
+                $data = [];
+                return response()->json($data, 200);
+            }
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $patient = $patient->where('patients.branch_id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $patient = $patient->where('patients.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->orderby) {
+
+                $patient = $patient->orderBy($request->column, $request->orderby);
+            }
+
+            $patient = $patient->orderBy('id', 'desc');
+
+            $patient = $patient->get();
+
+            return response()->json($patient, 200);
+
+        } else {
+
+            $patient = DB::table('patients')
+                ->join('branches', 'patients.branch_id', '=', 'branches.id')
+                ->join('users', 'patients.user_id', '=', 'users.id')
+                ->select(
+                    'patients.id',
+                    'patients.branch_id',
+                    'branches.branch_name',
+                    'patients.id_member',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'patients.pet_gender',
+                    'patients.pet_year_age',
+                    'patients.pet_month_age',
+                    'patients.owner_name',
+                    'patients.owner_address',
+                    'patients.owner_phone_number',
+                    'branches.branch_name',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"))
+                ->where('patients.isDeleted', '=', 'false');
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $patient = $patient->where('patients.branch_id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $patient = $patient->where('patients.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->orderby) {
+
+                $patient = $patient->orderBy($request->column, $request->orderby);
+            }
+
+            $patient = $patient->orderBy('id', 'desc');
+
+            $patient = $patient->get();
+
+            return response()->json($patient, 200);
+        }
+
+    }
+
+    private function Search($request)
+    {
+        $temp_column = '';
+        $data = DB::table('patients')
             ->join('branches', 'patients.branch_id', '=', 'branches.id')
             ->join('users', 'patients.user_id', '=', 'users.id')
             ->select('patients.id', 'patients.branch_id', 'branches.branch_name', 'patients.id_member', 'patients.pet_category', 'patients.pet_name', 'patients.pet_gender'
                 , 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address', 'patients.owner_phone_number'
                 , 'branches.branch_name', 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"))
-            ->where('patients.isDeleted', '=', 'false');
+            ->where('patients.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $patient = $patient->where('patients.branch_id', '=', $request->user()->branch_id);
+            $data = $data->where('patients.branch_id', '=', $request->user()->branch_id);
         }
 
         if ($request->branch_id && $request->user()->role == 'admin') {
-            $patient = $patient->where('patients.branch_id', '=', $request->branch_id);
+            $data = $data->where('patients.branch_id', '=', $request->branch_id);
         }
 
         if ($request->keyword) {
-            $patient = $patient->where('patients.id_member', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.pet_category', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.pet_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.pet_gender', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.pet_year_age', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.pet_month_age', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.owner_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.owner_address', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.owner_phone_number', 'like', '%' . $request->keyword . '%')
-                ->orwhere('branches.branch_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%');
+            $data = $data->where('patients.pet_category', 'like', '%' . $request->keyword . '%');
         }
 
-        if ($request->orderby) {
+        $data = $data->get();
 
-            $patient = $patient->orderBy($request->column, $request->orderby);
+        if (count($data)) {
+            $temp_column = 'patients.pet_category';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $data = DB::table('patients')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->join('users', 'patients.user_id', '=', 'users.id')
+            ->select('patients.id', 'patients.branch_id', 'branches.branch_name', 'patients.id_member', 'patients.pet_category', 'patients.pet_name', 'patients.pet_gender'
+                , 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address', 'patients.owner_phone_number'
+                , 'branches.branch_name', 'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"))
+            ->where('patients.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $data = $data->where('patients.branch_id', '=', $request->user()->branch_id);
         }
 
-        $patient = $patient->orderBy('id', 'desc');
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('patients.branch_id', '=', $request->branch_id);
+        }
 
-        $patient = $patient->get();
+        if ($request->keyword) {
+            $data = $data->where('patients.pet_name', 'like', '%' . $request->keyword . '%');
+        }
 
-        return response()->json($patient, 200);
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.pet_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $data = DB::table('patients')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->join('users', 'patients.user_id', '=', 'users.id')
+            ->select('patients.id', 'patients.branch_id', 'branches.branch_name', 'patients.id_member', 'patients.pet_category', 'patients.pet_name', 'patients.pet_gender'
+                , 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address', 'patients.owner_phone_number'
+                , 'branches.branch_name', 'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"))
+            ->where('patients.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $data = $data->where('patients.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('patients.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.owner_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $data = DB::table('patients')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->join('users', 'patients.user_id', '=', 'users.id')
+            ->select('patients.id', 'patients.branch_id', 'branches.branch_name', 'patients.id_member', 'patients.pet_category', 'patients.pet_name', 'patients.pet_gender'
+                , 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address', 'patients.owner_phone_number'
+                , 'branches.branch_name', 'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"))
+            ->where('patients.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $data = $data->where('patients.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('patients.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.pet_gender', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.pet_gender';
+            return $temp_column;
+        }
     }
 
     public function create(Request $request)

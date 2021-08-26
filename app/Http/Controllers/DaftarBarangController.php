@@ -21,9 +21,17 @@ class DaftarBarangController extends Controller
             ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
             ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
             ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->select('list_of_items.id', 'list_of_items.item_name', 'list_of_items.total_item',
-                'unit_item.id as unit_item_id', 'unit_item.unit_name', 'category_item.id as category_item_id', 'category_item.category_name'
-                , 'branches.id as branch_id', 'branches.branch_name', 'users.id as user_id', 'users.fullname as created_by',
+            ->select('list_of_items.id',
+                'list_of_items.item_name',
+                'list_of_items.total_item',
+                'unit_item.id as unit_item_id',
+                'unit_item.unit_name',
+                'category_item.id as category_item_id',
+                'category_item.category_name',
+                'branches.id as branch_id',
+                'branches.branch_name',
+                'users.id as user_id',
+                'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
             ->where('list_of_items.isDeleted', '=', 0);
 
@@ -37,23 +45,262 @@ class DaftarBarangController extends Controller
 
         if ($request->keyword) {
 
-            $item = $item->where('list_of_items.item_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('list_of_items.total_item', 'like', '%' . $request->keyword . '%')
-                ->orwhere('unit_item.unit_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('category_item.category_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('branches.branch_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%');
+            $res = $this->Search($request);
+
+            $item = DB::table('list_of_items')
+                ->join('users', 'list_of_items.user_id', '=', 'users.id')
+                ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+                ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+                ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+                ->select('list_of_items.id',
+                    'list_of_items.item_name',
+                    'list_of_items.total_item',
+                    'unit_item.id as unit_item_id',
+                    'unit_item.unit_name',
+                    'category_item.id as category_item_id',
+                    'category_item.category_name',
+                    'branches.id as branch_id',
+                    'branches.branch_name',
+                    'users.id as user_id',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
+                ->where('list_of_items.isDeleted', '=', 0);
+
+            if ($res) {
+                $patient = $patient->where($res, 'like', '%' . $request->keyword . '%');
+            } else {
+                $data = [];
+                return response()->json($data, 200);
+            }
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->orderby) {
+                $item = $item->orderBy($request->column, $request->orderby);
+            }
+
+            $item = $item->orderBy('list_of_items.id', 'desc');
+
+            $item = $item->get();
+
+            return response()->json($item, 200);
+
+        } else {
+
+            $item = DB::table('list_of_items')
+                ->join('users', 'list_of_items.user_id', '=', 'users.id')
+                ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+                ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+                ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+                ->select('list_of_items.id',
+                    'list_of_items.item_name',
+                    'list_of_items.total_item',
+                    'unit_item.id as unit_item_id',
+                    'unit_item.unit_name',
+                    'category_item.id as category_item_id',
+                    'category_item.category_name',
+                    'branches.id as branch_id',
+                    'branches.branch_name',
+                    'users.id as user_id',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
+                ->where('list_of_items.isDeleted', '=', 0);
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->orderby) {
+                $item = $item->orderBy($request->column, $request->orderby);
+            }
+
+            $item = $item->orderBy('list_of_items.id', 'desc');
+
+            $item = $item->get();
+
+            return response()->json($item, 200);
         }
 
-        if ($request->orderby) {
-            $item = $item->orderBy($request->column, $request->orderby);
+    }
+
+    private function Search($request)
+    {
+        $temp_column = '';
+
+        $item = DB::table('list_of_items')
+            ->join('users', 'list_of_items.user_id', '=', 'users.id')
+            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+            ->select(
+                'list_of_items.item_name',
+                'unit_item.unit_name',
+                'category_item.category_name',
+                'branches.branch_name',
+                'users.fullname as created_by')
+            ->where('list_of_items.isDeleted', '=', 0);
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
         }
 
-        $item = $item->orderBy('list_of_items.id', 'desc');
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+        }
 
-        $item = $item->get();
+        if ($request->keyword) {
+            $data = $data->where('list_of_items.item_name', 'like', '%' . $request->keyword . '%');
+        }
 
-        return response()->json($item, 200);
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'list_of_items.item_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $item = DB::table('list_of_items')
+            ->join('users', 'list_of_items.user_id', '=', 'users.id')
+            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+            ->select(
+                'list_of_items.item_name',
+                'unit_item.unit_name',
+                'category_item.category_name',
+                'branches.branch_name',
+                'users.fullname as created_by')
+            ->where('list_of_items.isDeleted', '=', 0);
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('unit_item.unit_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'unit_item.unit_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $item = DB::table('list_of_items')
+            ->join('users', 'list_of_items.user_id', '=', 'users.id')
+            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+            ->select(
+                'list_of_items.item_name',
+                'unit_item.unit_name',
+                'category_item.category_name',
+                'branches.branch_name',
+                'users.fullname as created_by')
+            ->where('list_of_items.isDeleted', '=', 0);
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('category_item.category_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'category_item.category_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $item = DB::table('list_of_items')
+            ->join('users', 'list_of_items.user_id', '=', 'users.id')
+            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+            ->select(
+                'list_of_items.item_name',
+                'unit_item.unit_name',
+                'category_item.category_name',
+                'branches.branch_name',
+                'users.fullname as created_by')
+            ->where('list_of_items.isDeleted', '=', 0);
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('branches.branch_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'branches.branch_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $item = DB::table('list_of_items')
+            ->join('users', 'list_of_items.user_id', '=', 'users.id')
+            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+            ->select(
+                'list_of_items.item_name',
+                'unit_item.unit_name',
+                'category_item.category_name',
+                'branches.branch_name',
+                'users.fullname as created_by')
+            ->where('list_of_items.isDeleted', '=', 0);
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'users.fullname';
+            return $temp_column;
+        }
+        //=======================================================
     }
 
     public function create(Request $request)
@@ -250,8 +497,6 @@ class DaftarBarangController extends Controller
         }
 
         return (new MultipleSheetUploadDaftarBarang())->download('Template Daftar Barang.xlsx');
-
-        // return response()->download(public_path('source_download/Template Upload Daftar Barang.xlsx'), 'Template Excel Upload Daftar Barang');
     }
 
     public function upload_template(Request $request)
@@ -267,11 +512,8 @@ class DaftarBarangController extends Controller
             'file' => 'required|mimes:xls,xlsx',
         ]);
 
-        //dd($request->file('file'));
-
         $rows = Excel::toArray(new MultipleSheetImportDaftarBarang, $request->file('file'));
         $result = $rows[0];
-        //response()->json(["rows"=>$rows]);
 
         foreach ($result as $key_result) {
 
@@ -296,5 +538,10 @@ class DaftarBarangController extends Controller
         return response()->json([
             'message' => 'Berhasil mengupload Barang',
         ], 200);
+    }
+
+    public function generate_excel(Request $request)
+    {
+
     }
 }

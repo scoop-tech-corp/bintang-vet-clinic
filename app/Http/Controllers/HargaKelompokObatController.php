@@ -15,12 +15,18 @@ class HargaKelompokObatController extends Controller
             ->join('users', 'price_medicine_groups.user_id', '=', 'users.id')
             ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
             ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-            ->select('price_medicine_groups.id', 'medicine_groups.id as medicine_group_id', 'medicine_groups.group_name',
-                'branches.id as branch_id', 'branches.branch_name', DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
-                DB::raw("TRIM(price_medicine_groups.capital_price)+0 as capital_price"), DB::raw("TRIM(price_medicine_groups.doctor_fee)+0 as doctor_fee"),
+            ->select('price_medicine_groups.id',
+                'medicine_groups.id as medicine_group_id',
+                'medicine_groups.group_name',
+                'branches.id as branch_id',
+                'branches.branch_name',
+                DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
+                DB::raw("TRIM(price_medicine_groups.capital_price)+0 as capital_price"),
+                DB::raw("TRIM(price_medicine_groups.doctor_fee)+0 as doctor_fee"),
                 DB::raw("TRIM(price_medicine_groups.petshop_fee)+0 as petshop_fee"),
-                'users.fullname as created_by', DB::raw("DATE_FORMAT(price_medicine_groups.created_at, '%d %b %Y') as created_at"))
-                ->where('price_medicine_groups.isDeleted', '=', 0);
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(price_medicine_groups.created_at, '%d %b %Y') as created_at"))
+            ->where('price_medicine_groups.isDeleted', '=', 0);
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_medicine_groups = $price_medicine_groups->where('branches.id', '=', $request->branch_id);
@@ -206,7 +212,7 @@ class HargaKelompokObatController extends Controller
         }
 
         $price_medicine_groups = DB::table('medicine_groups')
-            //->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
+        //->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
             ->select('id as medicine_group_id', 'medicine_groups.group_name')
             ->where('branch_id', '=', $request->branch_id)
             ->distinct('id')
@@ -220,5 +226,10 @@ class HargaKelompokObatController extends Controller
         }
 
         return response()->json($price_medicine_groups, 200);
+    }
+
+    public function generate_excel(Request $request)
+    {
+
     }
 }
