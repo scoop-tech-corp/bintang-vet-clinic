@@ -320,11 +320,11 @@ $(document).ready(function() {
 			type    : 'GET',
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
-				optPasien += `<option value=''>Pilih Pasien</option>`
+				optPasien += `<option value=''>Pilih Pasien (nama pasien - nama pemilik - cabang)</option>`
 				listPasien = data;
 				if (listPasien.length) {
 					for (let i = 0 ; i < listPasien.length ; i++) {
-						optPasien += `<option value=${data[i].id}>${data[i].pet_name} - ${data[i].branch_name}</option>`;
+						optPasien += `<option value=${data[i].id}>${data[i].pet_name} - ${data[i].owner_name} - ${data[i].branch_name}</option>`;
 					}
 				}
 				$('#selectedPasien').append(optPasien);

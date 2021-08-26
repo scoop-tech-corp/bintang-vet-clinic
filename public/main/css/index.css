@@ -1,0 +1,27 @@
+
+.rawat-inap .box-tools {
+  display: flex;
+}
+
+.rawat-inap-datepicker {
+  width: 150px;
+}
+
+.rawat-inap-filtercabang {
+  width: 150px; margin-left: 10px
+}
+
+@media (max-width: 768px) {
+
+  .rawat-inap .box-tools {
+    display: block;
+  }  
+
+  .rawat-inap-datepicker {
+    width: unset;
+  }
+
+  .rawat-inap-filtercabang {
+    width: unset; margin-left: unset;
+  }
+}

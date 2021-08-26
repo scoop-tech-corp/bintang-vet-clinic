@@ -4,6 +4,7 @@ $(document).ready(function() {
   let paramUrlSetup = {
 		orderby:'',
 		column: '',
+    keyword: '',
     branchId: ''
   };
   let getId = null;
@@ -20,6 +21,34 @@ $(document).ready(function() {
 	//}
 
   loadPembayaran();
+
+  $('.input-search-section .fa').click(function() {
+		onSearch($('.input-search-section input').val());
+	});
+
+	$('.input-search-section input').keypress(function(e) {
+		if (e.which == 13) { onSearch($(this).val()); }
+	});
+	
+  $('.onOrdering').click(function() {
+		const column = $(this).attr('data');
+		const orderBy = $(this).attr('orderby');
+		$('.onOrdering[data="'+column+'"]').children().remove();
+
+		if (orderBy == 'none' || orderBy == 'asc') {
+			$(this).attr('orderby', 'desc');
+			$(this).append('<span class="fa fa-sort-desc"></span>');
+
+		} else if(orderBy == 'desc') {
+			$(this).attr('orderby', 'asc');
+			$(this).append('<span class="fa fa-sort-asc"></span>');
+		}
+
+		paramUrlSetup.orderby = $(this).attr('orderby');
+		paramUrlSetup.column = column;
+
+		loadPembayaran();
+	});
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
@@ -60,13 +89,18 @@ $(document).ready(function() {
 		loadPembayaran();
   }
 
+  function onSearch(keyword) {
+		paramUrlSetup.keyword = keyword;
+		loadPembayaran();
+	}
+
   function loadPembayaran() {
 
     $.ajax({
 			url     : $('.baseUrl').val() + '/api/pembayaran',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, branch_id: paramUrlSetup.branchId },
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
 				let listPembayaran = '';
