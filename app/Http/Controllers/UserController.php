@@ -149,7 +149,69 @@ class UserController extends Controller
             ], 403);
         }
 
-        $user = DB::table('users')
+        if ($request->keyword) {
+
+            $res = $this->Search($request);
+
+            $user = DB::table('users')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select('users.id', 'users.branch_id', 'users.staffing_number', 'users.username', 'users.fullname', 'users.email'
+                    , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
+                    DB::raw("DATE_FORMAT(users.created_at, '%d %b %Y') as created_at"))
+                ->where('users.isDeleted', '=', 0);
+
+            if ($res) {
+                $user = $user->where($res, 'like', '%' . $request->keyword . '%');
+            } else {
+                $data = [];
+                return response()->json($data, 200);
+            }
+
+            if ($request->branch_id) {
+                $user = $user->where('users.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->orderby) {
+
+                $user = $user->orderBy($request->column, $request->orderby);
+            }
+
+            $user = $user->orderBy('users.id', 'desc');
+
+            $user = $user->get();
+            return response()->json($user, 200);
+
+        } else {
+
+            $user = DB::table('users')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select('users.id', 'users.branch_id', 'users.staffing_number', 'users.username', 'users.fullname', 'users.email'
+                    , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
+                    DB::raw("DATE_FORMAT(users.created_at, '%d %b %Y') as created_at"))
+                ->where('users.isDeleted', '=', 0);
+
+            if ($request->branch_id) {
+                $user = $user->where('users.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->orderby) {
+
+                $user = $user->orderBy($request->column, $request->orderby);
+            }
+
+            $user = $user->orderBy('users.id', 'desc');
+
+            $user = $user->get();
+
+            return response()->json($user, 200);
+        }
+
+    }
+
+    private function Search($request)
+    {
+        $temp_column = '';
+        $data = DB::table('users')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select('users.id', 'users.branch_id', 'users.staffing_number', 'users.username', 'users.fullname', 'users.email'
                 , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
@@ -157,33 +219,89 @@ class UserController extends Controller
             ->where('users.isDeleted', '=', 0);
 
         if ($request->keyword) {
-
-            $user = $user->where('users.branch_id', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.staffing_number', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.username', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.email', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.role', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.phone_number', 'like', '%' . $request->keyword . '%')
-                ->orwhere('branches.branch_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.status', 'like', '%' . $request->keyword . '%')
-                ->orwhere('users.created_by', 'like', '%' . $request->keyword . '%');
+            $data = $data->where('users.staffing_number', 'like', '%' . $request->keyword . '%');
         }
 
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $user = $user->where('users.branch_id', '=', $request->branch_id);
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'users.staffing_number';
+            return $temp_column;
+        }
+        //=====================================
+        $data = DB::table('users')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select('users.id', 'users.branch_id', 'users.staffing_number', 'users.username', 'users.fullname', 'users.email'
+                , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
+                DB::raw("DATE_FORMAT(users.created_at, '%d %b %Y') as created_at"))
+            ->where('users.isDeleted', '=', 0);
+
+        if ($request->keyword) {
+            $data = $data->where('users.username', 'like', '%' . $request->keyword . '%');
         }
 
-        if ($request->orderby) {
+        $data = $data->get();
 
-            $user = $user->orderBy($request->column, $request->orderby);
+        if (count($data)) {
+            $temp_column = 'users.username';
+            return $temp_column;
+        }
+        //=====================================
+        $data = DB::table('users')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select('users.id', 'users.branch_id', 'users.staffing_number', 'users.username', 'users.fullname', 'users.email'
+                , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
+                DB::raw("DATE_FORMAT(users.created_at, '%d %b %Y') as created_at"))
+            ->where('users.isDeleted', '=', 0);
+
+        if ($request->keyword) {
+            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
         }
 
-        $user = $user->orderBy('users.id', 'desc');
+        $data = $data->get();
 
-        $user = $user->get();
+        if (count($data)) {
+            $temp_column = 'users.fullname';
+            return $temp_column;
+        }
+        //=====================================
+        $data = DB::table('users')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select('users.id', 'users.branch_id', 'users.staffing_number', 'users.username', 'users.fullname', 'users.email'
+                , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
+                DB::raw("DATE_FORMAT(users.created_at, '%d %b %Y') as created_at"))
+            ->where('users.isDeleted', '=', 0);
 
-        return response()->json($user, 200);
+        if ($request->keyword) {
+            $data = $data->where('users.email', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'users.email';
+            return $temp_column;
+        }
+
+        //=====================================
+        $data = DB::table('users')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select('users.id', 'users.branch_id', 'users.staffing_number', 'users.username', 'users.fullname', 'users.email'
+                , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
+                DB::raw("DATE_FORMAT(users.created_at, '%d %b %Y') as created_at"))
+            ->where('users.isDeleted', '=', 0);
+
+        if ($request->keyword) {
+            $data = $data->where('users.role', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'users.role';
+            return $temp_column;
+        }
+
     }
 
     public function update(Request $request)
@@ -320,13 +438,6 @@ class UserController extends Controller
 
     public function doctor(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
-
         $data = DB::table('users')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select('users.id', 'users.username', 'users.role', 'branches.id as branch_id', 'branches.branch_name')

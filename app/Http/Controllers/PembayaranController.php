@@ -53,12 +53,86 @@ class PembayaranController extends Controller
 
     public function index(Request $request)
     {
-        // if ($request->user()->role == 'dokter') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
+
+        if ($request->keyword) {
+            $res = $this->Search($request);
+
+            $data = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->select('list_of_payments.id as list_of_payment_id',
+                    'check_up_results.id as check_up_result_id',
+                    'registrations.id_number as registration_number',
+                    'patients.id_member as patient_number',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'registrations.complaint',
+                    'check_up_results.status_outpatient_inpatient',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"));
+
+            if ($res) {
+                $patient = $patient->where($res, 'like', '%' . $request->keyword . '%');
+            } else {
+                $data = [];
+                return response()->json($data, 200);
+            }
+
+            if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+                $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->orderby) {
+                $data = $data->orderBy($request->column, $request->orderby);
+            }
+
+            $data = $data->orderBy('check_up_results.id', 'desc');
+
+            $data = $data->get();
+
+            return response()->json($data, 200);
+        } else {
+
+            $data = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->select('list_of_payments.id as list_of_payment_id',
+                    'check_up_results.id as check_up_result_id',
+                    'registrations.id_number as registration_number',
+                    'patients.id_member as patient_number',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'registrations.complaint',
+                    'check_up_results.status_outpatient_inpatient',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"));
+
+            if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+                $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->orderby) {
+                $data = $data->orderBy($request->column, $request->orderby);
+            }
+
+            $data = $data->orderBy('check_up_results.id', 'desc');
+
+            $data = $data->get();
+
+            return response()->json($data, 200);
+        }
+
+    }
+
+    private function Search($request)
+    {
+        $temp_column = '';
 
         $data = DB::table('list_of_payments')
             ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
@@ -66,10 +140,13 @@ class PembayaranController extends Controller
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select('list_of_payments.id as list_of_payment_id', 'check_up_results.id as check_up_result_id', 'registrations.id_number as registration_number',
-                'patients.id_member as patient_number', 'patients.pet_category', 'patients.pet_name', 'registrations.complaint',
-                'check_up_results.status_outpatient_inpatient', 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"));
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'registrations.complaint',
+                'users.fullname');
 
         if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
             $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
@@ -79,11 +156,187 @@ class PembayaranController extends Controller
             $data = $data->orderBy($request->column, $request->orderby);
         }
 
-        $data = $data->orderBy('check_up_results.id', 'desc');
+        if ($request->keyword) {
+            $data = $data->where('registrations.id_number', 'like', '%' . $request->keyword . '%');
+        }
 
         $data = $data->get();
 
-        return response()->json($data, 200);
+        if (count($data)) {
+            $temp_column = 'registrations.id_number';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $data = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'registrations.complaint',
+                'users.fullname');
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $data = $data->orderBy($request->column, $request->orderby);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.id_member', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.id_member';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $data = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'registrations.complaint',
+                'users.fullname');
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $data = $data->orderBy($request->column, $request->orderby);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.pet_category', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.pet_category';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $data = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'registrations.complaint',
+                'users.fullname');
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $data = $data->orderBy($request->column, $request->orderby);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.pet_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.pet_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $data = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'registrations.complaint',
+                'users.fullname');
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $data = $data->orderBy($request->column, $request->orderby);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('registrations.complaint', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'registrations.complaint';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $data = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'registrations.complaint',
+                'users.fullname');
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $data = $data->orderBy($request->column, $request->orderby);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'users.fullname';
+            return $temp_column;
+        }
+        //=======================================================
     }
 
     public function detail(Request $request)
