@@ -44,6 +44,9 @@
   @component('layout.modal-confirmation') @endcomponent
   @component('layout.message-box') @endcomponent
 @endsection
+@section('css-content')
+  <link rel="stylesheet" type='text/css' href="{{ asset('main/css/harga-kelompok-obat.css') }}">
+@endsection
 @section('script-content')
   <script src="{{ asset('plugins/jquery.mask.js') }}"></script>
   <script src="{{ asset('main/js/gudang/pembagian-harga-kelompok-obat/harga-kelompok-obat.js') }}"></script>

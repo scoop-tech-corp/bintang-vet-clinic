@@ -235,7 +235,7 @@ input:disabled {
     display: block;
   }
 
-  .section-right-box-title .select2-container {
+  .section-right-box-title .select2-container, .box-tools .select2-container {
     width: 100% !important;
     margin-top: 10px;
   }
