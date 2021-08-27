@@ -268,24 +268,28 @@ $(document).ready(function() {
 				let listHargaJasa = '';
 				$('#list-harga-jasa tr').remove();
 
-				$.each(data, function(idx, v) {
-					listHargaJasa += `<tr>`
-						+ `<td>${++idx}</td>`
-						+ `<td>${v.service_name}</td>`
-						+ `<td>${v.category_name}</td>`
-            + `<td>${v.branch_name}</td>`
-            + `<td>Rp ${typeof(v.selling_price) == 'number' ? v.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>Rp ${typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>Rp ${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>Rp ${typeof(v.petshop_fee) == 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-						+ `<td>${v.created_by}</td>`
-						+ `<td>${v.created_at}</td>`
-						+ ((role.toLowerCase() != 'admin') ? `` : `<td>
-								<button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
-								<button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-							</td>`)
-						+ `</tr>`;
-				});
+        if (data.length) {
+          $.each(data, function(idx, v) {
+            listHargaJasa += `<tr>`
+              + `<td>${++idx}</td>`
+              + `<td>${v.service_name}</td>`
+              + `<td>${v.category_name}</td>`
+              + `<td>${v.branch_name}</td>`
+              + `<td>Rp ${typeof(v.selling_price) == 'number' ? v.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>Rp ${typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>Rp ${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>Rp ${typeof(v.petshop_fee) == 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>${v.created_by}</td>`
+              + `<td>${v.created_at}</td>`
+              + ((role.toLowerCase() != 'admin') ? `` : `<td>
+                  <button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                </td>`)
+              + `</tr>`;
+          });
+        } else {
+          listHargaJasa += `<tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>`;
+        }
 				$('#list-harga-jasa').append(listHargaJasa);
 
 				$('.openFormEdit').click(function() {
@@ -300,10 +304,10 @@ $(document).ready(function() {
           formConfigure();
 
 					getId = getObj.id;
-          $('#hargaJual').val(getObj.selling_price);
-          $('#hargaModal').val(getObj.capital_price);
-          $('#feeDokter').val(getObj.doctor_fee);
-          $('#feePetshop').val(getObj.petshop_fee);
+          $('#hargaJual').val(getObj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#hargaModal').val(getObj.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#feeDokter').val(getObj.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#feePetshop').val(getObj.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
 				});
 			

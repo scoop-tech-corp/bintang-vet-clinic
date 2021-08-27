@@ -52,6 +52,9 @@
               <button type="button" class="btn btn-danger" @click="openFormDelete(item)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
             </td>
           </tr>
+          <tr class="text-center" v-if="!listData.length">
+            <td colspan="5" >Tidak ada data.</td>
+          </tr>
         </tbody>
       </table>
     </div>

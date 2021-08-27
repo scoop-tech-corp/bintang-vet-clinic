@@ -8,7 +8,11 @@
       <div class="section-left-box-title">
         <button class="btn btn-info openFormAdd">Tambah Pembayaran</button>
       </div>
-      <div class="section-right-box-title" style="width: 150px;">
+      <div class="section-right-box-title">
+        <div class="input-search-section m-r-10px">
+          <input type="text" class="form-control" placeholder="cari..">
+          <i class="fa fa-search" aria-hidden="true"></i>
+        </div>
         <select id="filterCabang" style="width: 100%"></select>
       </div>
     </div>

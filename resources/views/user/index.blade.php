@@ -37,7 +37,9 @@
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>
-        <tbody id="list-user"></tbody>
+        <tbody id="list-user">
+          <tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>
+        </tbody>
       </table>
     </div>
   </div>

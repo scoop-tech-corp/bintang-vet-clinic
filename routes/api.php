@@ -67,6 +67,8 @@ Route::group(['middleware' => ['api']], function () {
         Route::put('daftar-barang', 'DaftarBarangController@update');
         Route::delete('daftar-barang', 'DaftarBarangController@delete');
 
+        Route::get('daftar-barang/generate-excel', 'DaftarBarangController@generate_excel');
+
         Route::get('daftar-barang/download-template', 'DaftarBarangController@download_template');
         Route::post('daftar-barang/upload', 'DaftarBarangController@upload_template');
 
@@ -98,6 +100,7 @@ Route::group(['middleware' => ['api']], function () {
         Route::get('pembagian-harga-barang/kategori-barang', 'HargaBarangController@item_category');
         Route::get('pembagian-harga-barang/nama-barang', 'HargaBarangController@item_name');
 
+        Route::get('pembagian-harga-barang/generate-excel', 'HargaBarangController@generate_excel');
         Route::get('pembagian-harga-barang/download-template', 'HargaBarangController@download_template');
         Route::post('pembagian-harga-barang/upload', 'HargaBarangController@upload_template');
 
@@ -157,6 +160,7 @@ Route::group(['middleware' => ['api']], function () {
         Route::put('pembagian-harga-kelompok-obat', 'HargaKelompokObatController@update');
         Route::delete('pembagian-harga-kelompok-obat', 'HargaKelompokObatController@delete');
 
+        Route::get('pembagian-harga-kelompok-obat/generate-excel', 'HargaKelompokObatController@generate_excel');
         Route::get('pembagian-harga-kelompok-obat/cabang-obat', 'HargaKelompokObatController@branch_medicine');
 
         //laporan keuangan

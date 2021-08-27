@@ -33,7 +33,9 @@
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>
-        <tbody id="list-harga-kelompok-obat"></tbody>
+        <tbody id="list-harga-kelompok-obat">
+          <tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
@@ -41,6 +43,9 @@
   @component('gudang.pembagian-harga-kelompok-obat.modal-harga-kelompok-obat') @endcomponent
   @component('layout.modal-confirmation') @endcomponent
   @component('layout.message-box') @endcomponent
+@endsection
+@section('css-content')
+  <link rel="stylesheet" type='text/css' href="{{ asset('main/css/harga-kelompok-obat.css') }}">
 @endsection
 @section('script-content')
   <script src="{{ asset('plugins/jquery.mask.js') }}"></script>

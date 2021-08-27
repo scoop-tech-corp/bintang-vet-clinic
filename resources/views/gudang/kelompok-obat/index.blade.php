@@ -28,7 +28,9 @@
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>
-        <tbody id="list-kelompok-obat"></tbody>
+        <tbody id="list-kelompok-obat">
+          <tr class="text-center"><td colspan="6">Tidak ada data.</td></tr>
+        </tbody>
       </table>
     </div>
   </div>
@@ -39,6 +41,9 @@
   @component('layout.modal-confirmation') @endcomponent
   @component('layout.message-box') @endcomponent
 </div>
+@endsection
+@section('css-content')
+  <link rel="stylesheet" type='text/css' href="{{ asset('main/css/kelompok-obat.css') }}">
 @endsection
 @section('script-content')
   <script src="{{ asset('plugins/jquery.ui.widget.js') }}"></script>
