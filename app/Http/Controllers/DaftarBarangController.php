@@ -518,7 +518,15 @@ class DaftarBarangController extends Controller
     {
         $date = \Carbon\Carbon::now()->format('d-m-y');
 
-        $listBranch = Branch::find($request->branch_id);
+        $branchId = "";
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $branchId = $request->user()->branch_id;
+        } else {
+            $branchId = $request->branch_id;
+        }
+
+        $listBranch = Branch::find($branchId);
 
         $filename = "";
 
@@ -528,7 +536,7 @@ class DaftarBarangController extends Controller
             $filename = 'Rekap Daftar Barang ' . $date . '.xlsx';
         }
 
-        return (new RekapDaftarBarang($request->orderby, $request->column, $request->keyword, $request->branch_id, $request->user()->role))
+        return (new RekapDaftarBarang($request->orderby, $request->column, $request->keyword, $branchId, $request->user()->role))
             ->download($filename);
     }
 }
