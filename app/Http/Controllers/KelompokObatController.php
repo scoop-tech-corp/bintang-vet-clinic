@@ -14,22 +14,97 @@ class KelompokObatController extends Controller
 {
     public function index(Request $request)
     {
+
+        if ($request->keyword) {
+
+            $res = $this->Search($request);
+
+            $medicine_groups = DB::table('medicine_groups')
+                ->join('users', 'medicine_groups.user_id', '=', 'users.id')
+                ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+                ->select(
+                    'medicine_groups.id',
+                    'branches.id as branch_id',
+                    'branches.branch_name',
+                    'group_name',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
+                ->where('medicine_groups.isDeleted', '=', 0);
+
+            if ($res) {
+                $medicine_groups = $medicine_groups->where($res, 'like', '%' . $request->keyword . '%');
+            } else {
+                $medicine_groups = [];
+                return response()->json($medicine_groups, 200);
+            }
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
+            }
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->orderby) {
+                $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
+            }
+
+            $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
+
+            $medicine_groups = $medicine_groups->get();
+
+            return response()->json($medicine_groups, 200);
+            // $medicine_groups = $medicine_groups->where('group_name', 'like', '%' . $request->keyword . '%')
+            //     ->orwhere('created_by', 'like', '%' . $request->keyword . '%');
+        } else {
+
+            $medicine_groups = DB::table('medicine_groups')
+                ->join('users', 'medicine_groups.user_id', '=', 'users.id')
+                ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+                ->select(
+                    'medicine_groups.id',
+                    'branches.id as branch_id',
+                    'branches.branch_name',
+                    'group_name',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
+                ->where('medicine_groups.isDeleted', '=', 0);
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
+            }
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->orderby) {
+                $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
+            }
+
+            $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
+
+            $medicine_groups = $medicine_groups->get();
+
+            return response()->json($medicine_groups, 200);
+        }
+
+    }
+
+    private function Search(Request $request)
+    {
+        $temp_column = '';
+
         $medicine_groups = DB::table('medicine_groups')
             ->join('users', 'medicine_groups.user_id', '=', 'users.id')
             ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
             ->select(
-                'medicine_groups.id',
-                'branches.id as branch_id',
                 'branches.branch_name',
                 'group_name',
                 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
             ->where('medicine_groups.isDeleted', '=', 0);
-
-        if ($request->keyword) {
-            $medicine_groups = $medicine_groups->where('group_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('created_by', 'like', '%' . $request->keyword . '%');
-        }
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
@@ -39,15 +114,77 @@ class KelompokObatController extends Controller
             $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
         }
 
-        if ($request->orderby) {
-            $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
+        if ($request->keyword) {
+            $medicine_groups = $medicine_groups->where('branches.branch_name', 'like', '%' . $request->keyword . '%');
         }
-
-        $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
 
         $medicine_groups = $medicine_groups->get();
 
-        return response()->json($medicine_groups, 200);
+        if (count($medicine_groups)) {
+            $temp_column = 'branches.branch_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $medicine_groups = DB::table('medicine_groups')
+            ->join('users', 'medicine_groups.user_id', '=', 'users.id')
+            ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+            ->select(
+                'branches.branch_name',
+                'group_name',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
+            ->where('medicine_groups.isDeleted', '=', 0);
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->keyword) {
+            $medicine_groups = $medicine_groups->where('group_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $medicine_groups = $medicine_groups->get();
+
+        if (count($medicine_groups)) {
+            $temp_column = 'group_name';
+            return $temp_column;
+        }
+        //=======================================================
+
+        $medicine_groups = DB::table('medicine_groups')
+            ->join('users', 'medicine_groups.user_id', '=', 'users.id')
+            ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+            ->select(
+                'branches.branch_name',
+                'group_name',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
+            ->where('medicine_groups.isDeleted', '=', 0);
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->keyword) {
+            $medicine_groups = $medicine_groups->where('users.fullname', 'like', '%' . $request->keyword . '%');
+        }
+
+        $medicine_groups = $medicine_groups->get();
+
+        if (count($medicine_groups)) {
+            $temp_column = 'users.fullname';
+            return $temp_column;
+        }
+        //=======================================================
     }
 
     public function create(Request $request)
