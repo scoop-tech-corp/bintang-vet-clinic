@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\RekapHargakelompokObat;
+use App\Exports\RekapHargaKelompokObat;
 use App\Models\Branch;
 use App\Models\PriceMedicineGroup;
 use DB;
@@ -12,7 +12,7 @@ use Validator;
 class HargaKelompokObatController extends Controller
 {
     public function index(Request $request)
-    {
+    {//masih error
         $price_medicine_groups = DB::table('price_medicine_groups')
             ->join('users', 'price_medicine_groups.user_id', '=', 'users.id')
             ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
@@ -252,7 +252,7 @@ class HargaKelompokObatController extends Controller
             $filename = 'Rekap Harga Kelompok Obat ' . $date . '.xlsx';
         }
 
-        return (new RekapHargakelompokObat($request->orderby, $request->column, $request->keyword, $branchId, $request->user()->role))
+        return (new RekapHargaKelompokObat($request->orderby, $request->column, $request->keyword, $branchId, $request->user()->role))
             ->download($filename);
     }
 }
