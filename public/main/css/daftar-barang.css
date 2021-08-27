@@ -3,7 +3,7 @@ input[type='file'] {
 }
 
 @media (max-width: 768px) {
-  .openFormUpload, .section-right-box-title .select2-container {
+  .openFormUpload, .section-right-box-title .select2-container, .btn-download-excel {
     margin-top: 10px;
   }
 
@@ -11,12 +11,8 @@ input[type='file'] {
     width: 100% !important;
   }
 
-  .input-search-section {
-    width: 100%;
-    margin-right: 0px;
-  }
-
   .section-left-box-title {
+    width: 200px;
     margin-right: 10px;
   }
 

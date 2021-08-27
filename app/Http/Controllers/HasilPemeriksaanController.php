@@ -57,23 +57,335 @@ class HasilPemeriksaanController extends Controller
         }
 
         if ($request->keyword) {
-          info($request->keyword);
-            $data = $data->where('registrations.id_number', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.pet_category', 'like', '%' . $request->keyword . '%')
-                ->orwhere('patients.pet_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('registrations.complaint', 'like', '%' . $request->keyword . '%')
-                ->orwhere('created_by', 'like', '%' . $request->keyword . '%');
+
+            $res = $this->Search($request);
+
+            $data = DB::table('check_up_results')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->select(
+                    'check_up_results.id',
+                    'registrations.id_number as registration_number',
+                    'patients.id as patient_id',
+                    'patients.id_member as patient_number',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'patients.owner_name',
+                    'registrations.complaint',
+                    'check_up_results.status_finish',
+                    'check_up_results.status_outpatient_inpatient',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"))
+                ->where('check_up_results.isDeleted', '=', 0);
+
+            if ($res) {
+                $data = $data->where($res, 'like', '%' . $request->keyword . '%');
+            } else {
+                $data = [];
+                return response()->json($data, 200);
+            }
+
+            if ($request->user()->role == 'dokter') {
+                $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $data = $data->where('users.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->orderby) {
+                $data = $data->orderBy($request->column, $request->orderby);
+            }
+
+            $data = $data->orderBy('check_up_results.id', 'desc');
+
+            $data = $data->get();
+
+            return response()->json($data, 200);
+        } else {
+
+            $data = DB::table('check_up_results')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->select(
+                    'check_up_results.id',
+                    'registrations.id_number as registration_number',
+                    'patients.id as patient_id',
+                    'patients.id_member as patient_number',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'patients.owner_name',
+                    'registrations.complaint',
+                    'check_up_results.status_finish',
+                    'check_up_results.status_outpatient_inpatient',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"))
+                ->where('check_up_results.isDeleted', '=', 0);
+
+            if ($request->user()->role == 'dokter') {
+                $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $data = $data->where('users.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->orderby) {
+                $data = $data->orderBy($request->column, $request->orderby);
+            }
+
+            $data = $data->orderBy('check_up_results.id', 'desc');
+
+            $data = $data->get();
+
+            return response()->json($data, 200);
+        }
+    }
+
+    private function Search($request)
+    {
+        $temp_column = '';
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.owner_name',
+                'registrations.complaint',
+                'users.fullname')
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
         }
 
-        if ($request->orderby) {
-            $data = $data->orderBy($request->column, $request->orderby);
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
         }
 
-        $data = $data->orderBy('check_up_results.id', 'desc');
+        if ($request->keyword) {
+            $data = $data->where('registrations.id_number', 'like', '%' . $request->keyword . '%');
+        }
 
         $data = $data->get();
 
-        return response()->json($data, 200);
+        if (count($data)) {
+            $temp_column = 'registrations.id_number';
+            return $temp_column;
+        }
+        //============================================
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.owner_name',
+                'registrations.complaint',
+                'users.fullname')
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.id_member', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.id_member';
+            return $temp_column;
+        }
+        //============================================
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.owner_name',
+                'registrations.complaint',
+                'users.fullname')
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.pet_category', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.pet_category';
+            return $temp_column;
+        }
+        //============================================
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.owner_name',
+                'registrations.complaint',
+                'users.fullname')
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.pet_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.pet_name';
+            return $temp_column;
+        }
+        //============================================
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.owner_name',
+                'registrations.complaint',
+                'users.fullname')
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.owner_name';
+            return $temp_column;
+        }
+        //============================================
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.owner_name',
+                'registrations.complaint',
+                'users.fullname')
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('registrations.complaint', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'registrations.complaint';
+            return $temp_column;
+        }
+        //============================================
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.owner_name',
+                'registrations.complaint',
+                'users.fullname')
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'users.fullname';
+            return $temp_column;
+        }
+        //============================================
+
     }
 
     public function create(Request $request)
@@ -208,30 +520,12 @@ class HasilPemeriksaanController extends Controller
             }
         }
 
-        //validasi item rawat jalan
+        //validasi item
         if ($request->item) {
 
             $temp_item = $request->item;
 
-            // $result_item = json_decode(json_encode($temp_item), true);
-            //cek duplikat kelompok obat
             $result_item = json_decode($temp_item, true);
-
-            $keys = array();
-
-            foreach ($result_item as $res_test) {
-
-                $keys[$res_test['medicine_group_id']] = 1;
-
-            }
-
-            // if (count($keys) != count($result_item)) {
-
-            //     return response()->json([
-            //         'message' => 'The data was invalid.',
-            //         'errors' => ['Data Kelompok Obat terdapat duplikat!'],
-            //     ], 422);
-            // }
 
             foreach ($result_item as $res_group) {
 
@@ -247,13 +541,7 @@ class HasilPemeriksaanController extends Controller
                     ], 404);
                 }
 
-                //return $res_group;
-
-                // return $res_group['list_of_medicine'];
-
                 foreach ($res_group['list_of_medicine'] as $value_item) {
-
-                    // return $res_detail_group;
 
                     $check_price_item = DB::table('price_items')
                         ->select('list_of_items_id')
@@ -371,7 +659,7 @@ class HasilPemeriksaanController extends Controller
 
                 $detail_item = DB::table('temp_count_items')
                     ->where('user_id', $request->user()->id)->delete();
-                //return $count_item;
+
                 if ($count_item < 0) {
 
                     return response()->json([
@@ -491,8 +779,6 @@ class HasilPemeriksaanController extends Controller
 
                 foreach ($res_group['list_of_medicine'] as $value_item) {
 
-                    // foreach ($result_item as $value_item) {
-
                     $item_list = DetailItemPatient::create([
                         'check_up_result_id' => $item->id,
                         'medicine_group_id' => $res_group['medicine_group_id'],
@@ -523,7 +809,6 @@ class HasilPemeriksaanController extends Controller
                         'status' => 'kurang',
                         'user_id' => $request->user()->id,
                     ]);
-                    // }
                 }
             }
         }
@@ -563,7 +848,6 @@ class HasilPemeriksaanController extends Controller
         return response()->json(
             [
                 'message' => 'Tambah Data Berhasil!',
-                //'id' => $item->id,
             ], 200
         );
     }
@@ -745,9 +1029,6 @@ class HasilPemeriksaanController extends Controller
 
             if (!(is_null($key_service['id']))) {
 
-                //$detail_service_patient = DetailServicePatient::find($key_service['id']);
-
-                //$detail_service_patient
                 $check_price_service = DB::table('price_services')
                     ->select('list_of_services_id')
                     ->where('id', '=', $key_service['price_service_id'])
@@ -971,13 +1252,6 @@ class HasilPemeriksaanController extends Controller
                             ], 404);
                         }
 
-                        //untuk cek quantity yang sudah ada untuk mencari selisih penambahan
-                        // $check_item_result = DB::table('detail_item_out_patients')
-                        //     ->select('quantity')
-                        //     ->where('check_up_result_id', '=', $request->id)
-                        //     ->where('item_id', '=', $value_item['item_id'])
-                        //     ->first();
-
                         $check_item_result = DB::table('detail_item_patients')
                             ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
                             ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
@@ -1106,8 +1380,6 @@ class HasilPemeriksaanController extends Controller
                         }
 
                     }
-                    //}
-                    //}
 
                 }
 
@@ -1322,7 +1594,6 @@ class HasilPemeriksaanController extends Controller
                         ->where('id', $res_group['id'])->delete();
 
                 } else if (is_null($res_group['status']) && $res_group['id']) {
-                    info("masuk else pertama");
                     $detail_medicine_group = Detail_medicine_group_check_up_result::find($res_group['id']);
 
                     $detail_medicine_group->medicine_group_id = $res_group['medicine_group_id'];
@@ -1499,7 +1770,6 @@ class HasilPemeriksaanController extends Controller
                         }
                     }
                 } elseif (is_null($res_group['status']) && is_null($res_group['id'])) {
-                    info("masuk else kedua");
                     $add_parent = Detail_medicine_group_check_up_result::create([
                         'check_up_result_id' => $check_up_result->id,
                         'medicine_group_id' => $res_group['medicine_group_id'],
@@ -1799,14 +2069,12 @@ class HasilPemeriksaanController extends Controller
 
                     $values = DetailItemPatient::where('id', '=', $datas->id)
                         ->delete();
-                    //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
                 }
 
             }
 
             $val_medicine_group = Detail_medicine_group_check_up_result::where('id', '=', $resdata->id)
                 ->delete();
-            //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
         }
 
         $detail_service = DetailServicePatient::where('check_up_result_id', '=', $request->id)->get();
@@ -1820,7 +2088,6 @@ class HasilPemeriksaanController extends Controller
 
         $delete_detail_service_patients = DetailServicePatient::where('check_up_result_id', '=', $request->id)
             ->delete();
-        //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
 
         $inpatient = InPatient::where('check_up_result_id', '=', $request->id)->get();
 
@@ -1833,7 +2100,6 @@ class HasilPemeriksaanController extends Controller
 
         $delete_inpatient = InPatient::where('check_up_result_id', '=', $request->id)
             ->delete();
-        //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
 
         $find_images = DB::table('images_check_up_results')
             ->select('images_check_up_results.id', 'images_check_up_results.image')
@@ -1848,11 +2114,8 @@ class HasilPemeriksaanController extends Controller
 
                     File::delete(public_path() . $image->image);
 
-                    // $delete = DB::table('images_check_up_results')
-                    //     ->where('id', $image->id)->delete();
                     $delete = ImagesCheckUpResults::where('id', '=', $image->id)
                         ->delete();
-                    //->update(['isDeleted' => true, 'deleted_by' => $request->user()->fullname, 'deleted_at' => \Carbon\Carbon::now()]);
                 }
             }
 
@@ -1868,9 +2131,6 @@ class HasilPemeriksaanController extends Controller
         }
 
         $check_up_result = CheckUpResult::find($request->id);
-        // $check_up_result->isDeleted = true;
-        // $check_up_result->deleted_by = $request->user()->fullname;
-        // $check_up_result->deleted_at = \Carbon\Carbon::now();
         $check_up_result->delete();
 
         return response()->json([
@@ -1887,10 +2147,6 @@ class HasilPemeriksaanController extends Controller
             ], 403);
 
         }
-
-        // $message_image = [
-        //     'filenames.*.max' => 'Terdapat foto yang lebih dari 5mb harap cek ulang!',
-        // ];
 
         $validator = Validator::make($request->all(), [
             'check_up_result_id' => 'required',

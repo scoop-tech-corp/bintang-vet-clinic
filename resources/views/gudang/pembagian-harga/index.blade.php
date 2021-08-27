@@ -48,6 +48,9 @@
   @component('layout.modal-confirmation') @endcomponent
   @component('layout.message-box') @endcomponent
 @endsection
+@section('css-content')
+  <link rel="stylesheet" type='text/css' href="{{ asset('main/css/harga-barang.css') }}">
+@endsection
 @section('script-content')
   <script src="{{ asset('plugins/jquery.ui.widget.js') }}"></script>
   <script src="{{ asset('plugins/jquery.iframe-transport.js') }}"></script>

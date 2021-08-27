@@ -22,11 +22,24 @@ $(document).ready(function() {
 
   if (role.toLowerCase() != 'admin') {
     $('.columnAction').hide(); $('#filterCabang').hide();
+
+    if (role.toLowerCase() == 'dokter') {
+      $('.section-left-box-title').append(
+        `<button type="button" class="btn btn-success btn-download-excel" title="Download Excel">
+          <i class="fa fa-file-excel-o" aria-hidden="true"></i>&nbsp;&nbsp;Download Excel
+        </button>`
+      );
+    }
   } else {
     $('#selectedCabang').append(`<option value=''>Pilih Cabang</option>`);
     $('#selectedKelompokObat').append(`<option value=''>Pilih Kelompok Obat</option>`);
 
-    $('.section-left-box-title').append(`<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>`);
+    $('.section-left-box-title').append(`
+      <button class="btn btn-info openFormAdd m-r-10px">Tambah</button>
+      <button type="button" class="btn btn-success btn-download-excel" title="Download Excel">
+        <i class="fa fa-file-excel-o" aria-hidden="true"></i>&nbsp;&nbsp;Download Excel
+      </button>
+    `);
 		$('.section-right-box-title').append(`<select id="filterCabang" style="width: 50%"></select>`);
 
     $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
@@ -69,6 +82,37 @@ $(document).ready(function() {
     $('.modal-title').text('Tambah Pembagian Harga Kelompok Obat');
 
     refreshForm(); formConfigure();
+  });
+
+  $('.btn-download-excel').click(function() {
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/pembagian-harga-kelompok-obat/generate-excel',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
+      xhrFields: { responseType: 'blob' },
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data, status, xhr) {
+        let disposition = xhr.getResponseHeader('content-disposition');
+        let matches = /"([^"]*)"/.exec(disposition);
+        let filename = (matches != null && matches[1] ? matches[1] : 'file.xlsx');
+        let blob = new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        let downloadUrl = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+
+        a.href = downloadUrl;
+        a.download = filename
+        document.body.appendChild(a);
+        a.click();
+
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
   });
 
   $('#btnSubmitHargaKelompokObat').click(function() {
@@ -242,23 +286,27 @@ $(document).ready(function() {
 				let listHargaKelompokObat = '';
 				$('#list-harga-kelompok-obat tr').remove();
 
-				$.each(data, function(idx, v) {
-					listHargaKelompokObat += `<tr>`
-						+ `<td>${++idx}</td>`
-						+ `<td>${v.group_name}</td>`
-            + `<td>${v.branch_name}</td>`
-            + `<td>Rp ${typeof(v.selling_price) == 'number' ? v.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>Rp ${typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>Rp ${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>Rp ${typeof(v.petshop_fee) == 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-						+ `<td>${v.created_by}</td>`
-						+ `<td>${v.created_at}</td>`
-						+ ((role.toLowerCase() != 'admin') ? `` : `<td>
-								<button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
-								<button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-							</td>`)
-						+ `</tr>`;
-				});
+        if (data.length) {
+          $.each(data, function(idx, v) {
+            listHargaKelompokObat += `<tr>`
+              + `<td>${++idx}</td>`
+              + `<td>${v.group_name}</td>`
+              + `<td>${v.branch_name}</td>`
+              + `<td>Rp ${typeof(v.selling_price) == 'number' ? v.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>Rp ${typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>Rp ${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>Rp ${typeof(v.petshop_fee) == 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>${v.created_by}</td>`
+              + `<td>${v.created_at}</td>`
+              + ((role.toLowerCase() != 'admin') ? `` : `<td>
+                  <button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                </td>`)
+              + `</tr>`;
+          });
+        } else {
+          listHargaKelompokObat += `<tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>`;
+        }
 				$('#list-harga-kelompok-obat').append(listHargaKelompokObat);
 
 				$('.openFormEdit').click(function() {
@@ -271,8 +319,10 @@ $(document).ready(function() {
           loadKelompokObat(getObj.branch_id, getObj.medicine_group_id); formConfigure();
 
 					getId = getObj.id;
-          $('#hargaJual').val(getObj.selling_price); $('#hargaModal').val(getObj.capital_price);
-          $('#feeDokter').val(getObj.doctor_fee); $('#feePetshop').val(getObj.petshop_fee);
+          $('#hargaJual').val(getObj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')); 
+          $('#hargaModal').val(getObj.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#feeDokter').val(getObj.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')); 
+          $('#feePetshop').val(getObj.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
 				});
 			

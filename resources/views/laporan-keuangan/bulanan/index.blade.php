@@ -67,6 +67,8 @@
   </div>
 </div>
 
+@component('layout.message-box') @endcomponent
+
 @endsection
 @section('script-content')
   <script src="{{ asset('main/js/laporan-keuangan/bulanan/bulanan.js') }}"></script>

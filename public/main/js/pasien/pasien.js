@@ -244,25 +244,29 @@ $(document).ready(function() {
 				let listPasien = '';
 				$('#list-pasien tr').remove();
 
-				$.each(data, function(idx, v) {
-					listPasien += `<tr>`
-						+ `<td>${++idx}</td>`
-						+ `<td>${v.id_member}</td>`
-						+ `<td>${v.pet_category}</td>`
-						+ `<td>${v.pet_name}</td>`
-            + `<td>${v.owner_name}</td>`
-						+ `<td>${v.pet_gender}</td>`
-						+ `<td>${v.pet_year_age} Tahun</td>`
-						+ `<td>${v.branch_name}</td>`
-						+ `<td>${v.created_by}</td>`
-						+ `<td>${v.created_at}</td>`
-						+ ((role.toLowerCase() == 'resepsionis') ? `` : `<td>
-								<button type="button" class="btn btn-info openDetail" title="Riwayat Pasien" value=${v.id}><i class="fa fa-eye" aria-hidden="true"></i></button>
-								<button type="button" class="btn btn-warning openFormEdit" title="Edit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
-								<button type="button" class="btn btn-danger openFormDelete" title="Delete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-							</td>`)
-						+ `</tr>`;
-				});
+        if(data.length) {
+          $.each(data, function(idx, v) {
+            listPasien += `<tr>`
+              + `<td>${++idx}</td>`
+              + `<td>${v.id_member}</td>`
+              + `<td>${v.pet_category}</td>`
+              + `<td>${v.pet_name}</td>`
+              + `<td>${v.owner_name}</td>`
+              + `<td>${v.pet_gender}</td>`
+              + `<td>${v.pet_year_age} Tahun</td>`
+              + `<td>${v.branch_name}</td>`
+              + `<td>${v.created_by}</td>`
+              + `<td>${v.created_at}</td>`
+              + ((role.toLowerCase() == 'resepsionis') ? `` : `<td>
+                  <button type="button" class="btn btn-info openDetail" title="Riwayat Pasien" value=${v.id}><i class="fa fa-eye" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-warning openFormEdit" title="Edit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-danger openFormDelete" title="Delete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                </td>`)
+              + `</tr>`;
+          });
+        } else {
+          listPasien += `<tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>`;
+        }
 				$('#list-pasien').append(listPasien);
 
 				$('.openFormEdit').click(function() {
