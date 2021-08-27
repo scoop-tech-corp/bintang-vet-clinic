@@ -21,7 +21,7 @@ use Validator;
 class HasilPemeriksaanController extends Controller
 {
     public function index(Request $request)
-    {
+    {//masih error
         if ($request->user()->role == 'resepsionis') {
             return response()->json([
                 'message' => 'The user role was invalid.',
