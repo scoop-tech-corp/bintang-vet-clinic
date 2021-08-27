@@ -85,6 +85,10 @@ class PembayaranController extends Controller
                 $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
             }
 
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $data = $data->where('users.branch_id', '=', $request->branch_id);
+            }
+
             if ($request->orderby) {
                 $data = $data->orderBy($request->column, $request->orderby);
             }
