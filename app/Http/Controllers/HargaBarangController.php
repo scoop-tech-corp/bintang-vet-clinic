@@ -564,7 +564,6 @@ class HargaBarangController extends Controller
 
     public function generate_excel(Request $request)
     {
-
         $date = \Carbon\Carbon::now()->format('d-m-y');
 
         $listBranch = Branch::find($request->branch_id);
@@ -572,7 +571,7 @@ class HargaBarangController extends Controller
         $filename = "";
 
         if ($listBranch) {
-            $filename = 'Rekap Harga Barang Cabang ' . $branch . ' ' . $date . '.xlsx';
+            $filename = 'Rekap Harga Barang Cabang ' . $listBranch->branch_name . ' ' . $date . '.xlsx';
         } else {
             $filename = 'Rekap Harga Barang ' . $date . '.xlsx';
         }
