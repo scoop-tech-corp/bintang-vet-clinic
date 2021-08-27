@@ -234,7 +234,15 @@ class HargaKelompokObatController extends Controller
     {
         $date = \Carbon\Carbon::now()->format('d-m-y');
 
-        $listBranch = Branch::find($request->branch_id);
+        $branchId = "";
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $branchId = $request->user()->branch_id;
+        } else {
+            $branchId = $request->branch_id;
+        }
+
+        $listBranch = Branch::find($branchId);
 
         $filename = "";
 
@@ -244,7 +252,7 @@ class HargaKelompokObatController extends Controller
             $filename = 'Rekap Harga Kelompok Obat ' . $date . '.xlsx';
         }
 
-        return (new RekapHargakelompokObat($request->orderby, $request->column, $request->keyword, $request->branch_id, $request->user()->role))
+        return (new RekapHargakelompokObat($request->orderby, $request->column, $request->keyword, $branchId, $request->user()->role))
             ->download($filename);
     }
 }
