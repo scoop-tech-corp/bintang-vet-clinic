@@ -37,7 +37,7 @@ class DataRekapDaftarBarang implements FromCollection, ShouldAutoSize, WithHeadi
             ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
             ->select(
                 'list_of_items.item_name',
-                'list_of_items.total_item',
+                DB::raw("TRIM(list_of_items.total_item)+0 as total_item"),
                 'unit_item.unit_name',
                 'category_item.category_name',
                 'branches.branch_name',
@@ -89,7 +89,7 @@ class DataRekapDaftarBarang implements FromCollection, ShouldAutoSize, WithHeadi
             [
                 $item->number,
                 $item->item_name,
-                $item->total_item,
+                strval($item->total_item),
                 $item->unit_name,
                 $item->category_name,
                 $item->branch_name,
