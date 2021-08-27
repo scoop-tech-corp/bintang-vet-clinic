@@ -239,7 +239,7 @@ class HargaKelompokObatController extends Controller
         $filename = "";
 
         if ($listBranch) {
-            $filename = 'Rekap Harga Kelompok Obat Cabang ' . $branch . ' ' . $date . '.xlsx';
+            $filename = 'Rekap Harga Kelompok Obat Cabang ' . $listBranch->branch_name . ' ' . $date . '.xlsx';
         } else {
             $filename = 'Rekap Harga Kelompok Obat ' . $date . '.xlsx';
         }
