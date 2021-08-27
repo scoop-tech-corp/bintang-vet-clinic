@@ -41,7 +41,7 @@ class DaftarBarangController extends Controller
                 ->where('list_of_items.isDeleted', '=', 0);
 
             if ($res) {
-                $patient = $patient->where($res, 'like', '%' . $request->keyword . '%');
+                $item = $item->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
                 return response()->json($data, 200);
@@ -133,12 +133,12 @@ class DaftarBarangController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('list_of_items.item_name', 'like', '%' . $request->keyword . '%');
+            $item = $item->where('list_of_items.item_name', 'like', '%' . $request->keyword . '%');
         }
 
-        $data = $data->get();
+        $item = $item->get();
 
-        if (count($data)) {
+        if (count($item)) {
             $temp_column = 'list_of_items.item_name';
             return $temp_column;
         }
@@ -166,12 +166,12 @@ class DaftarBarangController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('unit_item.unit_name', 'like', '%' . $request->keyword . '%');
+            $item = $item->where('unit_item.unit_name', 'like', '%' . $request->keyword . '%');
         }
 
-        $data = $data->get();
+        $item = $item->get();
 
-        if (count($data)) {
+        if (count($item)) {
             $temp_column = 'unit_item.unit_name';
             return $temp_column;
         }
@@ -199,12 +199,12 @@ class DaftarBarangController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('category_item.category_name', 'like', '%' . $request->keyword . '%');
+            $item = $item->where('category_item.category_name', 'like', '%' . $request->keyword . '%');
         }
 
-        $data = $data->get();
+        $item = $item->get();
 
-        if (count($data)) {
+        if (count($item)) {
             $temp_column = 'category_item.category_name';
             return $temp_column;
         }
@@ -232,12 +232,12 @@ class DaftarBarangController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('branches.branch_name', 'like', '%' . $request->keyword . '%');
+            $item = $item->where('branches.branch_name', 'like', '%' . $request->keyword . '%');
         }
 
-        $data = $data->get();
+        $item = $item->get();
 
-        if (count($data)) {
+        if (count($item)) {
             $temp_column = 'branches.branch_name';
             return $temp_column;
         }
@@ -265,12 +265,12 @@ class DaftarBarangController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
+            $item = $item->where('users.fullname', 'like', '%' . $request->keyword . '%');
         }
 
-        $data = $data->get();
+        $item = $item->get();
 
-        if (count($data)) {
+        if (count($item)) {
             $temp_column = 'users.fullname';
             return $temp_column;
         }
