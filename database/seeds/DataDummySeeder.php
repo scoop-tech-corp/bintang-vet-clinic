@@ -2424,6 +2424,69 @@ class DataDummySeeder extends Seeder
             'created_at' => '2020-12-30',
         ]);
 
+        DB::table('in_patients')->insert([
+          'check_up_result_id' => '1',
+          'description' => 'ini adalah contoh kondisi pasien',
+          'user_id' => '1',
+          'created_at' => '2020-12-30',
+      ]);
+
+      DB::table('payrolls')->insert([
+        'user_employee_id' => '1',
+        'date_payed' => '2021-08-29',
+        'basic_sallary' => 2000000.00,
+        'accomodation' => 2000000.00,
+        'percentage_turnover' => 20,
+        'amount_turnover' => 120000.00,
+        'total_turnover' => 40000.00,
+        'amount_inpatient' => 50000.00,
+        'count_inpatient' => 5,
+        'total_inpatient' => 250000.00,
+        'percentage_surgery' => 15,
+        'amount_surgery' => 30000.00,
+        'total_overall' => 30000.00,
+        'total_surgery' => 30000.00,
+        'total_overall' => 2650000,
+        'created_at' => '2021-08-29'
+    ]);
+
+    DB::table('payrolls')->insert([
+      'user_employee_id' => '2',
+      'date_payed' => '2021-08-29',
+      'basic_sallary' => 2000000.00,
+      'accomodation' => 2000000.00,
+      'percentage_turnover' => 20,
+      'amount_turnover' => 120000.00,
+      'total_turnover' => 40000.00,
+      'amount_inpatient' => 50000.00,
+      'count_inpatient' => 5,
+      'total_inpatient' => 250000.00,
+      'percentage_surgery' => 15,
+      'amount_surgery' => 30000.00,
+      'total_overall' => 30000.00,
+      'total_surgery' => 30000.00,
+      'total_overall' => 2650000,
+      'created_at' => '2021-08-29'
+  ]);
+
+  DB::table('payrolls')->insert([
+    'user_employee_id' => '3',
+    'date_payed' => '2021-08-29',
+    'basic_sallary' => 2000000.00,
+    'accomodation' => 2000000.00,
+    'percentage_turnover' => 20,
+    'amount_turnover' => 120000.00,
+    'total_turnover' => 40000.00,
+    'amount_inpatient' => 50000.00,
+    'count_inpatient' => 5,
+    'total_inpatient' => 250000.00,
+    'percentage_surgery' => 15,
+    'amount_surgery' => 30000.00,
+    'total_overall' => 30000.00,
+    'total_surgery' => 30000.00,
+    'total_overall' => 2650000,
+    'created_at' => '2021-08-29'
+]);
         // DB::table('list_of_payments')->insert([
         //     'check_up_result_id' => '1',
         //     'user_id' => '1',
