@@ -185,8 +185,7 @@ Route::group(['middleware' => ['api']], function () {
 
         //dashboard
         Route::get('dashboard/barchart', 'DashboardController@BarChartPatient');
-        Route::get('dashboard/piechart', 'DashboardController@PieChartGender');
-        Route::get('dashboard/graphchart', 'DashboardController@GraphChartAge');
+        Route::get('dashboard/barchart-inpatient', 'DashboardController@BarChartInPatient');
 
         //penggajian
         Route::get('penggajian/gaji-user', 'PenggajianController@sallary_user');
