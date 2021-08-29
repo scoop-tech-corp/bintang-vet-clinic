@@ -109,7 +109,7 @@ class PenggajianController extends Controller
 
         }
 
-        Payroll::create([
+        $payroll = Payroll::create([
             'user_employee_id' => $request->user_employee_id,
             'date_payed' => $request->date_payed,
             'basic_sallary' => $request->basic_sallary,
@@ -128,6 +128,7 @@ class PenggajianController extends Controller
         ]);
 
         return response()->json([
+            'id' => $payroll->id,
             'message' => 'Berhasil menambah Data',
         ], 200);
 
@@ -295,14 +296,18 @@ class PenggajianController extends Controller
 
         // return Response::download($file, 'filename3.pdf', $headers);
 
-        $data = DB::table('payrolls as py')
+        $data_user = DB::table('payrolls as py')
             ->join('users', 'py.user_employee_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
                 'py.id as id',
                 'users.fullname as fullname',
                 'py.date_payed as date_payed',
+                'users.phone_number as phone_number',
+                'users.address as address',
+                'users.role as role',
                 'branches.branch_name as branch_name',
+                'branches.address as branch_address',
                 'py.basic_sallary as basic_sallary',
                 'py.accomodation as accomodation',
                 'py.total_turnover as total_turnover',
@@ -312,6 +317,8 @@ class PenggajianController extends Controller
             )
             ->where('py.id', '=', $request->id)
             ->get();
+
+        $data = ['data_user' => $data_user];
 
         $pdf = PDF::loadview('sallary-slip', $data);
 
