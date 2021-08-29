@@ -36,7 +36,8 @@ class PenggajianController extends Controller
                 DB::raw("TRIM(py.amount_surgery)+0 as amount_surgery"),
                 DB::raw("TRIM(py.total_surgery)+0 as total_surgery"),
                 DB::raw("TRIM(py.total_overall)+0 as total_overall"),
-            );
+            )
+            ->where('py.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $data = $data->where('py.user_employee_id', '=', $request->user()->id);
