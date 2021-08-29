@@ -162,6 +162,14 @@ class PenggajianController extends Controller
             ->where('usr.id', '=', $request->id)
             ->first();
 
+        if (is_null($amount_turnover->amount_turnover)) {
+            $amount_turnover->amount_turnover = 0;
+        }
+
+        if (is_null($amount_surgery->amount_surgery)) {
+            $amount_surgery->amount_surgery = 0;
+        }
+
         return response()->json([
             'amount_turnover' => $amount_turnover->amount_turnover,
             'count_inpatient' => $count_inpatient,
@@ -302,7 +310,8 @@ class PenggajianController extends Controller
             ->select(
                 'py.id as id',
                 'users.fullname as fullname',
-                'py.date_payed as date_payed',
+                DB::raw("DATE_FORMAT(py.date_payed, '%d/%m/%Y') as date_payed"),
+                'users.staffing_number as staffing_number',
                 'users.phone_number as phone_number',
                 'users.address as address',
                 'users.role as role',
