@@ -154,10 +154,10 @@ $(document).ready(function() {
 				} else { listLaporanKeuanganMingguan += `<tr class="text-center"><td colspan="14">Tidak ada data.</td></tr>`; }
 				$('#list-laporan-keuangan-mingguan').append(listLaporanKeuanganMingguan);
 
-				const priceOverall = resp.price_overall ? resp.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
-				const capitalPrice = resp.capital_price ? resp.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
-				const docterFee    = resp.doctor_fee ? resp.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
-				const petshopFee   = resp.petshop_fee ? resp.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+				const priceOverall = (resp.price_overall > -1) ? resp.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+				const capitalPrice = (resp.capital_price > -1) ? resp.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+				const docterFee    = (resp.doctor_fee > -1) ? resp.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+				const petshopFee   = (resp.petshop_fee > -1) ? resp.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 
         $('#total-keseluruhan-txt').text(`Rp. ${priceOverall}`);
         $('#harga-modal-txt').text(`Rp. ${capitalPrice}`);
