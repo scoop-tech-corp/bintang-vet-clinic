@@ -344,7 +344,7 @@ class PenggajianController extends Controller
 
         $pdf = PDF::loadview('sallary-slip', $data);
 
-        return $pdf->download('testing' . '.pdf');
+        return $pdf->download('Slip Gaji ' . $data_user[0]->fullname . ' ' . \Carbon\Carbon::parse($data_user[0]->date_period)->locale('id')->isoFormat('MMMM YYYY') . '.pdf');
     }
 
 }
