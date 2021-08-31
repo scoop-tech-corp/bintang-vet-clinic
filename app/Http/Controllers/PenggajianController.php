@@ -5,14 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Payroll;
 use DB;
 use Illuminate\Http\Request;
+use Nasution\Terbilang;
 use PDF;
 use Response;
 use Validator;
 
 class PenggajianController extends Controller
 {
-    // private $fpdf;
-
     public function index(Request $request)
     {
 
@@ -21,6 +20,7 @@ class PenggajianController extends Controller
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
                 'py.id as id',
+                'py.user_employee_id as user_employee_id',
                 'users.fullname as fullname',
                 'py.date_payed as date_payed',
                 'branches.branch_name as branch_name',
@@ -94,10 +94,15 @@ class PenggajianController extends Controller
             ], 422);
         }
 
+        $res_service = rtrim($request->date_payed, "-");
+
+        $date = explode('-', $res_service);
+
         $find_duplicate = db::table('payrolls')
             ->select('id')
             ->where('user_employee_id', '=', $request->user_employee_id)
-            ->where('date_payed', '=', $request->date_payed)
+            ->where(DB::raw("MONTH(date_payed)"), $date[1])
+            ->where(DB::raw("YEAR(date_payed)"), $date[0])
             ->where('isDeleted', '=', 0)
             ->count();
 
@@ -304,6 +309,7 @@ class PenggajianController extends Controller
         // );
 
         // return Response::download($file, 'filename3.pdf', $headers);
+        $terbilang = new Terbilang();
 
         $data_user = DB::table('payrolls as py')
             ->join('users', 'py.user_employee_id', '=', 'users.id')
@@ -312,6 +318,8 @@ class PenggajianController extends Controller
                 'py.id as id',
                 'users.fullname as fullname',
                 DB::raw("DATE_FORMAT(py.date_payed, '%d/%m/%Y') as date_payed"),
+                DB::raw("DATE_FORMAT(py.date_payed, '%Y/%m/%d') as date_period"),
+                DB::raw("DATE_FORMAT(py.date_payed, '%d %b %Y') as date_payed_diff_format"),
                 'users.staffing_number as staffing_number',
                 'users.phone_number as phone_number',
                 'users.address as address',
@@ -323,12 +331,16 @@ class PenggajianController extends Controller
                 'py.total_turnover as total_turnover',
                 'py.total_inpatient as total_inpatient',
                 'py.total_surgery as total_surgery',
-                'py.total_overall as total_overall',
+                DB::raw("TRIM(py.total_overall)+0 as total_overall"),
             )
             ->where('py.id', '=', $request->id)
             ->get();
 
-        $data = ['data_user' => $data_user];
+        $data = [
+            'data_user' => $data_user,
+            'terbilang' => $terbilang->convert($data_user[0]->total_overall),
+            'month_period' => \Carbon\Carbon::parse($data_user[0]->date_period)->locale('id')->isoFormat('MMMM YYYY'),
+        ];
 
         $pdf = PDF::loadview('sallary-slip', $data);
 
