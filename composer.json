@@ -19,6 +19,7 @@
         "laravel/tinker": "^2.5",
         "maatwebsite/excel": "^3.1",
         "mike42/escpos-php": "^3.0",
+        "nasution/terbilang": "^0.0.4",
         "tymon/jwt-auth": "^1.0"
     },
     "require-dev": {

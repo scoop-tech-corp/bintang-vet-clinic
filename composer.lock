@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4800c275bf4479609a45d2100bacc57c",
+    "content-hash": "4dd2c9ac70f3e08c2850741282dfbbe8",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2157,6 +2157,53 @@
                 "token"
             ],
             "time": "2016-12-05T07:27:31+00:00"
+        },
+        {
+            "name": "nasution/terbilang",
+            "version": "v0.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mul14/terbilang-php.git",
+                "reference": "9f156ed15d63df5115904944073adca4a06fda66"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mul14/terbilang-php/zipball/9f156ed15d63df5115904944073adca4a06fda66",
+                "reference": "9f156ed15d63df5115904944073adca4a06fda66",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">= 5.3.3"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Nasution\\": "src/Nasution"
+                },
+                "files": [
+                    "src/terbilang.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "WTFPL"
+            ],
+            "authors": [
+                {
+                    "name": "Mulia Arifandi Nasution",
+                    "email": "mul14.net@gmail.com"
+                }
+            ],
+            "description": "Convert numbers into words in Indonesian language",
+            "homepage": "https://github.com/mul14/terbilang-php",
+            "keywords": [
+                "indonesia",
+                "terbilang"
+            ],
+            "time": "2019-10-03T09:23:27+00:00"
         },
         {
             "name": "nesbot/carbon",
