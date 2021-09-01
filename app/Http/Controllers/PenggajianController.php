@@ -69,7 +69,7 @@ class PenggajianController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'date_payed' => 'required|date',
+            'date_payed' => 'required|date_format:d/m/Y',
             'user_employee_id' => 'required|numeric',
             'basic_sallary' => 'required|numeric|min:0',
             'accomodation' => 'required|numeric|min:0',
@@ -94,9 +94,9 @@ class PenggajianController extends Controller
             ], 422);
         }
 
-        $res_service = rtrim($request->date_payed, "/");
+        $res_date = rtrim($request->date_payed, "/");
 
-        $date = explode('/', $res_service);
+        $date = explode('/', $res_date);
 
         $find_duplicate = db::table('payrolls')
             ->select('id')
@@ -105,6 +105,8 @@ class PenggajianController extends Controller
             ->where(DB::raw("YEAR(date_payed)"), $date[2])
             ->where('isDeleted', '=', 0)
             ->count();
+
+        $date_inserted = $date[2] . '-' . $date[1] . '-' . $date[0];
 
         if ($find_duplicate != 0) {
 
@@ -117,7 +119,7 @@ class PenggajianController extends Controller
 
         $payroll = Payroll::create([
             'user_employee_id' => $request->user_employee_id,
-            'date_payed' => $request->date_payed,
+            'date_payed' => $date_inserted,
             'basic_sallary' => $request->basic_sallary,
             'accomodation' => $request->accomodation,
             'percentage_turnover' => $request->percentage_turnover,
@@ -227,7 +229,7 @@ class PenggajianController extends Controller
 
         $validate = Validator::make($request->all(), [
             'id' => 'required|numeric',
-            'date_payed' => 'required|date',
+            'date_payed' => 'required|date_format:d/m/Y',
             'user_employee_id' => 'required|numeric',
             'basic_sallary' => 'required|numeric|min:0',
             'accomodation' => 'required|numeric|min:0',
@@ -266,9 +268,15 @@ class PenggajianController extends Controller
 
         }
 
+        $res_date = rtrim($request->date_payed, "/");
+
+        $date = explode('/', $res_date);
+
+        $date_inserted = $date[2] . '-' . $date[1] . '-' . $date[0];
+
         $payroll = Payroll::find($request->id);
 
-        $payroll->date_payed = $request->date_payed;
+        $payroll->date_payed = $date_inserted;
         $payroll->user_employee_id = $request->user_employee_id;
         $payroll->basic_sallary = $request->basic_sallary;
         $payroll->accomodation = $request->accomodation;
