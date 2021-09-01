@@ -2,7 +2,7 @@ $(document).ready(function() {
   let optCabang = '';
 
   widgetTotalPasien({month: null, year: null});
-  widgetUmur();
+  widgetRawatInap();
   // loadCabang();
   let getAuthUser = localStorage.getItem('vet-clinic');
 
@@ -36,7 +36,7 @@ $(document).ready(function() {
     format: 'yyyy-mm-dd',
     todayHighlight: true,
   }).on('changeDate', function(e) {
-    widgetUmur(e.format());
+    widgetRawatInap(e.format());
   });
 
   $('#filterCabangRawatInap').select2({ placeholder: 'Cabang', allowClear: true });
@@ -87,7 +87,7 @@ $(document).ready(function() {
   }
 
 
-  function widgetUmur(date) {
+  function widgetRawatInap(date) {
     $.ajax({
 			url     : $('.baseUrl').val() + '/api/dashboard/barchart-inpatient',
 			headers : { 'Authorization': `Bearer ${token}` },

@@ -26,7 +26,7 @@
             <td class="p-left-15px"><span id="akomodasi-txt"></span></td>
           </tr>
           <tr>
-            <td><span class="font-weight-700">Omset</span></td>
+            <td><span class="font-weight-700">Omzet</span></td>
             <td class="p-left-15px"><span id="jumlah-omset-txt"></span></td>
           </tr>
           <tr>
