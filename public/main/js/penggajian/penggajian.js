@@ -345,8 +345,9 @@ $(document).ready(function() {
 					getId = getObj.id;
 
           getDate = getObj.date_payed;
-          $('#datepicker').val(getObj.date_payed);
-          $('#datepicker').datepicker('update', new Date(getObj.date_payed));
+          // $('#datepicker').val('21/05/2021');
+          const dateArr = getObj.date_payed.split('/');
+          $('#datepicker').datepicker('update', new Date(parseFloat(dateArr[2]), parseFloat(dateArr[1])-1, parseFloat(dateArr[0])));
 					$('#selectedNamaKaryawan').val(getObj.user_employee_id); $('#selectedNamaKaryawan').trigger('change');
           $('#pokok').val(getObj.basic_sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#akomodasi').val(getObj.accomodation.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
@@ -445,7 +446,12 @@ $(document).ready(function() {
 	}
 
 	function refreshForm() {
-		$('#datepicker').val(null);
+    const dateNow = new Date();
+    const tanggal = (parseFloat(dateNow.getDate()) < 10) ? ('0' + dateNow.getDate()) : (dateNow.getDate());
+    const bulan = ((parseFloat(dateNow.getMonth()) + 1) < 10) ? ('0' + (dateNow.getMonth() + 1)) : ((dateNow.getMonth() + 1));
+		getDate = tanggal + '/' + bulan + '/' + dateNow.getFullYear();
+
+    $('#datepicker').datepicker('update', new Date());
 		$('#selectedNamaKaryawan').val(null);
     $('#pokok').val(null);
     $('#akomodasi').val(null);
