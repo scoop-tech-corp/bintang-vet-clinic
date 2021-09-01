@@ -16,7 +16,7 @@
                 <div class="input-group-addon">
                   <i class="fa fa-calendar"></i>
                 </div>
-                <input type="text" class="form-control" id="datepicker" placeholder="yyyy-mm-dd" autocomplete="off">
+                <input type="text" class="form-control" id="datepicker" placeholder="dd/mm/yyyy" autocomplete="off">
               </div>
 							<div id="tanggalErr1" class="validate-error"></div>
 						</div>
@@ -39,7 +39,7 @@
 
             <table class="form-group">
               <tr>
-                <td><label for="omset">Omset</label></td>
+                <td><label for="omzet">Omzet</label></td>
               </tr>
               <tr>
                 <td><input id="inputOmset" type="number" class="form-control" min="0"></td>
