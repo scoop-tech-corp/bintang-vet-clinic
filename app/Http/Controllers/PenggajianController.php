@@ -22,7 +22,7 @@ class PenggajianController extends Controller
                 'py.id as id',
                 'py.user_employee_id as user_employee_id',
                 'users.fullname as fullname',
-                'py.date_payed as date_payed',
+                DB::raw("DATE_FORMAT(py.date_payed, '%d/%m/%Y') as date_payed"),
                 'branches.branch_name as branch_name',
                 DB::raw("TRIM(py.basic_sallary)+0 as basic_sallary"),
                 DB::raw("TRIM(py.accomodation)+0 as accomodation"),
@@ -94,15 +94,15 @@ class PenggajianController extends Controller
             ], 422);
         }
 
-        $res_service = rtrim($request->date_payed, "-");
+        $res_service = rtrim($request->date_payed, "/");
 
-        $date = explode('-', $res_service);
+        $date = explode('/', $res_service);
 
         $find_duplicate = db::table('payrolls')
             ->select('id')
             ->where('user_employee_id', '=', $request->user_employee_id)
             ->where(DB::raw("MONTH(date_payed)"), $date[1])
-            ->where(DB::raw("YEAR(date_payed)"), $date[0])
+            ->where(DB::raw("YEAR(date_payed)"), $date[2])
             ->where('isDeleted', '=', 0)
             ->count();
 
@@ -142,20 +142,44 @@ class PenggajianController extends Controller
 
     public function sallary_user(Request $request)
     {
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
+
+        $res_service = rtrim($request->date, "/");
+
+        $date = explode('/', $res_service);
+
         $amount_turnover = DB::table('users as usr')
             ->join('branches as brn', 'usr.branch_id', 'brn.id')
             ->join('detail_medicine_group_check_up_results as dmg', 'dmg.user_id', 'usr.id')
             ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', 'pmg.id')
             ->select(DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as amount_turnover"))
-            ->where('usr.id', '=', $request->id)
-            ->where(DB::raw('DATE(dmg.updated_at)'), '=', $request->date)
-            ->first();
+            ->where('usr.id', '=', $request->id);
+
+        if ($request->date) {
+            $amount_turnover = $amount_turnover
+                ->where(DB::raw("MONTH(dmg.updated_at)"), $date[1])
+                ->where(DB::raw("YEAR(dmg.updated_at)"), $date[2]);
+        }
+
+        $amount_turnover = $amount_turnover->first();
 
         $count_inpatient = DB::table('users as usr')
             ->join('branches as brn', 'usr.branch_id', 'brn.id')
             ->join('check_up_results as cur', 'usr.id', 'cur.user_id')
-            ->where('usr.id', '=', $request->id)
-            ->where(DB::raw('DATE(cur.updated_at)'), '=', $request->date)
+            ->where('usr.id', '=', $request->id);
+
+        if ($request->date) {
+            $count_inpatient = $count_inpatient
+                ->where(DB::raw("MONTH(cur.updated_at)"), $date[1])
+                ->where(DB::raw("YEAR(cur.updated_at)"), $date[2]);
+        }
+
+        $count_inpatient = $count_inpatient
             ->where('cur.status_outpatient_inpatient', '=', 1)
             ->count();
 
@@ -163,9 +187,18 @@ class PenggajianController extends Controller
             ->join('branches as brn', 'usr.branch_id', 'brn.id')
             ->join('detail_medicine_group_check_up_results as dmg', 'dmg.user_id', 'usr.id')
             ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', 'pmg.id')
-            ->select(DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as amount_surgery"))
-            ->where(DB::raw('DATE(dmg.updated_at)'), '=', $request->date)
-            ->where('usr.id', '=', $request->id)
+            ->join('medicine_groups as mg', 'pmg.medicine_group_id', 'mg.id')
+
+            ->select(DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as amount_surgery"));
+
+        if ($request->date) {
+            $amount_surgery = $amount_surgery
+                ->where(DB::raw("MONTH(dmg.updated_at)"), $date[1])
+                ->where(DB::raw("YEAR(dmg.updated_at)"), $date[2]);
+        }
+
+        $amount_surgery = $amount_surgery->where('usr.id', '=', $request->id)
+            ->where('mg.group_name', 'like', '%operasi%')
             ->first();
 
         if (is_null($amount_turnover->amount_turnover)) {
