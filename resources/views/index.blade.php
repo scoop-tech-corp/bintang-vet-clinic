@@ -38,9 +38,9 @@
                   <input type="text" class="form-control" id="datepicker-rawat-inap" placeholder="yyyy-mm-dd" autocomplete="off">
                 </div>
               </div>
-              <div class="rawat-inap-filtercabang">
+              {{-- <div class="rawat-inap-filtercabang">
                 <select id="filterCabangRawatInap" style="width: 100%"></select>
-              </div>
+              </div> --}}
             </div>
           </div>
         </div>
