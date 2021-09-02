@@ -57,12 +57,14 @@ $(document).ready(function() {
   });
 
   $('.btn-download-excel').click(function() {
-    if (paramUrlSetup.branchId) {
+    const getBranchId = (role.toLowerCase() == 'dokter') ? branchId : paramUrlSetup.branchId;
+
+    if (getBranchId) {
       $.ajax({
         url     : $('.baseUrl').val() + '/api/laporan-keuangan/harian/download',
         headers : { 'Authorization': `Bearer ${token}` },
         type    : 'GET',
-        data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, date: paramUrlSetup.date, branch_id: paramUrlSetup.branchId },
+        data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, date: paramUrlSetup.date, branch_id: getBranchId },
         xhrFields: { responseType: 'blob' },
         beforeSend: function() { $('#loading-screen').show(); },
         success: function(data, status, xhr) {

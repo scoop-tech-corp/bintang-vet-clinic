@@ -44,12 +44,14 @@ $(document).ready(function() {
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
 
   $('.btn-download-excel').click(function() {
-    if (paramUrlSetup.branchId) {
+    const getBranchId = (role.toLowerCase() == 'dokter') ? branchId : paramUrlSetup.branchId;
+
+    if (getBranchId) {
       $.ajax({
         url     : $('.baseUrl').val() + '/api/laporan-keuangan/bulanan/download',
         headers : { 'Authorization': `Bearer ${token}` },
         type    : 'GET',
-        data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, month: paramUrlSetup.month, year: paramUrlSetup.year, branch_id: paramUrlSetup.branchId },
+        data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, month: paramUrlSetup.month, year: paramUrlSetup.year, branch_id: getBranchId },
         xhrFields: { responseType: 'blob' },
         beforeSend: function() { $('#loading-screen').show(); },
         success: function(data, status, xhr) {
