@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exports\LaporanKeuanganHarian;
+use App\Models\Branch;
 use App\Models\ListofPayments;
 use DB;
+use Excel;
 use Illuminate\Http\Request;
 
 class LaporanKeuanganHarianController extends Controller
@@ -323,8 +325,11 @@ class LaporanKeuanganHarianController extends Controller
             ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
             ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
             ->join('users', 'detail_service_patients.user_id', '=', 'users.id')
-            ->select('detail_service_patients.id as detail_service_patient_id', 'price_services.id as price_service_id',
-                'list_of_services.id as list_of_service_id', 'list_of_services.service_name',
+            ->select(
+                'detail_service_patients.id as detail_service_patient_id',
+                'price_services.id as price_service_id',
+                'list_of_services.id as list_of_service_id',
+                'list_of_services.service_name',
                 'detail_service_patients.quantity',
                 'service_categories.category_name',
                 DB::raw("TRIM(detail_service_patients.price_overall )+0 as price_overall"),
@@ -332,7 +337,9 @@ class LaporanKeuanganHarianController extends Controller
                 DB::raw("TRIM(price_services.capital_price * detail_service_patients.quantity)+0 as capital_price"),
                 DB::raw("TRIM(price_services.doctor_fee * detail_service_patients.quantity)+0 as doctor_fee"),
                 DB::raw("TRIM(price_services.petshop_fee * detail_service_patients.quantity)+0 as petshop_fee"),
-                'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at"))
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at")
+            )
             ->where('list_of_payment_services.check_up_result_id', '=', $data->check_up_result_id)
             ->orderBy('list_of_payment_services.id', 'desc')
             ->get();
@@ -406,14 +413,23 @@ class LaporanKeuanganHarianController extends Controller
             ], 403);
         }
 
-        $branch = "";
-
         if ($request->user()->role == 'admin') {
             $branch = $request->branch_id;
         } else {
             $branch = $request->user()->branch_id;
         }
 
-        return (new LaporanKeuanganHarian($request->orderby, $request->column, $request->date, $branch, $request->user()->role))->download('Laporan Keuangan Harian.xlsx');
+        $date = \Carbon\Carbon::parse($request->date)->format('d-m-Y');
+
+        $branches = Branch::find($branch);
+
+        return Excel::download(
+          new LaporanKeuanganHarian(
+            $request->orderby,
+            $request->column,
+            $request->date,
+            $branch,
+            'Laporan Keuangan Harian')
+            , 'Laporan Keuangan Harian ' . $branches->branch_name . ' ' . $date . '.xlsx');
     }
 }
