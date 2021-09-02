@@ -5,6 +5,7 @@ let imageProfile = '';
 let email = '';
 let token = '';
 let userId = '';
+let branchId = '';
 let branchName = '';
 
 $(document).ready(function() {
@@ -22,6 +23,7 @@ $(document).ready(function() {
     userId       = getAuthUser.user_id;
     token        = getAuthUser.token;
     email        = getAuthUser.email;
+    branchId     = getAuthUser.branch_id;
     branchName   = getAuthUser.branch_name;
 
     $('.username-txt').append(username);
