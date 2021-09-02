@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exports\LaporanKeuanganBulanan;
+use App\Models\Branch;
 use App\Models\ListofPayments;
 use DB;
+use Excel;
 use Illuminate\Http\Request;
 
 class LaporanKeuanganBulananController extends Controller
@@ -415,14 +417,34 @@ class LaporanKeuanganBulananController extends Controller
             ], 403);
         }
 
-        $branch = "";
-
         if ($request->user()->role == 'admin') {
             $branch = $request->branch_id;
         } else {
             $branch = $request->user()->branch_id;
         }
 
-        return (new LaporanKeuanganBulanan($request->orderby, $request->column, $request->month, $request->year, $branch, $request->user()->role))->download('Laporan Keuangan Bulanan.xlsx');
+        $name = '';
+        $branches = Branch::find($branch);
+
+        if ($request->month && $request->year) {
+            $monthName = date('F', mktime(0, 0, 0, $request->month, 10));
+
+            $time = $monthName . ' ' . $request->year;
+
+            $name = 'Laporan Keuangan Bulanan ' . $branches->branch_name . ' ' . $time . '.xlsx';
+        } else {
+            $name = 'Laporan Keuangan Bulanan ' . $branches->branch_name . '.xlsx';
+        }
+
+        return Excel::download(new LaporanKeuanganBulanan(
+            $request->orderby,
+            $request->column,
+            $request->month,
+            $request->year,
+            $branch,
+            'Laporan Keuangan Bulanan'),
+            $name);
+
+        // return (new LaporanKeuanganBulanan())->download('Laporan Keuangan Bulanan.xlsx');
     }
 }
