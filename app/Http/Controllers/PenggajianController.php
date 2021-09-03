@@ -15,27 +15,116 @@ class PenggajianController extends Controller
     public function index(Request $request)
     {
 
+        if ($request->keyword) {
+
+            $res = $this->Search($request);
+
+            $data = DB::table('payrolls as py')
+                ->join('users', 'py.user_employee_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    'py.id as id',
+                    'py.user_employee_id as user_employee_id',
+                    'users.fullname as fullname',
+                    DB::raw("DATE_FORMAT(py.date_payed, '%d/%m/%Y') as date_payed"),
+                    'branches.branch_name as branch_name',
+                    DB::raw("TRIM(py.basic_sallary)+0 as basic_sallary"),
+                    DB::raw("TRIM(py.accomodation)+0 as accomodation"),
+                    DB::raw("TRIM(py.percentage_turnover)+0 as percentage_turnover"),
+                    DB::raw("TRIM(py.amount_turnover)+0 as amount_turnover"),
+                    DB::raw("TRIM(py.total_turnover)+0 as total_turnover"),
+                    DB::raw("TRIM(py.amount_inpatient)+0 as amount_inpatient"),
+                    DB::raw("TRIM(py.count_inpatient)+0 as count_inpatient"),
+                    DB::raw("TRIM(py.total_inpatient)+0 as total_inpatient"),
+                    DB::raw("TRIM(py.percentage_surgery)+0 as percentage_surgery"),
+                    DB::raw("TRIM(py.amount_surgery)+0 as amount_surgery"),
+                    DB::raw("TRIM(py.total_surgery)+0 as total_surgery"),
+                    DB::raw("TRIM(py.total_overall)+0 as total_overall"),
+                )
+                ->where('py.isDeleted', '=', 0);
+
+            if ($res) {
+                $data = $data->where($res, 'like', '%' . $request->keyword . '%');
+            } else {
+                $data = [];
+                return response()->json($data, 200);
+            }
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $data = $data->where('py.user_employee_id', '=', $request->user()->id);
+            }
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $data = $data->where('users.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->orderby) {
+                $data = $data->orderBy($request->column, $request->orderby);
+            }
+
+            $data = $data->orderBy('py.id', 'desc');
+
+            $data = $data->get();
+
+            return response()->json($data, 200);
+
+        } else {
+
+            $data = DB::table('payrolls as py')
+                ->join('users', 'py.user_employee_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    'py.id as id',
+                    'py.user_employee_id as user_employee_id',
+                    'users.fullname as fullname',
+                    DB::raw("DATE_FORMAT(py.date_payed, '%d/%m/%Y') as date_payed"),
+                    'branches.branch_name as branch_name',
+                    DB::raw("TRIM(py.basic_sallary)+0 as basic_sallary"),
+                    DB::raw("TRIM(py.accomodation)+0 as accomodation"),
+                    DB::raw("TRIM(py.percentage_turnover)+0 as percentage_turnover"),
+                    DB::raw("TRIM(py.amount_turnover)+0 as amount_turnover"),
+                    DB::raw("TRIM(py.total_turnover)+0 as total_turnover"),
+                    DB::raw("TRIM(py.amount_inpatient)+0 as amount_inpatient"),
+                    DB::raw("TRIM(py.count_inpatient)+0 as count_inpatient"),
+                    DB::raw("TRIM(py.total_inpatient)+0 as total_inpatient"),
+                    DB::raw("TRIM(py.percentage_surgery)+0 as percentage_surgery"),
+                    DB::raw("TRIM(py.amount_surgery)+0 as amount_surgery"),
+                    DB::raw("TRIM(py.total_surgery)+0 as total_surgery"),
+                    DB::raw("TRIM(py.total_overall)+0 as total_overall"),
+                )
+                ->where('py.isDeleted', '=', 0);
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $data = $data->where('py.user_employee_id', '=', $request->user()->id);
+            }
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $data = $data->where('users.branch_id', '=', $request->branch_id);
+            }
+
+            if ($request->orderby) {
+                $data = $data->orderBy($request->column, $request->orderby);
+            }
+
+            $data = $data->orderBy('py.id', 'desc');
+
+            $data = $data->get();
+
+            return response()->json($data, 200);
+        }
+
+    }
+
+    private function Search($request)
+    {
+        $temp_column = '';
+
         $data = DB::table('payrolls as py')
             ->join('users', 'py.user_employee_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                'py.id as id',
-                'py.user_employee_id as user_employee_id',
-                'users.fullname as fullname',
-                DB::raw("DATE_FORMAT(py.date_payed, '%d/%m/%Y') as date_payed"),
-                'branches.branch_name as branch_name',
-                DB::raw("TRIM(py.basic_sallary)+0 as basic_sallary"),
-                DB::raw("TRIM(py.accomodation)+0 as accomodation"),
-                DB::raw("TRIM(py.percentage_turnover)+0 as percentage_turnover"),
-                DB::raw("TRIM(py.amount_turnover)+0 as amount_turnover"),
-                DB::raw("TRIM(py.total_turnover)+0 as total_turnover"),
-                DB::raw("TRIM(py.amount_inpatient)+0 as amount_inpatient"),
-                DB::raw("TRIM(py.count_inpatient)+0 as count_inpatient"),
-                DB::raw("TRIM(py.total_inpatient)+0 as total_inpatient"),
-                DB::raw("TRIM(py.percentage_surgery)+0 as percentage_surgery"),
-                DB::raw("TRIM(py.amount_surgery)+0 as amount_surgery"),
-                DB::raw("TRIM(py.total_surgery)+0 as total_surgery"),
-                DB::raw("TRIM(py.total_overall)+0 as total_overall"),
+                'users.fullname',
+                'branches.branch_name'
             )
             ->where('py.isDeleted', '=', 0);
 
@@ -47,16 +136,45 @@ class PenggajianController extends Controller
             $data = $data->where('users.branch_id', '=', $request->branch_id);
         }
 
-        if ($request->orderby) {
-            $data = $data->orderBy($request->column, $request->orderby);
+        if ($request->keyword) {
+            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
         }
-
-        $data = $data->orderBy('py.id', 'desc');
 
         $data = $data->get();
 
-        return response()->json($data, 200);
+        if (count($data)) {
+            $temp_column = 'users.fullname';
+            return $temp_column;
+        }
+        //=======================================================
 
+        $data = DB::table('payrolls as py')
+            ->join('users', 'py.user_employee_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select(
+                'users.fullname',
+                'branches.branch_name'
+            )
+            ->where('py.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $data = $data->where('py.user_employee_id', '=', $request->user()->id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('branches.branch_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'branches.branch_name';
+            return $temp_column;
+        }
     }
 
     public function create(Request $request)
@@ -176,7 +294,7 @@ class PenggajianController extends Controller
             ->join('branches as brn', 'usr.branch_id', 'brn.id')
             ->join('detail_service_patients as dsp', 'dsp.user_id', 'usr.id')
             ->join('price_services as ps', 'dsp.price_service_id', 'ps.id')
-            ->select(DB::raw("TRIM(SUM(ps.doctor_fee))+0 as amount_turnover_item"))
+            ->select(DB::raw("TRIM(SUM(ps.doctor_fee))+0 as amount_turnover_service"))
             ->where('usr.id', '=', $request->id);
 
         if ($request->date) {
