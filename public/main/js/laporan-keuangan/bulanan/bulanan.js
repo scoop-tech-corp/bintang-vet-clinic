@@ -44,12 +44,14 @@ $(document).ready(function() {
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
 
   $('.btn-download-excel').click(function() {
-    if (paramUrlSetup.branchId) {
+    const getBranchId = (role.toLowerCase() == 'dokter') ? branchId : paramUrlSetup.branchId;
+
+    if (getBranchId) {
       $.ajax({
         url     : $('.baseUrl').val() + '/api/laporan-keuangan/bulanan/download',
         headers : { 'Authorization': `Bearer ${token}` },
         type    : 'GET',
-        data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, month: paramUrlSetup.month, year: paramUrlSetup.year, branch_id: paramUrlSetup.branchId },
+        data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, month: paramUrlSetup.month, year: paramUrlSetup.year, branch_id: getBranchId },
         xhrFields: { responseType: 'blob' },
         beforeSend: function() { $('#loading-screen').show(); },
         success: function(data, status, xhr) {
@@ -143,10 +145,10 @@ $(document).ready(function() {
 				} else { listLaporanKeuanganBulanan += `<tr class="text-center"><td colspan="14">Tidak ada data.</td></tr>`; }
 				$('#list-laporan-keuangan-bulanan').append(listLaporanKeuanganBulanan);
 
-				const priceOverall = resp.price_overall ? resp.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
-				const capitalPrice = resp.capital_price ? resp.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
-				const docterFee    = resp.doctor_fee ? resp.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
-				const petshopFee   = resp.petshop_fee ? resp.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '';
+				const priceOverall = (resp.price_overall > -1) ? resp.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+				const capitalPrice = (resp.capital_price > -1) ? resp.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+				const docterFee    = (resp.doctor_fee > -1) ? resp.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+				const petshopFee   = (resp.petshop_fee > -1) ? resp.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 
         $('#total-keseluruhan-txt').text(`Rp. ${priceOverall}`);
         $('#harga-modal-txt').text(`Rp. ${capitalPrice}`);

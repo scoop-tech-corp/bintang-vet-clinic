@@ -171,7 +171,6 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::get('laporan-keuangan/detail', 'LaporanKeuanganHarianController@detail');
 
-
         //mingguan
         Route::get('laporan-keuangan/mingguan', 'LaporanKeuanganMingguanController@index');
         Route::get('laporan-keuangan/mingguan/download', 'LaporanKeuanganMingguanController@download_excel');
@@ -186,10 +185,17 @@ Route::group(['middleware' => ['api']], function () {
 
         //dashboard
         Route::get('dashboard/barchart', 'DashboardController@BarChartPatient');
+        Route::get('dashboard/barchart-inpatient', 'DashboardController@BarChartInPatient');
 
-        Route::get('dashboard/piechart', 'DashboardController@PieChartGender');
+        //penggajian
+        Route::get('penggajian/gaji-user', 'PenggajianController@sallary_user');
 
-        Route::get('dashboard/graphchart', 'DashboardController@GraphChartAge');
+        Route::get('penggajian', 'PenggajianController@index');
+        Route::post('penggajian', 'PenggajianController@create');
+        Route::put('penggajian', 'PenggajianController@update');
+        Route::delete('penggajian', 'PenggajianController@delete');
+
+        Route::get('penggajian/generate', 'PenggajianController@generate');
     });
 });
 

@@ -33,4 +33,32 @@ class DashboardController extends Controller
 
         return response()->json($data, 200);
     }
+
+    public function BarChartInPatient(Request $request)
+    {
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
+
+        $data = DB::table('check_up_results as cur')
+            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+            ->join('users', 'cur.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select(DB::raw('COUNT(cur.id) as total_patient'), 'branches.branch_name')
+            ->where('reg.isDeleted', '=', 0)
+            ->where('cur.status_outpatient_inpatient', '=', 1);
+
+        if ($request->date) {
+            $data = $data->where(DB::raw("DATE(cur.created_at)"), $request->date);
+        }
+
+        $data = $data->groupby('branches.branch_name')
+            ->get();
+
+        return response()->json($data, 200);
+
+    }
 }

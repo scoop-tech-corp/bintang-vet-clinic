@@ -1,5 +1,5 @@
 .menuCabang, .menuUser, .menuPasien, .menuPendaftaran, .menuDokter, .menuPeriksa,
-.menuTindakan, .menuGudang, .menuPembayaran, .menuKeuangan, .menuKunjungan {
+.menuTindakan, .menuGudang, .menuPembayaran, .menuKeuangan, .menuKunjungan, .menuPenggajian {
 	display: none;
 }
 
@@ -177,9 +177,26 @@ input:disabled {
   font-weight: 700;
 }
 
-.p-top-10px {
+.p-top-5px {
   padding-top: 5px;
 }
+
+.p-top-8px {
+  padding-top: 8px;
+}
+
+.p-top-10px {
+  padding-top: 10px;
+}
+
+.p-right-3px {
+  padding-right: 3px;
+}
+
+.p-right-5px {
+  padding-right: 5px;
+}
+
 
 .p-right-42px {
   padding-right: 42px;
@@ -187,6 +204,10 @@ input:disabled {
 
 .p-left-10px {
   padding-left: 10px;
+}
+
+.p-left-15px {
+  padding-left: 15px;
 }
 
 .p-bottom-50px {
@@ -197,8 +218,20 @@ input:disabled {
   margin-left: 10px;
 }
 
+.m-l-13px {
+  margin-left: 13px;
+}
+
 .m-l-20px {
   margin-left: 20px;
+}
+
+.m-l-30px {
+  margin-left: 30px;
+}
+
+.m-l-72px {
+  margin-left: 72px;
 }
 
 .m-t-10px { 
@@ -223,6 +256,10 @@ input:disabled {
 
 .m-b-20px { 
 	margin-bottom: 20px;
+}
+
+.m-r-3px { 
+	margin-right: 3px;
 }
 
 .m-r-10px { 

@@ -2,8 +2,8 @@ $(document).ready(function() {
   let optCabang = '';
 
   widgetTotalPasien({month: null, year: null});
-  widgetUmur();
-  loadCabang();
+  widgetRawatInap();
+  // loadCabang();
   let getAuthUser = localStorage.getItem('vet-clinic');
 
   if (!getAuthUser) {
@@ -36,7 +36,7 @@ $(document).ready(function() {
     format: 'yyyy-mm-dd',
     todayHighlight: true,
   }).on('changeDate', function(e) {
-    widgetUmur(e.format());
+    widgetRawatInap(e.format());
   });
 
   $('#filterCabangRawatInap').select2({ placeholder: 'Cabang', allowClear: true });
@@ -87,38 +87,47 @@ $(document).ready(function() {
   }
 
 
-  function widgetUmur(date) {
-    Highcharts.chart('rawatInapWidget', {
-      chart: {
-          type: 'area'
-      },
-      title: { text: '' },
-      subtitle: { text: ''},
-      xAxis: { categories: ['Internet Explorer', 'Firefox', 'Edge', 'Safari']},
-      yAxis: { title: { text: '' } },
-      credits: { enabled: false },
-      plotOptions: {
-        area: {
-          dataLabels:{ enabled: true },
-          marker: { enabled: true, symbol: 'circle' }
-        }
-      },
-      series: [{
-          name: 'Total Pasien Widget',
-          data: [{
-              name: 'Internet Explorer',
-              y: 11.84
-          }, {
-              name: 'Firefox',
-              y: 10.85
-          }, {
-              name: 'Edge',
-              y: 4.67
-          }, {
-              name: 'Safari',
-              y: 4.18
-          }]
-        }]
+  function widgetRawatInap(date) {
+    $.ajax({
+			url     : $('.baseUrl').val() + '/api/dashboard/barchart-inpatient',
+			headers : { 'Authorization': `Bearer ${token}` },
+			type    : 'GET',
+			data	  : { date: date},
+			beforeSend: function() { $('#loading-screen').show(); },
+			success: function(resp) {
+        const getData = resp;
+        const tempDataSeries = [];
+        const categoriesXAxis = [];
+
+        getData.forEach(dt => {
+          categoriesXAxis.push(dt.branch_name);
+          tempDataSeries.push({name: dt.branch_name, y: dt.total_patient});
+        });
+
+        const finalSeries = [{name: 'Total Pasien Widget', data: tempDataSeries}];
+
+        Highcharts.chart('rawatInapWidget', {
+          chart: { type: 'column' },
+          title: { text: '' },
+          xAxis: { categories: categoriesXAxis },
+          legend: {enabled: false},
+          credits: { enabled: false },
+          plotOptions: {
+            column: {
+              dataLabels: { enabled: true }
+            }
+          },
+          yAxis: { title: { text: '' } },
+          series: finalSeries
+        });
+
+      }, complete: function() { $('#loading-screen').hide(); },
+			error: function(err) {
+				if (err.status == 401) {
+					localStorage.removeItem('vet-clinic');
+					location.href = $('.baseUrl').val() + '/masuk';
+				}
+			}
     });
   }
 
