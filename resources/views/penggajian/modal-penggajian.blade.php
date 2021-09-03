@@ -42,7 +42,7 @@
                 <td><label for="omzet">Omzet</label></td>
               </tr>
               <tr>
-                <td><input id="inputOmset" type="number" class="form-control" min="0"></td>
+                <td><input id="inputOmset" type="number" class="form-control" min="0" max="100"></td>
                 <td class="p-left-15px">%</td>
                 <td class="p-left-15px">X</td>
                 <td class="p-left-15px"><span id="omset-karyawan"></span></td>
@@ -72,7 +72,7 @@
                 <td class="p-top-10px"><label for="operasi">Operasi</label></td>
               </tr>
               <tr>
-                <td><input id="inputOperasi" type="number" class="form-control" min="0"></td>
+                <td><input id="inputOperasi" type="number" class="form-control" min="0" max="100"></td>
                 <td class="p-left-15px">%</td>
                 <td class="p-left-15px">X</td>
                 <td class="p-left-15px"><span id="operasi-karyawan"></span></td>
