@@ -5,6 +5,7 @@ let imageProfile = '';
 let email = '';
 let token = '';
 let userId = '';
+let branchId = '';
 let branchName = '';
 
 $(document).ready(function() {
@@ -22,6 +23,7 @@ $(document).ready(function() {
     userId       = getAuthUser.user_id;
     token        = getAuthUser.token;
     email        = getAuthUser.email;
+    branchId     = getAuthUser.branch_id;
     branchName   = getAuthUser.branch_name;
 
     $('.username-txt').append(username);
@@ -43,17 +45,18 @@ $(document).ready(function() {
       $('.menuGudang').show();   $('.menuPembayaran').show();
       $('.menuKeuangan').show(); $('.menuKunjungan').show();
       $('.menuCabang').show();   $('.menuUser').show();
-      $('.menuPeriksa').show();
+      $('.menuPeriksa').show();  $('.menuPenggajian').show();
     } else if (role === 'resepsionis') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();
       $('.menuKunjungan').show(); $('.menuGudang').show();
+      $('.menuPenggajian').show();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
       $('.menuKunjungan').show(); $('.menuPeriksa').show();
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
-      $('.menuPembayaran').show();
+      $('.menuPembayaran').show(); $('.menuPenggajian').show();
     }
   }
 

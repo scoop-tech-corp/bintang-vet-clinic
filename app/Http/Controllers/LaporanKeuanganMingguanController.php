@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exports\LaporanKeuanganMingguan;
+use App\Models\Branch;
 use App\Models\ListofPayments;
 use DB;
+use Excel;
 use Illuminate\Http\Request;
 
 class LaporanKeuanganMingguanController extends Controller
@@ -413,6 +415,27 @@ class LaporanKeuanganMingguanController extends Controller
             $branch = $request->user()->branch_id;
         }
 
-        return (new LaporanKeuanganMingguan($request->orderby, $request->column, $request->date_from, $request->date_to, $branch, $request->user()->role))->download('Laporan Keuangan Mingguan.xlsx');
+        $date_from = '';
+        $date_to = '';
+        $filename = '';
+
+        $branches = Branch::find($branch);
+
+        if ($request->date_from && $request->date_to) {
+            $date_from = \Carbon\Carbon::parse($request->date_from)->format('d-m-Y');
+            $date_to = \Carbon\Carbon::parse($request->date_to)->format('d-m-Y');
+            $filename = 'Laporan Keuangan Mingguan ' . $branches->branch_name . ' ' . $date_from . ' - ' . $date_to . '.xlsx';
+        } else {
+            $filename = 'Laporan Keuangan Mingguan ' . $branches->branch_name . '.xlsx';
+        }
+
+        return Excel::download(
+            new LaporanKeuanganMingguan(
+                $request->orderby,
+                $request->column,
+                $request->date_from,
+                $request->date_to,
+                $branch,
+                'Laporan Keuangan Mingguan'), $filename);
     }
 }
