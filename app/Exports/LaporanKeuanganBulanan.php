@@ -65,10 +65,10 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                     'lop.id as list_of_payment_id',
                     'lop.check_up_result_id',
                     'medicine_groups.group_name as action',
-                    DB::raw("TRIM(pmg.capital_price)+0 as capital_price"),
-                    DB::raw("TRIM(pmg.selling_price)+0 as selling_price"),
-                    DB::raw("TRIM(pmg.petshop_fee)+0 as petshop_fee"),
-                    DB::raw("TRIM(pmg.doctor_fee)+0 as doctor_fee"),
+                    DB::raw("TRIM(SUM(pmg.capital_price))+0 as capital_price"),
+                    DB::raw("TRIM(SUM(pmg.selling_price))+0 as selling_price"),
+                    DB::raw("TRIM(SUM(pmg.petshop_fee))+0 as petshop_fee"),
+                    DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as doctor_fee"),
                     'p.pet_name as pet_name',
                     'p.owner_name as owner_name',
                     'branches.id as branchId',
@@ -76,7 +76,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                     DB::raw("DATE_FORMAT(lopm.updated_at, '%d/%m/%Y') as created_at")
                 )
                 ->where(DB::raw("DATE(lopm.updated_at)"), '=', $result_data->date)
-                ->groupBy('lopm.detail_medicine_group_check_up_result_id')
+                ->groupBy('pmg.medicine_group_id')
                 ->orderBy('cur.id', 'asc');
 
             $service = DB::table('list_of_payments')
@@ -104,7 +104,6 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                     DB::raw("DATE_FORMAT(list_of_payment_services.updated_at, '%d/%m/%Y') as created_at")
                 )
                 ->where(DB::raw("DATE(list_of_payment_services.updated_at)"), '=', $result_data->date)
-                ->groupBy('list_of_payments.check_up_result_id')
                 ->orderBy('check_up_results.id', 'asc')
                 ->union($item);
 
