@@ -1337,7 +1337,7 @@ class PembayaranController extends Controller
             ->select(
                 DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"))
             ->whereIn('detail_service_patients.id', $myArray_service)
-            ->groupby('detail_service_patients.id')
+            ->groupby('detail_service_patients.check_up_result_id')
             ->first();
 
         $price_overall_item = DB::table('list_of_payment_medicine_groups as lop')
