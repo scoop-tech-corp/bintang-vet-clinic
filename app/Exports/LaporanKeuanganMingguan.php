@@ -71,11 +71,10 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                     'p.pet_name as pet_name',
                     'p.owner_name as owner_name',
                     'branches.id as branchId',
-                    // 'lopm.updated_at as created_at',
                     DB::raw("DATE_FORMAT(lopm.updated_at, '%d/%m/%Y') as created_at")
                 )
                 ->where(DB::raw("DATE(lopm.updated_at)"), '=', $result_data->date)
-                ->groupBy('pmg.medicine_group_id')
+                ->groupBy('lopm.detail_medicine_group_check_up_result_id')
                 ->orderBy('cur.id', 'asc');
 
             $service = DB::table('list_of_payments')
