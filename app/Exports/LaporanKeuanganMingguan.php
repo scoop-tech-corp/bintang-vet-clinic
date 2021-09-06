@@ -46,8 +46,6 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
         $list_date = $list_date->groupby(DB::raw("DATE(lop.updated_at)"))
             ->get();
 
-        $array = array();
-
         foreach ($list_date as $result_data) {
 
             $item = DB::table('list_of_payments as lop')
@@ -61,18 +59,26 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
 
                 ->select(
+                    'lop.id as list_of_payment_id',
+                    'lop.check_up_result_id',
                     'medicine_groups.group_name as action',
-                    DB::raw("TRIM(SUM(pmg.capital_price))+0 as capital_price"),
-                    DB::raw("TRIM(SUM(pmg.selling_price))+0 as selling_price"),
-                    DB::raw("TRIM(SUM(pmg.petshop_fee))+0 as petshop_fee"),
-                    DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as doctor_fee"),
+                    'lopm.detail_medicine_group_check_up_result_id as dmg',
+                    DB::raw("TRIM(pmg.capital_price)+0 as capital_price"),
+                    DB::raw("TRIM(pmg.selling_price)+0 as selling_price"),
+                    DB::raw("TRIM(pmg.petshop_fee)+0 as petshop_fee"),
+                    DB::raw("TRIM(pmg.doctor_fee)+0 as doctor_fee"),
                     'p.pet_name as pet_name',
                     'p.owner_name as owner_name',
                     'branches.id as branchId',
                     DB::raw("DATE_FORMAT(lopm.updated_at, '%d/%m/%Y') as created_at")
                 )
-                ->where(DB::raw("DATE(lopm.updated_at)"), '=', $result_data->date)
-                ->groupBy('lopm.detail_medicine_group_check_up_result_id')
+                ->where(DB::raw("DATE(lopm.updated_at)"), '=', $result_data->date);
+
+            if ($this->branch_id) {
+                $item = $item->where('branches.id', '=', $this->branch_id);
+            }
+
+            $item = $item->groupBy('lopm.detail_medicine_group_check_up_result_id')
                 ->orderBy('cur.id', 'asc');
 
             $service = DB::table('list_of_payments')
@@ -87,8 +93,11 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
 
                 ->select(
+                    'list_of_payments.id as list_of_payment_id',
+                    'list_of_payments.check_up_result_id',
                     'list_of_services.service_name as action',
-                    DB::raw("TRIM(price_services.capital_price * detail_service_patients.quantity)+0 as capital_price"),
+                    'list_of_payments.check_up_result_id as dmg',
+                    DB::raw("TRIM(capital_price * detail_service_patients.quantity)+0 as capital_price"),
                     DB::raw("TRIM(detail_service_patients.price_overall)+0 as selling_price"),
                     DB::raw("TRIM(price_services.petshop_fee * detail_service_patients.quantity)+0 as petshop_fee"),
                     DB::raw("TRIM(price_services.doctor_fee * detail_service_patients.quantity)+0 as doctor_fee"),
@@ -98,11 +107,19 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                     DB::raw("DATE_FORMAT(list_of_payment_services.updated_at, '%d/%m/%Y') as created_at")
                 )
                 ->where(DB::raw("DATE(list_of_payment_services.updated_at)"), '=', $result_data->date)
-                ->orderBy('check_up_results.id', 'asc')
-                ->union($item);
+                ->orderBy('check_up_results.id', 'asc');
+
+            if ($this->branch_id) {
+                $service = $service->where('branches.id', '=', $this->branch_id);
+            }
+
+            $service = $service->union($item);
 
             $data = DB::query()->fromSub($service, 'p_pn')
-                ->select('action',
+                ->select(
+                    'list_of_payment_id',
+                    'check_up_result_id',
+                    'action',
                     'capital_price',
                     'selling_price',
                     'petshop_fee',
@@ -111,10 +128,6 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                     'owner_name',
                     'branchId',
                     'created_at');
-
-            if ($this->branch_id) {
-                $data = $data->where('branchId', '=', $this->branch_id);
-            }
 
             if ($this->orderby) {
 
