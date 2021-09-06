@@ -61,8 +61,6 @@ class LaporanKeuanganHarian implements FromView, WithTitle
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
 
                 ->select(
-                    'lop.id as list_of_payment_id',
-                    'lop.check_up_result_id',
                     'medicine_groups.group_name as action',
                     DB::raw("TRIM(SUM(pmg.capital_price))+0 as capital_price"),
                     DB::raw("TRIM(SUM(pmg.selling_price))+0 as selling_price"),
@@ -89,8 +87,6 @@ class LaporanKeuanganHarian implements FromView, WithTitle
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
 
                 ->select(
-                    'list_of_payments.id as list_of_payment_id',
-                    'list_of_payments.check_up_result_id',
                     'list_of_services.service_name as action',
                     DB::raw("TRIM(price_services.capital_price * detail_service_patients.quantity)+0 as capital_price"),
                     DB::raw("TRIM(detail_service_patients.price_overall)+0 as selling_price"),
