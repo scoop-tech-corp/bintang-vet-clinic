@@ -95,16 +95,16 @@
 
                     <td style="text-align: left; border: 1px solid black;">{{ $res_data->action }}</td>
                     <td style="text-align: right; border: 1px solid black;">
-                        {{ number_format($res_data->selling_price) }}
+                        {{ number_format($res_data->selling_price, 2, ',', '.') }}
                     </td>
                     <td style="text-align: right; border: 1px solid black;">
-                        {{ number_format($res_data->petshop_fee) }}
+                        {{ number_format($res_data->petshop_fee, 2, ',', '.') }}
                     </td>
                     <td style="text-align: right; border: 1px solid black;">
-                        {{ number_format($res_data->capital_price) }}
+                        {{ number_format($res_data->capital_price, 2, ',', '.') }}
                     </td>
                     <td style="text-align: right; border: 1px solid black;">
-                        {{ number_format($res_data->doctor_fee) }}
+                        {{ number_format($res_data->doctor_fee, 2, ',', '.') }}
                     </td>
                     <td style="text-align: right; border: 1px solid black;"></td>
                 </tr>
@@ -118,13 +118,17 @@
             @endforeach
             <tr>
                 <td colspan="4" style="text-align: center; border: 1px thick black;"><b>TOTAL</b></td>
-                <td style="text-align: center; border: 1px thick black;"><b>{{ number_format($total_income) }}</b>
+                <td style="text-align: center; border: 1px thick black;">
+                    <b>{{ number_format($total_income, 2, ',', '.') }}</b>
                 </td>
-                <td style="text-align: center; border: 1px thick black;"><b>{{ number_format($total_petshop) }}</b>
+                <td style="text-align: center; border: 1px thick black;">
+                    <b>{{ number_format($total_petshop, 2, ',', '.') }}</b>
                 </td>
-                <td style="text-align: center; border: 1px thick black;"><b>{{ number_format($total_capital) }}</b>
+                <td style="text-align: center; border: 1px thick black;">
+                    <b>{{ number_format($total_capital, 2, ',', '.') }}</b>
                 </td>
-                <td style="text-align: center; border: 1px thick black;"><b>{{ number_format($total_doctor) }}</b>
+                <td style="text-align: center; border: 1px thick black;">
+                    <b>{{ number_format($total_doctor, 2, ',', '.') }}</b>
                 </td>
                 <td style="text-align: right; border: 1px thick black;">
                     <b>{{ number_format($total_capital + $total_doctor) }}</b>
