@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payroll;
+use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
 use Nasution\Terbilang;
@@ -273,12 +274,14 @@ class PenggajianController extends Controller
 
         $date = explode('/', $res_service);
 
+        $user = User::find($request->id);
+
         $amount_turnover_item = DB::table('users as usr')
             ->join('branches as brn', 'usr.branch_id', 'brn.id')
             ->join('detail_medicine_group_check_up_results as dmg', 'dmg.user_id', 'usr.id')
             ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', 'pmg.id')
             ->select(DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as amount_turnover_item"))
-            ->where('usr.id', '=', $request->id);
+            ->where('brn.id', '=', $user->branch_id);
 
         if ($request->date) {
             $amount_turnover_item = $amount_turnover_item
@@ -295,7 +298,7 @@ class PenggajianController extends Controller
             ->join('detail_service_patients as dsp', 'dsp.user_id', 'usr.id')
             ->join('price_services as ps', 'dsp.price_service_id', 'ps.id')
             ->select(DB::raw("TRIM(SUM(ps.doctor_fee))+0 as amount_turnover_service"))
-            ->where('usr.id', '=', $request->id);
+            ->where('usr.id', '=', $user->branch_id);
 
         if ($request->date) {
             $amount_turnover_service = $amount_turnover_service
@@ -312,7 +315,7 @@ class PenggajianController extends Controller
         $count_inpatient = DB::table('users as usr')
             ->join('branches as brn', 'usr.branch_id', 'brn.id')
             ->join('check_up_results as cur', 'usr.id', 'cur.user_id')
-            ->where('usr.id', '=', $request->id);
+            ->where('brn.id', '=', $user->branch_id);
 
         if ($request->date) {
             $count_inpatient = $count_inpatient
