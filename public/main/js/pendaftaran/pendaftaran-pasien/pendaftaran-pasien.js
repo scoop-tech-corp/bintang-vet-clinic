@@ -30,7 +30,7 @@ $(document).ready(function() {
   loadPasien();
 
 	loadDokter();
-	
+
 
   $('.input-search-section .fa').click(function() {
 		onSearch($('.input-search-section input').val());
@@ -39,7 +39,7 @@ $(document).ready(function() {
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
 	});
-	
+
 	$('.onOrdering').click(function() {
 		const column = $(this).attr('data');
 		const orderBy = $(this).attr('orderby');
@@ -59,7 +59,7 @@ $(document).ready(function() {
 
 		loadPendaftaranPasien();
   });
-  
+
   $('.openFormAdd').click(function() {
 		modalState = 'add';
 		$('.modal-title').text('Tambah Pendaftaran Pasien');
@@ -115,7 +115,7 @@ $(document).ready(function() {
 			$('#modal-confirmation').modal('show');
     }
 	});
-	
+
 	$('#submitConfirm').click(function() {
     if (modalState == 'edit') {
 			// process edit
@@ -230,18 +230,18 @@ $(document).ready(function() {
             listPendaftaranPasien += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.id_number}</td>`
+              + `<td>${v.created_at}</td>`
               + `<td>${v.id_number_patient}</td>`
               + `<td>${v.pet_name}</td>`
               + `<td>${v.complaint}</td>`
               + `<td>${v.registrant}</td>`
-              + `<td>${v.username_doctor}</td>`     
+              + `<td>${v.username_doctor}</td>`
               + `<td>${generateBedge(v.acceptance_status)}</td>`
               + `<td>${v.created_by}</td>`
-              + `<td>${v.created_at}</td>`
               + `<td>
-                  <button type="button" class="btn btn-warning openFormEdit" 
+                  <button type="button" class="btn btn-warning openFormEdit"
                     ${(v.acceptance_status == 1 || v.acceptance_status == 3) && role.toLowerCase() != 'admin'  ? 'disabled' : ''} value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-danger openFormDelete" 
+                  <button type="button" class="btn btn-danger openFormDelete"
                     ${(v.acceptance_status == 1 || v.acceptance_status == 3) && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 </td>`
               + `</tr>`;
@@ -290,7 +290,7 @@ $(document).ready(function() {
 						$('#nomorHpPemilikTxt').text(getObj.owner_phone_number);
 					}
 				});
-			
+
 				$('.openFormDelete').click(function() {
 					getId = $(this).val();
 					const getObj = data.find(x => x.id == getId);
@@ -346,7 +346,7 @@ $(document).ready(function() {
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
 				optDokter += `<option value=''>Pilih Dokter</option>`
-	
+
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optDokter += `<option value=${data[i].id}>${data[i].username} - ${data[i].branch_name}</option>`;
@@ -362,7 +362,7 @@ $(document).ready(function() {
 			}
 		});
 	}
-	
+
 	function loadCabang() {
 		$.ajax({
 			url     : $('.baseUrl').val() + '/api/cabang',
@@ -371,7 +371,7 @@ $(document).ready(function() {
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
 				optCabang += `<option value=''>Cabang</option>`
-	
+
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
@@ -394,7 +394,7 @@ $(document).ready(function() {
     $('#pasienErr1').text(''); isValidSelectedPasien = true;
     $('#keluhanErr1').text(''); isValidKeluhan = true;
     $('#namaPendaftarErr1').text(''); isValidNamaPendaftar = true;
-    $('#dokterErr1').text(''); isValidSelectedDokter = true;    
+    $('#dokterErr1').text(''); isValidSelectedDokter = true;
     $('#beErr').empty(); isBeErr = false;
 	}
 
@@ -405,11 +405,11 @@ $(document).ready(function() {
 		$('#namaPemilikTxt').text('-'); $('#alamatPemilikTxt').text('-');
 		$('#nomorHpPemilikTxt').text('-');
 	}
-	
+
 	function validationForm() {
 		if (!$('#selectedPasien').val()) {
 			$('#pasienErr1').text('Pasien harus di isi'); isValidSelectedPasien = false;
-		} else { 
+		} else {
 			$('#pasienErr1').text(''); isValidSelectedPasien = true;
 		}
 
@@ -433,7 +433,7 @@ $(document).ready(function() {
 
 		$('#beErr').empty(); isBeErr = false;
 
-		if (!isValidSelectedPasien || !isValidSelectedDokter || !isValidKeluhan 
+		if (!isValidSelectedPasien || !isValidSelectedDokter || !isValidKeluhan
 				|| !isValidNamaPendaftar|| isBeErr) {
 			$('#btnSubmitPendaftaranPasien').attr('disabled', true);
 		} else {

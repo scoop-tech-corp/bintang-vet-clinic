@@ -29,7 +29,7 @@ $(document).ready(function() {
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
 	});
-	
+
   $('.onOrdering').click(function() {
 		const column = $(this).attr('data');
 		const orderBy = $(this).attr('orderby');
@@ -111,13 +111,13 @@ $(document).ready(function() {
             listPembayaran += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.registration_number}</td>`
+              + `<td>${v.created_at}</td>`
               + `<td>${v.patient_number}</td>`
               + `<td>${v.pet_category}</td>`
               + `<td>${v.pet_name}</td>`
               + `<td>${v.complaint}</td>`
               + `<td>${(v.status_outpatient_inpatient == 1) ? 'Rawat Inap' : 'Rawat Jalan'}</td>`
               + `<td>${v.created_by}</td>`
-              + `<td>${v.created_at}</td>`
               + `<td>
                   <button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-warning openFormEdit" value=${v.list_of_payment_id}><i class="fa fa-pencil" aria-hidden="true"></i></button>

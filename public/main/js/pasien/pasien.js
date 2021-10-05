@@ -31,7 +31,7 @@ $(document).ready(function() {
     $('#branch').select2({ placeholder: 'Cabang' });
 		loadCabang();
 	}
-  
+
 	loadPasien();
 
 	$('.input-search-section .fa').click(function() {
@@ -41,7 +41,7 @@ $(document).ready(function() {
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
   });
-  
+
   $('.onOrdering').click(function() {
 		const column = $(this).attr('data');
 		const orderBy = $(this).attr('orderby');
@@ -66,7 +66,7 @@ $(document).ready(function() {
 		modalState = 'add';
     $('.modal-title').text('Tambah Pasien');
 		$('.detail-register').hide();
-    
+
     if (role.toLowerCase() == 'admin') {
       $('.field-cabang').show();
     } else {
@@ -75,7 +75,7 @@ $(document).ready(function() {
     refreshForm();
     formConfigure();
 	});
-	
+
   $('#branch').on('select2:select', function (e) { validationForm(); });
 	$('#animalSex').on('select2:select', function (e) { validationForm(); });
 	$('#animalType').keyup(function () { validationForm(); });
@@ -88,7 +88,7 @@ $(document).ready(function() {
 
 	$('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
 	$('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
-	
+
 	$('#btnSubmitPasien').click(function() {
     if (modalState == 'add') {
 
@@ -142,7 +142,7 @@ $(document).ready(function() {
 			$('#modal-confirmation').modal('show');
     }
 	});
-	
+
 	$('#submitConfirm').click(function() {
     if (modalState == 'edit') {
       // process edit
@@ -249,6 +249,7 @@ $(document).ready(function() {
             listPasien += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.id_member}</td>`
+              + `<td>${v.created_at}</td>`
               + `<td>${v.pet_category}</td>`
               + `<td>${v.pet_name}</td>`
               + `<td>${v.owner_name}</td>`
@@ -256,7 +257,6 @@ $(document).ready(function() {
               + `<td>${v.pet_year_age} Tahun</td>`
               + `<td>${v.branch_name}</td>`
               + `<td>${v.created_by}</td>`
-              + `<td>${v.created_at}</td>`
               + ((role.toLowerCase() == 'resepsionis') ? `` : `<td>
                   <button type="button" class="btn btn-info openDetail" title="Riwayat Pasien" value=${v.id}><i class="fa fa-eye" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-warning openFormEdit" title="Edit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
@@ -295,7 +295,7 @@ $(document).ready(function() {
 					$('#ownerAddress').val(getObj.owner_address);
 					$('#ownerTelp').val(getObj.owner_phone_number);
 				});
-			
+
 				$('.openFormDelete').click(function() {
 					getId = $(this).val();
 					modalState = 'delete';
@@ -306,7 +306,7 @@ $(document).ready(function() {
 				});
 
 				$('.openDetail').click(function() {
-					window.location.href = $('.baseUrl').val() + `/riwayat-pameriksaan/${$(this).val()}`;	
+					window.location.href = $('.baseUrl').val() + `/riwayat-pameriksaan/${$(this).val()}`;
 				});
 
 			}, complete: function() { $('#loading-screen').hide(); },
@@ -356,7 +356,7 @@ $(document).ready(function() {
 
 		if (!$('#animalType').val()) {
 			$('#animalTypeErr1').text('Jenis hewan harus di isi'); isValidAnimalType = false;
-		} else { 
+		} else {
 			$('#animalTypeErr1').text(''); isValidAnimalType = true;
 		}
 
@@ -389,13 +389,13 @@ $(document).ready(function() {
 		} else {
 			$('#ownerAddressErr1').text(''); isValidOwnerAddress = true;
 		}
-		
+
 		if ($('#ownerTelp').val() == '') {
 			$('#ownerTelpErr1').text('Telpon Pemilik harus di isi'); isValidOwnerTelp = false;
 		} else {
 			$('#ownerTelpErr1').text(''); isValidOwnerTelp = true;
     }
-    
+
 		$('#beErr').empty(); isBeErr = false;
 
 		if ((!isValidBranch && role.toLowerCase() == 'admin') || !isValidAnimalType || !isValidAnimalName
@@ -412,7 +412,7 @@ $(document).ready(function() {
 		$('#animalType').val(null); $('#animalSex').val(null);
     $('#animalName').val(null); $('#ownerTelp').val(null);
 		$('#ownerName').val(null); $('#ownerAddress').val(null);
-    $('#animalAgeYear').val(null); 
+    $('#animalAgeYear').val(null);
     $('#animalSexErr1').text(''); isValidAnimalSex = true;
     $('#branchErr1').text(''); isValidBranch = true;
     $('#animalAgeMonth').val(null); isValidAnimalAgeMonth = true;
@@ -422,12 +422,12 @@ $(document).ready(function() {
     $('#ownerNameErr1').text('');isValidOwnerName = true;
     $('#ownerAddressErr1').text('');isValidOwnerAddress = true;
     $('#ownerTelpErr1').text('');isValidOwnerTelp = true;
-    
+
     $('#beErr').empty(); isBeErr = false;
 
     $('#noRegisTxt').text('');
 	}
-	
+
 	function formConfigure() {
 		$('#animalSex').select2();
 		$('#modal-pasien').modal('show');

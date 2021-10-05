@@ -131,7 +131,7 @@
                     <b>{{ number_format($total_doctor, 2, ',', '.') }}</b>
                 </td>
                 <td style="text-align: right; border: 1px thick black;">
-                    <b>{{ number_format($total_capital + $total_doctor) }}</b>
+                    <b>{{ number_format($total_capital + $total_doctor, 2, ',', '.') }}</b>
                 </td>
             </tr>
         @endforeach
