@@ -396,12 +396,13 @@ $(document).ready(function() {
         + `${(formState) == 'edit' ? '<td>'+(lj.created_by ? lj.created_by : '-')+'</td>' : '' }`
         + `<td>${lj.category_name}</td>`
         + `<td>${lj.service_name}</td>`
-        + `<td><input type="number" min="0" class="qty-input-jasa" index=${idx} value=${lj.quantity} ${lj.status_paid_off ? 'disabled': ''}></td>`
+        + `<td><input type="number" min="0" class="qty-input-jasa" index=${idx} value=${lj.quantity}></td>`
         + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td><span id="totalBarang-jasa-${idx}">${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span></td>`
         + `<td>
-            <button type="button" class="btn btn-danger btnRemoveSelectedListJasa" value=${idx} 
-              ${lj.status_paid_off ? 'disabled': ''}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-danger btnRemoveSelectedListJasa" value=${idx}>
+              <i class="fa fa-trash-o" aria-hidden="true"></i>
+            </button>
           </td>`
         + `</tr>`;
         ++no;
