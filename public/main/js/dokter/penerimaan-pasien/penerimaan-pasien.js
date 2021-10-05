@@ -10,7 +10,7 @@ $(document).ready(function() {
   };
 
   if (role.toLowerCase() == 'resepsionis') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
+		window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	} else {
 		loadPenerimaanPasien();
 	}
@@ -23,7 +23,7 @@ $(document).ready(function() {
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
 	});
-	
+
 	$('.onOrdering').click(function() {
 		const column = $(this).attr('data');
 		const orderBy = $(this).attr('orderby');
@@ -56,7 +56,7 @@ $(document).ready(function() {
         $('#modal-confirmation').modal('toggle');
 
         $("#msg-box .modal-body").text('Berhasil Menerima Pasien');
-        $('#msg-box').modal('show');  
+        $('#msg-box').modal('show');
 
         loadPenerimaanPasien();
       }, complete: function() { $('#loading-screen').hide(); },
@@ -69,13 +69,13 @@ $(document).ready(function() {
     });
   });
 
-  $('#alasan').keyup(function () { 
+  $('#alasan').keyup(function () {
     if (!$('#alasan').val()) {
 			$('#alasanErr1').text('Alasan harus di isi'); isValidAlasan = false;
-		} else { 
+		} else {
 			$('#alasanErr1').text(''); isValidAlasan = true;
     }
-    
+
     $('#beErr').empty(); isBeErr = false;
 
     if (!isValidAlasan || isBeErr) {
@@ -139,13 +139,13 @@ $(document).ready(function() {
             listPenerimaanPasien += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.id_number}</td>`
+              + `<td>${v.created_at}</td>`
               + `<td>${v.id_number_patient}</td>`
               + `<td>${v.pet_category}</td>`
               + `<td>${v.pet_name}</td>`
               + `<td>${v.complaint}</td>`
               + `<td>${v.registrant}</td>`
               + `<td>${v.created_by}</td>`
-              + `<td>${v.created_at}</td>`
               + `<td>
                   <button type="button" class="btn btn-info openDetail" value=${v.id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-success openTerima" value=${v.id} title="Diterima"><i class="fa fa-check" aria-hidden="true"></i></button>
@@ -172,7 +172,7 @@ $(document).ready(function() {
           $('#namaPemilikTxt').text(getObj.owner_name); $('#alamatPemilikTxt').text(getObj.owner_address);
           $('#nomorHpPemilikTxt').text(getObj.owner_phone_number);
 				});
-			
+
 				$('.openTerima').click(function() {
 					getId = $(this).val();
 					const getObj = data.find(x => x.id == getId);
@@ -181,7 +181,7 @@ $(document).ready(function() {
           $('#modal-confirmation .box-body').text('Anda yakin ingin menerima Pasien ini?');
           $('#modal-confirmation').modal('show');
         });
-        
+
         $('.openTolak').click(function() {
           getId = $(this).val(); refreshForm();
           $('.modal-title').text('Konfirmasi Tolak Pasien');

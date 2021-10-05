@@ -10,7 +10,7 @@ $(document).ready(function() {
   };
 
   if (role.toLowerCase() == 'resepsionis') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
+		window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	} else {
     if (role.toLowerCase() != 'admin') {
       $('#filterCabang').hide();
@@ -21,7 +21,7 @@ $(document).ready(function() {
 
 		loadHasilPemeriksaan();
 	}
-  
+
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
 
@@ -32,7 +32,7 @@ $(document).ready(function() {
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
 	});
-	
+
 	$('.onOrdering').click(function() {
 		const column = $(this).attr('data');
 		const orderBy = $(this).attr('orderby');
@@ -112,6 +112,7 @@ $(document).ready(function() {
             listHasilPemeriksaan += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.registration_number}</td>`
+              + `<td>${v.created_at}</td>`
               + `<td>${v.patient_number}</td>`
               + `<td>${v.pet_category}</td>`
               + `<td>${v.pet_name}</td>`
@@ -120,7 +121,6 @@ $(document).ready(function() {
               + `<td>${generateBedge(v.status_finish)}</td>`
               + `<td>${(v.status_outpatient_inpatient == 1) ? 'Rawat Inap' : 'Rawat Jalan'}</td>`
               + `<td>${v.created_by}</td>`
-              + `<td>${v.created_at}</td>`
               + `<td>
                   <button type="button" class="btn btn-info openDetail" ${v.status_finish == 0 && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-warning openFormEdit" ${v.status_finish == 1 && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
@@ -145,7 +145,7 @@ $(document).ready(function() {
 					}
 					return bedge;
         }
-        
+
         $('.openDetail').click(function() {
           const getObj = data.find(x => x.id == $(this).val());
 					if (getObj.status_finish != 0 || role.toLowerCase() == 'admin') {
@@ -159,7 +159,7 @@ $(document).ready(function() {
             window.location.href = $('.baseUrl').val() + `/hasil-pemeriksaan/edit/${$(this).val()}`;
           }
 				});
-			
+
 				$('.openFormDelete').click(function() {
 					getId = $(this).val();
 					const getObj = data.find(x => x.id == getId);
@@ -190,7 +190,7 @@ $(document).ready(function() {
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(data) {
 				optCabang += `<option value=''>Cabang</option>`
-	
+
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
