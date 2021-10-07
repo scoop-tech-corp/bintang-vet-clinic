@@ -167,8 +167,7 @@ $(document).ready(function() {
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
 
         $('.openDetail').click(function() {
-          // const getObj = data.find(x => x.id == $(this).val());
-					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-mingguan/detail/${$(this).val()}`;
+					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-mingguan/detail/${$(this).val()}?dateFrom=${paramUrlSetup.date_from}&dateTo=${paramUrlSetup.date_to}`;
         });
 
 			}, complete: function() { $('#loading-screen').hide(); },

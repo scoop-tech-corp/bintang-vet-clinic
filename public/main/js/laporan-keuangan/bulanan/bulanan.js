@@ -156,8 +156,7 @@ $(document).ready(function() {
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
 
         $('.openDetail').click(function() {
-          // const getObj = data.find(x => x.id == $(this).val());
-					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-bulanan/detail/${$(this).val()}`;
+					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-bulanan/detail/${$(this).val()}?month=${paramUrlSetup.month}&year=${paramUrlSetup.year}`;
         });
 
 			}, complete: function() { $('#loading-screen').hide(); },
