@@ -148,8 +148,7 @@ $(document).ready(function() {
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
 
         $('.openDetail').click(function() {
-          // const getObj = data.find(x => x.id == $(this).val());
-					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-harian/detail/${$(this).val()}`;
+					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-harian/detail/${$(this).val()}?date=${paramUrlSetup.date}`;
         });
 
 			}, complete: function() { $('#loading-screen').hide(); },
