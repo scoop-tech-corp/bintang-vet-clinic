@@ -50,17 +50,21 @@
               </div>
               <div id="animalAgeErr1" class="validate-error"></div>
             </div>
-            <div class="form-group">
+            <div class="form-group isShowPemilik">
               <label for="ownerName">Nama Pemilik</label>
-              <input id="ownerName" type="text" class="form-control" placeholder="Masukan Nama Pemilik">
+              <div id="section-nama-pemilik">
+                <select id="ownerDropdown" name="ownerDropdown" style="width: 75%;"></select>
+                <input id="ownerName" type="text" class="form-control" placeholder="Masukan Nama Pemilik" style="display: none; width: 75%">
+                <button type="button" class="btn btn-primary" id="btnNamaPemilik">Tambah Pemilik</button>
+              </div>
               <div id="ownerNameErr1" class="validate-error"></div>
             </div>
-            <div class="form-group">
-              <label for="ownerName">Alamat Pemilik</label>
+            <div class="form-group isShowPemilik">
+              <label for="ownerAddress">Alamat Pemilik</label>
               <input id="ownerAddress" type="text" class="form-control" placeholder="Masukan Alamat Pemilik">
               <div id="ownerAddressErr1" class="validate-error"></div>
             </div>
-            <div class="form-group">
+            <div class="form-group isShowPemilik">
               <label for="ownerTelp">Nomor HP Pemilik</label>
               <input id="ownerTelp" type="number" class="form-control" placeholder="Masukan Nomor HP Pemilik">
               <div id="ownerTelpErr1" class="validate-error"></div>
