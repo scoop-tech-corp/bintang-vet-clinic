@@ -21,7 +21,7 @@ use Validator;
 class HasilPemeriksaanController extends Controller
 {
     public function index(Request $request)
-    {//masih error
+    {
         if ($request->user()->role == 'resepsionis') {
             return response()->json([
                 'message' => 'The user role was invalid.',
@@ -429,9 +429,9 @@ class HasilPemeriksaanController extends Controller
 
             $validate = Validator::make($request->all(), [
                 'patient_registration_id' => 'required|numeric|unique:check_up_results,patient_registration_id',
-                'anamnesa' => 'required|string|min:10',
-                'sign' => 'required|string|min:10',
-                'diagnosa' => 'required|string|min:10',
+                'anamnesa' => 'required|string|min:1',
+                'sign' => 'required|string|min:1',
+                'diagnosa' => 'required|string|min:1',
                 'status_finish' => 'required|bool',
                 'status_outpatient_inpatient' => 'required|bool',
             ], $message_patient);
@@ -673,24 +673,24 @@ class HasilPemeriksaanController extends Controller
 
         //validasi tambah gambar
 
-        $messages_images = [
-            'filenames.required' => 'Gambar harus diisi!',
-            'filenames.*.required' => 'Gambar harus diisi!',
-        ];
+        // $messages_images = [
+        //     'filenames.required' => 'Gambar harus diisi!',
+        //     'filenames.*.required' => 'Gambar harus diisi banyak!',
+        // ];
 
-        $validator_image = Validator::make($request->all(), [
-            'filenames' => 'required',
-            'filenames.*' => 'required|mimes:jpg,png,jpeg',
-        ], $messages_images);
+        // $validator_image = Validator::make($request->all(), [
+        //     'filenames' => 'required',
+        //     'filenames.*' => 'required|mimes:jpg,png,jpeg',
+        // ], $messages_images);
 
-        if ($validator_image->fails()) {
-            $errors_image = $validator_image->errors()->all();
+        // if ($validator_image->fails()) {
+        //     $errors_image = $validator_image->errors()->all();
 
-            return response()->json([
-                'message' => 'Foto yang dimasukkan tidak valid!',
-                'errors' => $errors_image,
-            ], 422);
-        }
+        //     return response()->json([
+        //         'message' => 'Foto yang dimasukkan tidak valid!',
+        //         'errors' => $errors_image,
+        //     ], 422);
+        // }
 
         if ($request->hasfile('filenames')) {
 
@@ -866,9 +866,21 @@ class HasilPemeriksaanController extends Controller
 
         $registration = DB::table('registrations')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select('registrations.id_number as registration_number', 'patients.id as patient_id', 'patients.id_member as patient_number', 'patients.pet_category',
-                'patients.pet_name', 'patients.pet_gender', 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address',
-                'patients.owner_phone_number', 'registrations.complaint', 'registrations.registrant')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->select(
+                'registrations.id_number as registration_number',
+                'patients.id as patient_id',
+                'patients.id_member as patient_number',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.pet_gender',
+                'patients.pet_year_age',
+                'patients.pet_month_age',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
+                'registrations.complaint',
+                'registrations.registrant')
             ->where('registrations.id', '=', $data->patient_registration_id)
             ->first();
 
@@ -2349,9 +2361,21 @@ class HasilPemeriksaanController extends Controller
 
         $registration = DB::table('registrations')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select('registrations.id_number as registration_number', 'patients.id as patient_id', 'patients.id_member as patient_number', 'patients.pet_category',
-                'patients.pet_name', 'patients.pet_gender', 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address',
-                'patients.owner_phone_number', 'registrations.complaint', 'registrations.registrant')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->select(
+                'registrations.id_number as registration_number',
+                'patients.id as patient_id',
+                'patients.id_member as patient_number',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.pet_gender',
+                'patients.pet_year_age',
+                'patients.pet_month_age',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
+                'registrations.complaint',
+                'registrations.registrant')
             ->where('registrations.id', '=', $data->patient_registration_id)
             ->first();
 

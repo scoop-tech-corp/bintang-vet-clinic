@@ -31,9 +31,9 @@ class PasienController extends Controller
                     'patients.pet_gender',
                     'patients.pet_year_age',
                     'patients.pet_month_age',
-                    'patients.owner_name',
-                    'patients.owner_address',
-                    'patients.owner_phone_number',
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                     'branches.branch_name',
                     'users.fullname as created_by',
                     DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"),
@@ -85,9 +85,9 @@ class PasienController extends Controller
                     'patients.pet_gender',
                     'patients.pet_year_age',
                     'patients.pet_month_age',
-                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name END) AS owner_name'),
-                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address END) AS owner_address'),
-                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number END) AS owner_phone_number'),
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                     'branches.branch_name',
                     'users.fullname as created_by',
                     'owners.id as owner_id',
@@ -378,9 +378,9 @@ class PasienController extends Controller
             'jenis_kelamin_hewan' => 'required|string|max:50',
             'usia_tahun_hewan' => 'required|numeric|min:0',
             'usia_bulan_hewan' => 'required|numeric|min:0|max:12',
-            'nama_pemilik' => 'required|string|max:50',
-            'alamat_pemilik' => 'required|string|max:100',
-            'nomor_ponsel_pengirim' => 'required|numeric|digits_between:10,13',
+            // 'nama_pemilik' => 'required|string|max:50',
+            // 'alamat_pemilik' => 'required|string|max:100',
+            // 'nomor_ponsel_pengirim' => 'required|numeric|digits_between:10,13',
         ]);
 
         if ($validator->fails()) {
@@ -435,15 +435,70 @@ class PasienController extends Controller
             $temp_id_member = $request->id_member;
         }
 
+        $owner_id = 0;
+
+        if ($request->id_pemilik != 0 || is_null($request->id_pemilik)) {
+
+            $check_owner = DB::table('owners')
+                ->where('id', '=', $request->id_pemilik)
+                ->count();
+
+            if (!$check_owner) {
+                return response()->json([
+                    'message' => 'Data owner tidak ditemukan!',
+                    'errors' => ['Data tidak ditemukan!'],
+                ], 422);
+            }
+
+            $owner_id = $request->id_pemilik;
+        } else {
+            $validator_owner = Validator::make($request->all(), [
+                'nama_pemilik' => 'required|string|max:50',
+                'alamat_pemilik' => 'required|string|max:100',
+                'nomor_ponsel_pengirim' => 'required|numeric|digits_between:10,13',
+            ]);
+
+            if ($validator_owner->fails()) {
+                $errors_validator = $validator_owner->errors()->all();
+
+                return response()->json([
+                    'message' => 'Data pasien yang dimasukkan tidak valid!',
+                    'errors' => $errors_validator,
+                ], 422);
+            }
+
+            $check_owner = DB::table('owners')
+                ->where('owner_name', '=', $request->nama_pemilik)
+                ->where('branch_id', '=', $temp_branch)
+                ->count();
+
+            if ($check_owner) {
+                return response()->json([
+                    'message' => 'Nama pemiliki sudah ada!',
+                    'errors' => ['Nama pemiliki sudah ada!'],
+                ], 422);
+            }
+
+            $owner = Owner::create([
+                'branch_id' => $temp_branch,
+                'owner_name' => $request->nama_pemilik,
+                'owner_address' => $request->alamat_pemilik,
+                'owner_phone_number' => strval($request->nomor_ponsel_pengirim),
+            ]);
+
+            $owner_id = $owner->id;
+        }
+
         $patient->id_member = $temp_id_member;
         $patient->pet_category = $request->kategori_hewan;
         $patient->pet_name = $request->nama_hewan;
         $patient->pet_gender = $request->jenis_kelamin_hewan;
         $patient->pet_year_age = $request->usia_tahun_hewan;
         $patient->pet_month_age = $request->usia_bulan_hewan;
-        $patient->owner_name = $request->nama_pemilik;
-        $patient->owner_address = $request->alamat_pemilik;
-        $patient->owner_phone_number = $request->nomor_ponsel_pengirim;
+        // $patient->owner_name = $request->nama_pemilik;
+        // $patient->owner_address = $request->alamat_pemilik;
+        // $patient->owner_phone_number = $request->nomor_ponsel_pengirim;
+        $patient->owner_id = $owner_id;
         $patient->user_update_id = $request->user()->id;
         $patient->branch_id = $temp_branch;
         $patient->updated_at = \Carbon\Carbon::now();
@@ -497,6 +552,7 @@ class PasienController extends Controller
             ->join('users', 'registrations.user_id', '=', 'users.id')
             ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
             ->join('branches', 'patients.branch_id', '=', 'branches.id')
             ->select('registrations.id as registration_id',
                 'registrations.id_number as registration_number',
@@ -506,9 +562,9 @@ class PasienController extends Controller
                 'patients.pet_gender',
                 'patients.pet_year_age',
                 'patients.pet_month_age',
-                'patients.owner_name',
-                'patients.owner_address',
-                'patients.owner_phone_number',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                 'registrations.complaint',
                 'registrations.registrant',
                 'user_doctor.id as user_doctor_id',

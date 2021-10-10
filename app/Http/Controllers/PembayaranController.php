@@ -390,9 +390,21 @@ class PembayaranController extends Controller
 
         $registration = DB::table('registrations')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select('registrations.id_number as registration_number', 'patients.id as patient_id', 'patients.id_member as patient_number', 'patients.pet_category',
-                'patients.pet_name', 'patients.pet_gender', 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address',
-                'patients.owner_phone_number', 'registrations.complaint', 'registrations.registrant')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->select(
+                'registrations.id_number as registration_number',
+                'patients.id as patient_id',
+                'patients.id_member as patient_number',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.pet_gender',
+                'patients.pet_year_age',
+                'patients.pet_month_age',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
+                'registrations.complaint',
+                'registrations.registrant')
             ->where('registrations.id', '=', $data_check_up_result->patient_registration_id)
             ->first();
 
@@ -1309,7 +1321,6 @@ class PembayaranController extends Controller
                 'medicine_groups.group_name',
                 DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
                 DB::raw("COUNT(lopm.medicine_group_id) as quantity"),
-                // DB::raw("COUNT()")'lopm.quantity as quantity',
                 DB::raw("TRIM(pmg.selling_price * COUNT(lopm.medicine_group_id))+0 as price_overall"),
                 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(lopm.created_at, '%d %b %Y') as created_at")
@@ -1372,9 +1383,11 @@ class PembayaranController extends Controller
         $data_patient = DB::table('check_up_results')
             ->join('registrations', 'check_up_results.patient_registration_id', 'registrations.id')
             ->join('patients', 'registrations.patient_id', 'patients.id')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
             ->join('users', 'registrations.doctor_user_id', 'users.id')
             ->join('branches', 'users.branch_id', 'branches.id')
-            ->select('registrations.id_number', 'patients.id_member as id_patient', 'pet_name', 'owner_name')
+            ->select('registrations.id_number', 'patients.id_member as id_patient', 'pet_name',
+            DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'))
             ->where('check_up_results.id', '=', $request->check_up_result_id)
             ->get();
 

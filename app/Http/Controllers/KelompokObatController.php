@@ -353,8 +353,6 @@ class KelompokObatController extends Controller
         $rows = Excel::toArray(new MultipleSheetImportKelompokObat, $request->file('file'));
         $result = $rows[0];
 
-        info($result);
-
         foreach ($result as $key_result) {
 
             $check_branch = DB::table('medicine_groups')
