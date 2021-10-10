@@ -43,9 +43,16 @@ class LaporanKeuanganBulananController extends Controller
                 DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as doctor_fee"),
                 DB::raw("TRIM(SUM(pmg.petshop_fee))+0 as petshop_fee"),
                 'users.fullname as created_by',
-                'lop.updated_at as created_at',
-                'branches.id as branchId')
-            ->groupBy('lop.check_up_result_id');
+                'lop.created_at as created_at',
+                'branches.id as branchId');
+
+        if ($request->month && $request->year) {
+            $item = $item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
+
+        }
+
+        $item = $item->groupBy('lop.check_up_result_id');
 
         $service = DB::table('list_of_payments')
             ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
@@ -65,8 +72,15 @@ class LaporanKeuanganBulananController extends Controller
                 DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
                 DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
                 'users.fullname as created_by', 'list_of_payments.updated_at as created_at',
-                'branches.id as branchId')
-            ->groupBy('list_of_payments.check_up_result_id')
+                'branches.id as branchId');
+
+        if ($request->month && $request->year) {
+            $service = $service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
+
+        }
+
+        $service = $service->groupBy('list_of_payments.check_up_result_id')
             ->union($item);
 
         $data = DB::query()->fromSub($service, 'p_pn')
@@ -83,12 +97,6 @@ class LaporanKeuanganBulananController extends Controller
             $data = $data->where('branchId', '=', $request->branch_id);
         } elseif ($request->user()->role == 'dokter') {
             $data = $data->where('branchId', '=', $request->user()->branch_id);
-        }
-
-        if ($request->month && $request->year) {
-            $data = $data->where(DB::raw("MONTH(created_at)"), $request->month)
-                ->where(DB::raw("YEAR(created_at)"), $request->year);
-
         }
 
         if ($request->orderby) {
@@ -116,8 +124,8 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-            $price_overall_item = $price_overall_item->where(DB::raw("MONTH(lop.updated_at)"), $request->month)
-                ->where(DB::raw("YEAR(lop.updated_at)"), $request->year);
+            $price_overall_item = $price_overall_item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
         }
         $price_overall_item = $price_overall_item->first();
 
@@ -138,8 +146,8 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-            $price_overall_service = $price_overall_service->where(DB::raw("MONTH(list_of_payments.updated_at)"), $request->month)
-                ->where(DB::raw("YEAR(list_of_payments.updated_at)"), $request->year);
+            $price_overall_service = $price_overall_service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
         }
         $price_overall_service = $price_overall_service->first();
 
@@ -160,8 +168,8 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-            $capital_price_item = $capital_price_item->where(DB::raw("MONTH(lop.updated_at)"), $request->month)
-                ->where(DB::raw("YEAR(lop.updated_at)"), $request->year);
+            $capital_price_item = $capital_price_item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
         }
         $capital_price_item = $capital_price_item->first();
 
@@ -182,8 +190,8 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-            $capital_price_service = $capital_price_service->where(DB::raw("MONTH(list_of_payments.updated_at)"), $request->month)
-                ->where(DB::raw("YEAR(list_of_payments.updated_at)"), $request->year);
+            $capital_price_service = $capital_price_service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
         }
         $capital_price_service = $capital_price_service->first();
 
@@ -204,8 +212,8 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-            $doctor_fee_item = $doctor_fee_item->where(DB::raw("MONTH(lop.updated_at)"), $request->month)
-                ->where(DB::raw("YEAR(lop.updated_at)"), $request->year);
+            $doctor_fee_item = $doctor_fee_item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
         }
         $doctor_fee_item = $doctor_fee_item->first();
 
@@ -226,8 +234,8 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-            $doctor_fee_service = $doctor_fee_service->where(DB::raw("MONTH(list_of_payments.updated_at)"), $request->month)
-                ->where(DB::raw("YEAR(list_of_payments.updated_at)"), $request->year);
+            $doctor_fee_service = $doctor_fee_service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
         }
         $doctor_fee_service = $doctor_fee_service->first();
 
@@ -248,8 +256,8 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-            $petshop_fee_item = $petshop_fee_item->where(DB::raw("MONTH(lop.updated_at)"), $request->month)
-                ->where(DB::raw("YEAR(lop.updated_at)"), $request->year);
+            $petshop_fee_item = $petshop_fee_item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
         }
         $petshop_fee_item = $petshop_fee_item->first();
 
@@ -270,8 +278,8 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-            $petshop_fee_service = $petshop_fee_service->where(DB::raw("MONTH(list_of_payments.updated_at)"), $request->month)
-                ->where(DB::raw("YEAR(list_of_payments.updated_at)"), $request->year);
+            $petshop_fee_service = $petshop_fee_service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
         }
         $petshop_fee_service = $petshop_fee_service->first();
 
@@ -321,9 +329,20 @@ class LaporanKeuanganBulananController extends Controller
 
         $registration = DB::table('registrations')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select('registrations.id_number as registration_number', 'patients.id as patient_id', 'patients.id_member as patient_number', 'patients.pet_category',
-                'patients.pet_name', 'patients.pet_gender', 'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address',
-                'patients.owner_phone_number', 'registrations.complaint', 'registrations.registrant')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->select('registrations.id_number as registration_number',
+                'patients.id as patient_id',
+                'patients.id_member as patient_number',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.pet_gender',
+                'patients.pet_year_age',
+                'patients.pet_month_age',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
+                'registrations.complaint',
+                'registrations.registrant')
             ->where('registrations.id', '=', $check_up_result->patient_registration_id)
             ->first();
 
@@ -345,8 +364,15 @@ class LaporanKeuanganBulananController extends Controller
                 DB::raw("TRIM(price_services.doctor_fee * detail_service_patients.quantity)+0 as doctor_fee"),
                 DB::raw("TRIM(price_services.petshop_fee * detail_service_patients.quantity)+0 as petshop_fee"),
                 'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at"))
-            ->where('list_of_payment_services.check_up_result_id', '=', $data->check_up_result_id)
-            ->orderBy('list_of_payment_services.id', 'desc')
+            ->where('list_of_payment_services.check_up_result_id', '=', $data->check_up_result_id);
+
+        if ($request->month && $request->year) {
+            $list_of_payment_services = $list_of_payment_services->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
+
+        }
+
+        $list_of_payment_services = $list_of_payment_services->orderBy('list_of_payment_services.id', 'desc')
             ->get();
 
         $data['list_of_payment_services'] = $list_of_payment_services;
@@ -362,8 +388,14 @@ class LaporanKeuanganBulananController extends Controller
                 'medicine_groups.group_name',
                 'branches.id as branch_id',
                 'branches.branch_name')
-            ->where('lopm.list_of_payment_id', '=', $data->id)
-            ->get();
+            ->where('lopm.list_of_payment_id', '=', $data->id);
+
+        if ($request->month && $request->year) {
+            $item = $item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
+
+        }
+        $item = $item->get();
 
         foreach ($item as $value) {
 

@@ -276,34 +276,40 @@ class PenggajianController extends Controller
 
         $user = User::find($request->id);
 
-        $amount_turnover_item = DB::table('users as usr')
-            ->join('branches as brn', 'usr.branch_id', 'brn.id')
-            ->join('detail_medicine_group_check_up_results as dmg', 'dmg.user_id', 'usr.id')
-            ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', 'pmg.id')
-            ->select(DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as amount_turnover_item"))
-            ->where('brn.id', '=', $user->branch_id);
+        $amount_turnover_item = DB::table('list_of_payments as lop')
+            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select(
+                DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as amount_turnover_item"))
+            ->where('branches.id', '=', $user->branch_id);
 
         if ($request->date) {
             $amount_turnover_item = $amount_turnover_item
-                ->where(DB::raw("MONTH(dmg.updated_at)"), $date[1])
-                ->where(DB::raw("YEAR(dmg.updated_at)"), $date[2]);
+                ->where(DB::raw("MONTH(lopm.updated_at)"), $date[1])
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $date[2]);
         }
 
         $amount_turnover_item = $amount_turnover_item->first();
 
         //=====================================================
 
-        $amount_turnover_service = DB::table('users as usr')
-            ->join('branches as brn', 'usr.branch_id', 'brn.id')
-            ->join('detail_service_patients as dsp', 'dsp.user_id', 'usr.id')
-            ->join('price_services as ps', 'dsp.price_service_id', 'ps.id')
-            ->select(DB::raw("TRIM(SUM(ps.doctor_fee))+0 as amount_turnover_service"))
-            ->where('usr.id', '=', $user->branch_id);
+        $amount_turnover_service = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select(
+                DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as amount_turnover_service"))
+            ->where('branches.id', '=', $user->branch_id);
 
         if ($request->date) {
             $amount_turnover_service = $amount_turnover_service
-                ->where(DB::raw("MONTH(dsp.updated_at)"), $date[1])
-                ->where(DB::raw("YEAR(dsp.updated_at)"), $date[2]);
+                ->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $date[1])
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $date[2]);
         }
 
         $amount_turnover_service = $amount_turnover_service->first();
@@ -312,20 +318,28 @@ class PenggajianController extends Controller
 
         //==============================================================
 
-        $count_inpatient = DB::table('users as usr')
-            ->join('branches as brn', 'usr.branch_id', 'brn.id')
-            ->join('check_up_results as cur', 'usr.id', 'cur.user_id')
-            ->where('brn.id', '=', $user->branch_id);
+        $count_inpatient = DB::table('list_of_payments as lop')
+            ->join('list_of_payment_services as lops', 'lops.list_of_payment_id', 'lop.id')
+            ->join('detail_service_patients as dsp', 'lops.detail_service_patient_id', 'dsp.id')
+            ->join('price_services as ps', 'dsp.price_service_id', 'ps.id')
+            ->join('list_of_services as los', 'ps.list_of_services_id', 'los.id')
+            ->join('users as usr', 'dsp.user_id', 'usr.id')
+            ->join('branches as br', 'usr.branch_id', 'br.id')
+
+
+            ->select(DB::raw("TRIM(SUM(dsp.quantity))+0 as count_inpatient"))
+            ->where('br.id', '=', $user->branch_id)
+            ->where('los.service_name', 'like', '%rawat inap%');
 
         if ($request->date) {
             $count_inpatient = $count_inpatient
-                ->where(DB::raw("MONTH(cur.updated_at)"), $date[1])
-                ->where(DB::raw("YEAR(cur.updated_at)"), $date[2]);
+                ->where(DB::raw("MONTH(lops.updated_at)"), $date[1])
+                ->where(DB::raw("YEAR(lops.updated_at)"), $date[2]);
         }
 
         $count_inpatient = $count_inpatient
-            ->where('cur.status_outpatient_inpatient', '=', 1)
-            ->count();
+        // ->where('cur.status_outpatient_inpatient', '=', 1)
+            ->first();
 
         $amount_surgery = DB::table('users as usr')
             ->join('branches as brn', 'usr.branch_id', 'brn.id')
@@ -355,7 +369,7 @@ class PenggajianController extends Controller
 
         return response()->json([
             'amount_turnover' => $amount_turnover,
-            'count_inpatient' => $count_inpatient,
+            'count_inpatient' => $count_inpatient->count_inpatient,
             'amount_surgery' => $amount_surgery->amount_surgery,
         ], 200);
     }

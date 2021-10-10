@@ -49,6 +49,8 @@ Route::group(['middleware' => ['api']], function () {
         Route::delete('pasien', 'PasienController@delete');
         Route::get('pasien/status-terima', 'PasienController@patient_accept_only');
 
+        Route::get('pasien/daftar-pemilik', 'PasienController@ListOwner');
+
         //kategori barang
         Route::get('kategori-barang', 'KategoriBarangController@index');
         Route::post('kategori-barang', 'KategoriBarangController@create');
