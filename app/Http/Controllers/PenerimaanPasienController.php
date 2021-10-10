@@ -29,6 +29,7 @@ class PenerimaanPasienController extends Controller
                 ->join('users', 'registrations.user_id', '=', 'users.id')
                 ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('owners', 'patients.owner_id', '=', 'owners.id')
                 ->join('branches', 'patients.branch_id', '=', 'branches.id')
                 ->select(
                     'registrations.id as id',
@@ -40,9 +41,9 @@ class PenerimaanPasienController extends Controller
                     'patients.pet_gender',
                     'patients.pet_year_age',
                     'patients.pet_month_age',
-                    'patients.owner_name',
-                    'patients.owner_address',
-                    'patients.owner_phone_number',
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                     'complaint',
                     'registrant',
                     'user_doctor.id as user_doctor_id',
@@ -81,6 +82,7 @@ class PenerimaanPasienController extends Controller
                 ->join('users', 'registrations.user_id', '=', 'users.id')
                 ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('owners', 'patients.owner_id', '=', 'owners.id')
                 ->join('branches', 'patients.branch_id', '=', 'branches.id')
                 ->select(
                     'registrations.id as id',
@@ -92,9 +94,9 @@ class PenerimaanPasienController extends Controller
                     'patients.pet_gender',
                     'patients.pet_year_age',
                     'patients.pet_month_age',
-                    'patients.owner_name',
-                    'patients.owner_address',
-                    'patients.owner_phone_number',
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                     'complaint',
                     'registrant',
                     'user_doctor.id as user_doctor_id',

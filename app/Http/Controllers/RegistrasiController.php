@@ -20,13 +20,29 @@ class RegistrasiController extends Controller
                 ->join('users', 'registrations.user_id', '=', 'users.id')
                 ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('owners', 'patients.owner_id', '=', 'owners.id')
                 ->join('branches', 'patients.branch_id', '=', 'branches.id')
-                ->select('registrations.id as id', 'registrations.id_number', 'registrations.patient_id',
-                    'patients.id_member as id_number_patient', 'patients.pet_category', 'patients.pet_name', 'patients.pet_gender',
-                    'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address',
-                    'patients.owner_phone_number', 'complaint', 'registrant', 'user_doctor.id as user_doctor_id',
-                    'user_doctor.username as username_doctor', 'registrations.acceptance_status', 'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"), 'users.branch_id as user_branch_id')
+                ->select(
+                    'registrations.id as id',
+                    'registrations.id_number',
+                    'registrations.patient_id',
+                    'patients.id_member as id_number_patient',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'patients.pet_gender',
+                    'patients.pet_year_age',
+                    'patients.pet_month_age',
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
+                    'complaint',
+                    'registrant',
+                    'user_doctor.id as user_doctor_id',
+                    'user_doctor.username as username_doctor',
+                    'registrations.acceptance_status',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"),
+                    'users.branch_id as user_branch_id')
                 ->where('registrations.isDeleted', '=', 0);
 
             if ($res) {
@@ -58,27 +74,35 @@ class RegistrasiController extends Controller
             $data = $data->get();
 
             return response()->json($data, 200);
-            // $data = $data->where('registrations.id', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('patients.id_member', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('patients.pet_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('registrations.complaint', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('registrations.registrant', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('user_doctor.username', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%');
         } else {
 
             $data = DB::table('registrations')
                 ->join('users', 'registrations.user_id', '=', 'users.id')
                 ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('owners', 'patients.owner_id', '=', 'owners.id')
                 ->join('branches', 'patients.branch_id', '=', 'branches.id')
-                ->select('registrations.id as id', 'registrations.id_number', 'registrations.patient_id',
-                    'patients.id_member as id_number_patient', 'patients.pet_category', 'patients.pet_name', 'patients.pet_gender',
-                    'patients.pet_year_age', 'patients.pet_month_age', 'patients.owner_name', 'patients.owner_address',
-                    'patients.owner_phone_number', 'complaint', 'registrant', 'user_doctor.id as user_doctor_id',
-                    'user_doctor.username as username_doctor', 'registrations.acceptance_status', 'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"), 'users.branch_id as user_branch_id')
+                ->select(
+                    'registrations.id as id',
+                    'registrations.id_number',
+                    'registrations.patient_id',
+                    'patients.id_member as id_number_patient',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'patients.pet_gender',
+                    'patients.pet_year_age',
+                    'patients.pet_month_age',
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
+                    'complaint',
+                    'registrant',
+                    'user_doctor.id as user_doctor_id',
+                    'user_doctor.username as username_doctor',
+                    'registrations.acceptance_status',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"),
+                    'users.branch_id as user_branch_id')
                 ->where('registrations.isDeleted', '=', 0);
 
             if ($request->user()->role == 'resepsionis') {
