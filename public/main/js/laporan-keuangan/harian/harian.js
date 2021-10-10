@@ -74,12 +74,12 @@ $(document).ready(function() {
           let blob = new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
           let downloadUrl = URL.createObjectURL(blob);
           let a = document.createElement("a");
-  
+
           a.href = downloadUrl;
           a.download = filename
           document.body.appendChild(a);
           a.click();
-  
+
         }, complete: function() { $('#loading-screen').hide(); },
         error: function(err) {
           if (err.status == 401) {
@@ -118,6 +118,7 @@ $(document).ready(function() {
 						listLaporanKeuanganHarian += `<tr>`
 							+ `<td>${++idx}</td>`
 							+ `<td>${v.registration_number}</td>`
+              + `<td>${v.created_at}</td>`
 							+ `<td>${v.patient_number}</td>`
 							+ `<td>${v.pet_category}</td>`
 							+ `<td>${v.pet_name}</td>`
@@ -128,7 +129,6 @@ $(document).ready(function() {
 							+ `<td>${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
 							+ `<td>${typeof(v.petshop_fee)== 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
 							+ `<td>${v.created_by}</td>`
-							+ `<td>${v.created_at}</td>`
 							+ `<td>
 									<button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
 								</td>`
@@ -148,8 +148,7 @@ $(document).ready(function() {
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
 
         $('.openDetail').click(function() {
-          // const getObj = data.find(x => x.id == $(this).val());
-					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-harian/detail/${$(this).val()}`;
+					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-harian/detail/${$(this).val()}?date=${paramUrlSetup.date}`;
         });
 
 			}, complete: function() { $('#loading-screen').hide(); },

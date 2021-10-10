@@ -6,20 +6,22 @@ $(document).ready(function() {
     const url = window.location.pathname;
     const stuff = url.split('/');
     const lastUrl = stuff[stuff.length-1];
+    const getParamDate = new URL(window.location.href).searchParams.get('date');
+
     refreshText();
-    loadDetailLaporanKeuanganHarian(lastUrl);
+    loadDetailLaporanKeuanganHarian(lastUrl, getParamDate);
   }
 
   $('.btn-back-to-list .text, #btnKembali').click(function() {
     window.location.href = $('.baseUrl').val() + '/laporan-keuangan-harian';
   });
 
-  function loadDetailLaporanKeuanganHarian(paramId) {
+  function loadDetailLaporanKeuanganHarian(paramId, paramDate) {
     $.ajax({
       url     : $('.baseUrl').val() + '/api/laporan-keuangan/detail',
       headers : { 'Authorization': `Bearer ${token}` },
       type    : 'GET',
-      data	  : { id: paramId },
+      data	  : { id: paramId, date: paramDate },
       beforeSend: function() { $('#loading-screen').show(); },
       success: function(data) {
       const getData = data;

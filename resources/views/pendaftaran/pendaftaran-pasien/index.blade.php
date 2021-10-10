@@ -25,6 +25,7 @@
           <tr>
             <th>No</th>
             <th class="onOrdering" data='id_register' orderby="none">No. Registrasi <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='id_member' orderby="none">No. Pasien <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='pet_name' orderby="none">Nama Hewan <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='complaint' orderby="none">Keluhan <span class="fa fa-sort"></span></th>
@@ -32,7 +33,6 @@
             <th class="onOrdering" data='branch_name' orderby="none">Dokter yang menangani <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='registrant' orderby="none">Status <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='created_by' orderby="none">Dibuat Oleh <span class="fa fa-sort"></span></th>
-            <th class="onOrdering" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
             <th>Aksi</th>
           </tr>
         </thead>
@@ -50,7 +50,7 @@
 </div>
 @endsection
 @section('script-content')
-  <script src="{{ asset('main/js/pendaftaran/pendaftaran-pasien/pendaftaran-pasien.js') }}"></script>  
+  <script src="{{ asset('main/js/pendaftaran/pendaftaran-pasien/pendaftaran-pasien.js') }}"></script>
 @endsection
 @section('vue-content')
 

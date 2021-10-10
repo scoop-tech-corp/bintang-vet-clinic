@@ -6,20 +6,23 @@ $(document).ready(function() {
     const url = window.location.pathname;
     const stuff = url.split('/');
     const lastUrl = stuff[stuff.length-1];
+    const getParamMonth = new URL(window.location.href).searchParams.get('month');
+    const getParamYear = new URL(window.location.href).searchParams.get('year');
+
     refreshText();
-    loadDetailLaporanKeuanganBulanan(lastUrl);
+    loadDetailLaporanKeuanganBulanan(lastUrl, {month: getParamMonth, year: getParamYear});
   }
 
   $('.btn-back-to-list .text, #btnKembali').click(function() {
     window.location.href = $('.baseUrl').val() + '/laporan-keuangan-bulanan';
   });
 
-  function loadDetailLaporanKeuanganBulanan(paramId) {
+  function loadDetailLaporanKeuanganBulanan(paramId, paramMonthYear) {
     $.ajax({
       url     : $('.baseUrl').val() + '/api/laporan-keuangan/detail',
       headers : { 'Authorization': `Bearer ${token}` },
       type    : 'GET',
-      data	  : { id: paramId },
+      data	  : { id: paramId, month: paramMonthYear.month, year: paramMonthYear.year },
       beforeSend: function() { $('#loading-screen').show(); },
       success: function(data) {
       const getData = data;

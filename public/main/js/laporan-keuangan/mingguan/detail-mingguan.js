@@ -6,20 +6,23 @@ $(document).ready(function() {
     const url = window.location.pathname;
     const stuff = url.split('/');
     const lastUrl = stuff[stuff.length-1];
+    const getParamDateFrom = new URL(window.location.href).searchParams.get('dateFrom');
+    const getParamDateTo = new URL(window.location.href).searchParams.get('dateTo');
+
     refreshText();
-    loadDetailLaporanKeuanganMingguan(lastUrl);
+    loadDetailLaporanKeuanganMingguan(lastUrl, {dateFrom: getParamDateFrom, dateTo: getParamDateTo});
   }
 
   $('.btn-back-to-list .text, #btnKembali').click(function() {
     window.location.href = $('.baseUrl').val() + '/laporan-keuangan-mingguan';
   });
 
-  function loadDetailLaporanKeuanganMingguan(paramId) {
+  function loadDetailLaporanKeuanganMingguan(paramId, paramDate) {
     $.ajax({
       url     : $('.baseUrl').val() + '/api/laporan-keuangan/detail',
       headers : { 'Authorization': `Bearer ${token}` },
       type    : 'GET',
-      data	  : { id: paramId },
+      data	  : { id: paramId, date_from: paramDate.dateFrom, date_to: paramDate.dateTo },
       beforeSend: function() { $('#loading-screen').show(); },
       success: function(data) {
       const getData = data;
