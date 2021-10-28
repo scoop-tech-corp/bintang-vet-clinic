@@ -33,6 +33,7 @@ class HasilPemeriksaanController extends Controller
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
             ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
             ->select(
                 'check_up_results.id',
                 'registrations.id_number as registration_number',
@@ -40,7 +41,7 @@ class HasilPemeriksaanController extends Controller
                 'patients.id_member as patient_number',
                 'patients.pet_category',
                 'patients.pet_name',
-                'patients.owner_name',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                 'registrations.complaint',
                 'check_up_results.status_finish',
                 'check_up_results.status_outpatient_inpatient',
@@ -64,6 +65,7 @@ class HasilPemeriksaanController extends Controller
                 ->join('users', 'check_up_results.user_id', '=', 'users.id')
                 ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('owners', 'patients.owner_id', '=', 'owners.id')
                 ->select(
                     'check_up_results.id',
                     'registrations.id_number as registration_number',
@@ -71,7 +73,7 @@ class HasilPemeriksaanController extends Controller
                     'patients.id_member as patient_number',
                     'patients.pet_category',
                     'patients.pet_name',
-                    'patients.owner_name',
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                     'registrations.complaint',
                     'check_up_results.status_finish',
                     'check_up_results.status_outpatient_inpatient',
@@ -109,6 +111,7 @@ class HasilPemeriksaanController extends Controller
                 ->join('users', 'check_up_results.user_id', '=', 'users.id')
                 ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('owners', 'patients.owner_id', '=', 'owners.id')
                 ->select(
                     'check_up_results.id',
                     'registrations.id_number as registration_number',
@@ -116,7 +119,7 @@ class HasilPemeriksaanController extends Controller
                     'patients.id_member as patient_number',
                     'patients.pet_category',
                     'patients.pet_name',
-                    'patients.owner_name',
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                     'registrations.complaint',
                     'check_up_results.status_finish',
                     'check_up_results.status_outpatient_inpatient',
@@ -288,12 +291,13 @@ class HasilPemeriksaanController extends Controller
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
             ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
             ->select(
                 'registrations.id_number',
                 'patients.id_member',
                 'patients.pet_category',
                 'patients.pet_name',
-                'patients.owner_name',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                 'registrations.complaint',
                 'users.fullname')
             ->where('check_up_results.isDeleted', '=', 0);
@@ -307,13 +311,13 @@ class HasilPemeriksaanController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%');
+            $data = $data->where('owner_name', 'like', '%' . $request->keyword . '%');
         }
 
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'patients.owner_name';
+            $temp_column = 'owner_name';
             return $temp_column;
         }
         //============================================
