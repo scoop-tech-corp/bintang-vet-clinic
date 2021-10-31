@@ -516,7 +516,7 @@ $(document).ready(function() {
     // process Omset
     const getOmset = parseFloat($('#inputOmset').val());
     const getOmsetKaryawan = parseFloat($('#omset-karyawan').attr('value'));
-    if (getOmset && getOmset > 0 && getOmsetKaryawan > -1) {
+    if (getOmset >= 0 && getOmsetKaryawan > -1) {
       totalOmset = Math.round((getOmset / 100) * getOmsetKaryawan);
       $('#totalOmset').attr('value', totalOmset);
       $('#totalOmset').text('Rp ' + totalOmset.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
@@ -525,7 +525,7 @@ $(document).ready(function() {
     // process Inap
     const getInap = parseFloat($('#inputInap').val().replaceAll('.', ''));
     const getInapKaryawan = parseFloat($('#inap-karyawan').attr('value'));
-    if (getInap && getInap > 0 && getInapKaryawan > -1) {
+    if (getInap >= 0 && getInapKaryawan > -1) {
       totalInap = getInap * getInapKaryawan;
       $('#totalInap').attr('value', totalInap);
       $('#totalInap').text('Rp ' + totalInap.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
@@ -534,7 +534,7 @@ $(document).ready(function() {
     // process Operasi
     const getOperasi = parseFloat($('#inputOperasi').val());
     const getOperasiKaryawan = parseFloat($('#operasi-karyawan').attr('value'));
-    if (getOperasi && getOperasi > 0 && getOperasiKaryawan > -1) {
+    if (getOperasi >= 0 && getOperasiKaryawan > -1) {
       totalOperasi =  Math.round((getOperasi / 100) * getOperasiKaryawan);
       $('#totalOperasi').attr('value', totalOperasi);
       $('#totalOperasi').text('Rp ' + totalOperasi.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
