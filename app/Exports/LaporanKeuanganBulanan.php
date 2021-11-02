@@ -56,6 +56,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                 ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
                 ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
                 ->join('patients as p', 'reg.patient_id', '=', 'p.id')
+                ->join('owners', 'p.owner_id', '=', 'owners.id')
                 ->join('users', 'lop.user_id', '=', 'users.id')
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
 
@@ -69,7 +70,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                     DB::raw("TRIM(pmg.petshop_fee)+0 as petshop_fee"),
                     DB::raw("TRIM(pmg.doctor_fee)+0 as doctor_fee"),
                     'p.pet_name as pet_name',
-                    'p.owner_name as owner_name',
+                    DB::raw('(CASE WHEN p.owner_name = "" THEN owners.owner_name ELSE p.owner_name END) AS owner_name'),
                     'branches.id as branchId',
                     DB::raw("DATE_FORMAT(lopm.updated_at, '%d/%m/%Y') as created_at")
                 )
@@ -90,6 +91,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                 ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
                 ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('owners', 'patients.owner_id', '=', 'owners.id')
                 ->join('users', 'check_up_results.user_id', '=', 'users.id')
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
 
@@ -103,7 +105,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                     DB::raw("TRIM(price_services.petshop_fee * detail_service_patients.quantity)+0 as petshop_fee"),
                     DB::raw("TRIM(price_services.doctor_fee * detail_service_patients.quantity)+0 as doctor_fee"),
                     'patients.pet_name as pet_name',
-                    'patients.owner_name as owner_name',
+                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                     'branches.id as branchId',
                     DB::raw("DATE_FORMAT(list_of_payment_services.updated_at, '%d/%m/%Y') as created_at")
                 )
