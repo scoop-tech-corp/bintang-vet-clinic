@@ -355,7 +355,7 @@ class PenggajianController extends Controller
                 ->where(DB::raw("YEAR(dmg.updated_at)"), $date[2]);
         }
 
-        $amount_surgery = $amount_surgery->where('usr.id', '=', $request->id)
+        $amount_surgery = $amount_surgery->where('brn.id', '=', $user->branch_id)
             ->where('mg.group_name', 'like', '%operasi%')
             ->first();
 
