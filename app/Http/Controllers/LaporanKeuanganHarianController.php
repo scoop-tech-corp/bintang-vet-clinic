@@ -273,6 +273,7 @@ class LaporanKeuanganHarianController extends Controller
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
                 DB::raw("TRIM(SUM(pmg.petshop_fee))+0 as petshop_fee"));
+                //test
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
