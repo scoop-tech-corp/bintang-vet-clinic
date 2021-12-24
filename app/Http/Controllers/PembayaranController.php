@@ -919,33 +919,36 @@ class PembayaranController extends Controller
                         ->select('id')
                         ->where('dmg.check_up_result_id', '=', $request->check_up_result_id)
                         ->where('dmg.medicine_group_id', '=', $value_item['medicine_group_id'])
-                        ->first();
-
-                    $payment_medicine_group = list_of_payment_medicine_groups::create([
-                        'detail_medicine_group_check_up_result_id' => $detail_medicine_group->id,
-                        'list_of_payment_id' => $list_of_payment->id,
-                        'medicine_group_id' => $value_item['medicine_group_id'],
-                        'user_id' => $request->user()->id,
-                    ]);
-
-                    $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])
-                        ->where('check_up_result_id', '=', $request->check_up_result_id)
-                        ->update(['status_paid_off' => 1, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
-
-                    $detail_item_patient = DB::table('detail_item_patients as dip')
-                        ->select('id', 'price_item_id', 'price_overall', 'quantity')
-                        ->where('dip.detail_medicine_group_id', '=', $detail_medicine_group->id)
                         ->get();
 
-                    foreach ($detail_item_patient as $value_detail) {
+                    foreach ($detail_medicine_group as $res) {
 
-                        $item = ListofPaymentItem::create([
-                            'list_of_payment_medicine_group_id' => $payment_medicine_group->id,
-                            'price_item_id' => $value_detail->price_item_id,
-                            'price_overall' => $value_detail->price_overall,
-                            'quantity' => $value_detail->quantity,
+                        $payment_medicine_group = list_of_payment_medicine_groups::create([
+                            'detail_medicine_group_check_up_result_id' => $res->id,
+                            'list_of_payment_id' => $list_of_payment->id,
+                            'medicine_group_id' => $value_item['medicine_group_id'],
                             'user_id' => $request->user()->id,
                         ]);
+
+                        $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])
+                            ->where('check_up_result_id', '=', $request->check_up_result_id)
+                            ->update(['status_paid_off' => 1, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
+
+                        $detail_item_patient = DB::table('detail_item_patients as dip')
+                            ->select('id', 'price_item_id', 'price_overall', 'quantity')
+                            ->where('dip.detail_medicine_group_id', '=', $res->id)
+                            ->get();
+
+                        foreach ($detail_item_patient as $value_detail) {
+
+                            $item = ListofPaymentItem::create([
+                                'list_of_payment_medicine_group_id' => $payment_medicine_group->id,
+                                'price_item_id' => $value_detail->price_item_id,
+                                'price_overall' => $value_detail->price_overall,
+                                'quantity' => $value_detail->quantity,
+                                'user_id' => $request->user()->id,
+                            ]);
+                        }
                     }
 
                     // $values = Detail_medicine_group_check_up_result::where('check_up_result_id', '=', $request->check_up_result_id)
@@ -1387,7 +1390,7 @@ class PembayaranController extends Controller
             ->join('users', 'registrations.doctor_user_id', 'users.id')
             ->join('branches', 'users.branch_id', 'branches.id')
             ->select('registrations.id_number', 'patients.id_member as id_patient', 'pet_name',
-            DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'))
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'))
             ->where('check_up_results.id', '=', $request->check_up_result_id)
             ->get();
 
