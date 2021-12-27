@@ -716,6 +716,7 @@ class PembayaranController extends Controller
 
     public function update(Request $request)
     {
+        info($request);
         //validasi
         $check_list_of_payment = DB::table('list_of_payments')
             ->where('check_up_result_id', '=', $request->check_up_result_id)
@@ -1044,6 +1045,7 @@ class PembayaranController extends Controller
 
     public function delete(Request $request)
     {
+
         $check_payment = ListofPayments::find($request->list_of_payment_id);
 
         if (is_null($check_payment)) {
@@ -1065,7 +1067,6 @@ class PembayaranController extends Controller
             foreach ($data_service as $service) {
 
                 $check_service = DetailServicePatient::find($service['detail_service_patient_id']);
-
                 $check_service->status_paid_off = 0;
                 $check_service->user_update_id = $request->user()->id;
                 $check_service->updated_at = \Carbon\Carbon::now();
@@ -1091,8 +1092,13 @@ class PembayaranController extends Controller
 
             if ($check_payment_item) {
 
-                $values = Detail_medicine_group_check_up_result::where('id', '=', $val->detail_medicine_group_check_up_result_id)
-                    ->update(['status_paid_off' => false, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
+                $values = Detail_medicine_group_check_up_result::find($val->detail_medicine_group_check_up_result_id);
+                $values->status_paid_off = 0;
+                $values->user_update_id = $request->user()->id;
+                $values->updated_at = \Carbon\Carbon::now();
+                $values->save;
+                // $values = Detail_medicine_group_check_up_result::where('id', '=', $val->detail_medicine_group_check_up_result_id)
+                //     ->update(['status_paid_off' => 0, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
 
                 $check_payment_item = DB::table('list_of_payment_items')
                     ->where('list_of_payment_medicine_group_id', $val->id)
