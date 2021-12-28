@@ -716,7 +716,6 @@ class PembayaranController extends Controller
 
     public function update(Request $request)
     {
-        info($request);
         //validasi
         $check_list_of_payment = DB::table('list_of_payments')
             ->where('check_up_result_id', '=', $request->check_up_result_id)
