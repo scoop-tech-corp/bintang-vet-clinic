@@ -493,19 +493,6 @@ class PenggajianController extends Controller
     public function generate(Request $request)
     {
 
-        // $pdf = app('Fpdf');
-        // $pdf->AddPage();
-        // $pdf->SetFont('Arial', 'B', 16);
-        // $pdf->Cell(40, 10, 'Hello World!');
-        // $pdf->Output('F', 'filename3.pdf');
-
-        // $file = public_path() . "/filename3.pdf";
-
-        // $headers = array(
-        //     'Content-Type: application/pdf',
-        // );
-
-        // return Response::download($file, 'filename3.pdf', $headers);
         $terbilang = new Terbilang();
 
         $data_user = DB::table('payrolls as py')

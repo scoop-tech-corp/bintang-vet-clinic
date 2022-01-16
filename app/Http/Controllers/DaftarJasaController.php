@@ -238,7 +238,7 @@ class DaftarJasaController extends Controller
         $validator = Validator::make($request->all(), [
             'NamaLayanan' => 'required|string|min:3|max:50',
             'KategoriJasa' => 'required|integer|max:50',
-            'CabangId' => 'required|integer',
+            // 'CabangId' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -250,26 +250,41 @@ class DaftarJasaController extends Controller
             ], 422);
         }
 
-        $check_service = DB::table('list_of_services')
-            ->where('branch_id', '=', $request->CabangId)
-            ->where('service_category_id', '=', $request->KategoriJasa)
-            ->where('service_name', '=', $request->NamaLayanan)
-            ->count();
+        $branchId = $request->Cabang;
+        $result_branch = json_decode($branchId, true);
 
-        if ($check_service > 0) {
-
+        if (count($result_branch) == 0) {
             return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Data sudah pernah ada sebelumnya!'],
+                'message' => 'The given data was invalid.',
+                'errors' => ['Data Cabang Harus dipilih minimal 1!'],
             ], 422);
         }
 
-        $list_of_services = ListofServices::create([
-            'service_name' => $request->NamaLayanan,
-            'service_category_id' => $request->KategoriJasa,
-            'branch_id' => $request->CabangId,
-            'user_id' => $request->user()->id,
-        ]);
+        foreach ($result_branch as $key_branch) {
+
+            $check_service = DB::table('list_of_services')
+                ->where('branch_id', '=', $key_branch['CabangId'])
+                ->where('service_category_id', '=', $request->KategoriJasa)
+                ->where('service_name', '=', $request->NamaLayanan)
+                ->count();
+
+            if ($check_service > 0) {
+
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Data sudah pernah ada sebelumnya!'],
+                ], 422);
+            }
+        }
+
+        foreach ($result_branch as $key_branch) {
+            $list_of_services = ListofServices::create([
+                'service_name' => $request->NamaLayanan,
+                'service_category_id' => $request->KategoriJasa,
+                'branch_id' => $key_branch['CabangId'],
+                'user_id' => $request->user()->id,
+            ]);
+        }
 
         return response()->json(
             [
