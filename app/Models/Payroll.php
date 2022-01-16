@@ -16,5 +16,5 @@ class Payroll extends Model
         'accomodation', 'percentage_turnover', 'amount_turnover',
         'total_turnover', 'amount_inpatient', 'count_inpatient',
         'total_inpatient', 'percentage_surgery', 'amount_surgery',
-        'total_surgery', 'total_overall', 'user_id'];
+        'total_surgery', 'total_overall', 'user_id','amount_grooming','count_grooming','total_grooming','minus_turnover'];
 }
