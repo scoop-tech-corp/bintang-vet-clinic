@@ -202,6 +202,12 @@ class PenggajianController extends Controller
             'amount_surgery' => 'required|numeric|min:0',
             'total_surgery' => 'required|numeric|min:0',
             'total_overall' => 'required|numeric|min:0',
+
+            'amount_grooming' => 'required|numeric|min:0',
+            'count_grooming' => 'required|numeric|min:0',
+            'total_grooming' => 'required|numeric|min:0',
+
+            'minus_turnover' => 'required|numeric|min:0',
         ]);
 
         if ($validate->fails()) {
@@ -252,6 +258,12 @@ class PenggajianController extends Controller
             'total_surgery' => $request->total_surgery,
             'total_overall' => $request->total_overall,
             'user_id' => $request->user()->id,
+
+            'amount_grooming' => $request->amount_grooming,
+            'count_grooming' => $request->count_grooming,
+            'total_grooming' => $request->total_grooming,
+
+            'minus_turnover' => $request->minus_turnover,
         ]);
 
         return response()->json([
@@ -326,7 +338,6 @@ class PenggajianController extends Controller
             ->join('users as usr', 'dsp.user_id', 'usr.id')
             ->join('branches as br', 'usr.branch_id', 'br.id')
 
-
             ->select(DB::raw("TRIM(SUM(dsp.quantity))+0 as count_inpatient"))
             ->where('br.id', '=', $user->branch_id)
             ->where('los.service_name', 'like', '%rawat inap%');
@@ -338,7 +349,6 @@ class PenggajianController extends Controller
         }
 
         $count_inpatient = $count_inpatient
-        // ->where('cur.status_outpatient_inpatient', '=', 1)
             ->first();
 
         $amount_surgery = DB::table('users as usr')
@@ -367,10 +377,34 @@ class PenggajianController extends Controller
             $amount_surgery->amount_surgery = 0;
         }
 
+        //==============================================================
+
+        $count_grooming = DB::table('list_of_payments as lop')
+            ->join('list_of_payment_services as lops', 'lops.list_of_payment_id', 'lop.id')
+            ->join('detail_service_patients as dsp', 'lops.detail_service_patient_id', 'dsp.id')
+            ->join('price_services as ps', 'dsp.price_service_id', 'ps.id')
+            ->join('list_of_services as los', 'ps.list_of_services_id', 'los.id')
+            ->join('users as usr', 'dsp.user_id', 'usr.id')
+            ->join('branches as br', 'usr.branch_id', 'br.id')
+
+            ->select(DB::raw("TRIM(SUM(dsp.quantity))+0 as count_grooming"))
+            ->where('br.id', '=', $user->branch_id)
+            ->where('los.service_name', 'like', '%grooming%');
+
+        if ($request->date) {
+            $count_grooming = $count_grooming
+                ->where(DB::raw("MONTH(lops.updated_at)"), $date[1])
+                ->where(DB::raw("YEAR(lops.updated_at)"), $date[2]);
+        }
+
+        $count_grooming = $count_grooming
+            ->first();
+
         return response()->json([
             'amount_turnover' => $amount_turnover,
             'count_inpatient' => $count_inpatient->count_inpatient,
             'amount_surgery' => $amount_surgery->amount_surgery,
+            'count_grooming' => $count_grooming->count_grooming,
         ], 200);
     }
 
@@ -399,6 +433,12 @@ class PenggajianController extends Controller
             'amount_surgery' => 'required|numeric|min:0',
             'total_surgery' => 'required|numeric|min:0',
             'total_overall' => 'required|numeric|min:0',
+
+            'amount_grooming' => 'required|numeric|min:0',
+            'count_grooming' => 'required|numeric|min:0',
+            'total_grooming' => 'required|numeric|min:0',
+
+            'minus_turnover' => 'required|numeric|min:0',
         ]);
 
         if ($validate->fails()) {
@@ -448,6 +488,13 @@ class PenggajianController extends Controller
         $payroll->total_overall = $request->total_overall;
         $payroll->user_update_id = $request->user()->id;
         $payroll->updated_at = \Carbon\Carbon::now();
+
+        $payroll->amount_grooming = $request->amount_grooming;
+        $payroll->count_grooming = $request->count_grooming;
+        $payroll->total_grooming = $request->total_grooming;
+
+        $payroll->minus_turnover = $request->minus_turnover;
+
         $payroll->save();
 
         return response()->json([
@@ -493,19 +540,6 @@ class PenggajianController extends Controller
     public function generate(Request $request)
     {
 
-        // $pdf = app('Fpdf');
-        // $pdf->AddPage();
-        // $pdf->SetFont('Arial', 'B', 16);
-        // $pdf->Cell(40, 10, 'Hello World!');
-        // $pdf->Output('F', 'filename3.pdf');
-
-        // $file = public_path() . "/filename3.pdf";
-
-        // $headers = array(
-        //     'Content-Type: application/pdf',
-        // );
-
-        // return Response::download($file, 'filename3.pdf', $headers);
         $terbilang = new Terbilang();
 
         $data_user = DB::table('payrolls as py')
@@ -528,6 +562,7 @@ class PenggajianController extends Controller
                 'py.total_turnover as total_turnover',
                 'py.total_inpatient as total_inpatient',
                 'py.total_surgery as total_surgery',
+                'py.total_grooming as total_grooming',
                 DB::raw("TRIM(py.total_overall)+0 as total_overall"),
             )
             ->where('py.id', '=', $request->id)

@@ -301,6 +301,18 @@
         </tr>
 
         <tr>
+            <td style="text-align: center">
+                <label>5</label>
+            </td>
+            <td>
+                <label>Bonus Grooming</label>
+            </td>
+            <td>
+                <label>Rp {{ number_format($data_user[0]->total_grooming) }}</label>
+            </td>
+        </tr>
+
+        <tr>
             <td>
                 &nbsp;
             </td>

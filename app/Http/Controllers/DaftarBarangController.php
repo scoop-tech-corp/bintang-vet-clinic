@@ -291,7 +291,7 @@ class DaftarBarangController extends Controller
             'jumlah_barang' => 'required|numeric|min:0',
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
-            'cabang' => 'required|string|max:50',
+            // 'cabang' => 'required|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -303,27 +303,44 @@ class DaftarBarangController extends Controller
             ], 422);
         }
 
-        $check_branch = DB::table('list_of_items')
-            ->where('branch_id', '=', $request->cabang)
-            ->where('item_name', '=', $request->nama_barang)
-            ->count();
+        $branchId = $request->Cabang;
+        $result_branch = json_decode($branchId, true);
 
-        if ($check_branch > 0) {
-
+        if (count($result_branch) == 0) {
             return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Data sudah ada!'],
+                'message' => 'The given data was invalid.',
+                'errors' => ['Data Cabang Harus dipilih minimal 1!'],
             ], 422);
         }
 
-        $item = ListofItems::create([
-            'item_name' => $request->nama_barang,
-            'total_item' => $request->jumlah_barang,
-            'unit_item_id' => $request->satuan_barang,
-            'category_item_id' => $request->kategori_barang,
-            'branch_id' => $request->cabang,
-            'user_id' => $request->user()->id,
-        ]);
+        foreach ($result_branch as $key_branch) {
+
+            $check_branch = DB::table('list_of_items')
+                ->where('branch_id', '=', $key_branch['CabangId'])
+                ->where('item_name', '=', $request->nama_barang)
+                ->count();
+
+            if ($check_branch > 0) {
+
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Data sudah ada!'],
+                ], 422);
+            }
+
+        }
+
+        foreach ($result_branch as $key_branch) {
+
+            $item = ListofItems::create([
+                'item_name' => $request->nama_barang,
+                'total_item' => $request->jumlah_barang,
+                'unit_item_id' => $request->satuan_barang,
+                'category_item_id' => $request->kategori_barang,
+                'branch_id' => $request->cabang,
+                'user_id' => $request->user()->id,
+            ]);
+        }
 
         return response()->json(
             [

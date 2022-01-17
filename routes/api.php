@@ -141,6 +141,12 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::delete('pembayaran', 'PembayaranController@delete');
 
+        //Metode Pembayaran
+        Route::get('metode-pembayaran', 'DaftarMetodePembayaranController@index');
+        Route::post('metode-pembayaran', 'DaftarMetodePembayaranController@create');
+        Route::put('metode-pembayaran', 'DaftarMetodePembayaranController@update');
+        Route::delete('metode-pembayaran', 'DaftarMetodePembayaranController@delete');
+
         //Route::delete('pembayaran/all', 'PembayaranController@delete_all');
 
         //riwayat pasien

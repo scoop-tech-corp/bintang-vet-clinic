@@ -198,7 +198,7 @@ class KelompokObatController extends Controller
 
         $validate = Validator::make($request->all(), [
             'NamaGrup' => 'required|string|max:50',
-            'Cabang' => 'required|integer',
+            // 'Cabang' => 'required|integer',
         ]);
 
         if ($validate->fails()) {
@@ -210,26 +210,41 @@ class KelompokObatController extends Controller
             ], 422);
         }
 
-        $find_duplicate = db::table('medicine_groups')
-            ->select('group_name')
-            ->where('group_name', '=', $request->NamaGrup)
-            ->where('branch_id', '=', $request->Cabang)
-            ->count();
+        $branchId = $request->Cabang;
+        $result_branch = json_decode($branchId, true);
 
-        if ($find_duplicate != 0) {
-
+        if (count($result_branch) == 0) {
             return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Data sudah ada!'],
+                'message' => 'The given data was invalid.',
+                'errors' => ['Data Cabang Harus dipilih minimal 1!'],
             ], 422);
-
         }
 
-        MedicineGroup::create([
-            'group_name' => $request->NamaGrup,
-            'branch_id' => $request->Cabang,
-            'user_id' => $request->user()->id,
-        ]);
+        foreach ($result_branch as $key_branch) {
+
+            $find_duplicate = db::table('medicine_groups')
+                ->select('group_name')
+                ->where('group_name', '=', $request->NamaGrup)
+                ->where('branch_id', '=', $key_branch['CabangId'])
+                ->count();
+
+            if ($find_duplicate != 0) {
+
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Data sudah ada!'],
+                ], 422);
+
+            }
+        }
+
+        foreach ($result_branch as $key_branch) {
+            MedicineGroup::create([
+                'group_name' => $request->NamaGrup,
+                'branch_id' => $request->Cabang,
+                'user_id' => $request->user()->id,
+            ]);
+        }
 
         return response()->json([
             'message' => 'Berhasil menambah Kelompok Barang',
