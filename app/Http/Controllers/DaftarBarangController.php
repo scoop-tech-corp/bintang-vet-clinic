@@ -303,7 +303,7 @@ class DaftarBarangController extends Controller
             ], 422);
         }
 
-        $branchId = $request->Cabang;
+        $branchId = $request->cabang;
         $result_branch = json_decode($branchId, true);
 
         if (count($result_branch) == 0) {
@@ -316,7 +316,7 @@ class DaftarBarangController extends Controller
         foreach ($result_branch as $key_branch) {
 
             $check_branch = DB::table('list_of_items')
-                ->where('branch_id', '=', $key_branch['CabangId'])
+                ->where('branch_id', '=', $key_branch)
                 ->where('item_name', '=', $request->nama_barang)
                 ->count();
 
@@ -337,7 +337,7 @@ class DaftarBarangController extends Controller
                 'total_item' => $request->jumlah_barang,
                 'unit_item_id' => $request->satuan_barang,
                 'category_item_id' => $request->kategori_barang,
-                'branch_id' => $request->cabang,
+                'branch_id' => $key_branch,
                 'user_id' => $request->user()->id,
             ]);
         }
