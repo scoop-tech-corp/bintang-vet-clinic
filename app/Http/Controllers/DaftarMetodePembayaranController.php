@@ -52,7 +52,7 @@ class DaftarMetodePembayaranController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'NamaPembayaran' => 'required|string|max:20|min:3|unique:payment_methods,payment_name',
+            'nama_pembayaran' => 'required|string|max:20|min:3|unique:payment_methods,payment_name',
         ]);
 
         if ($validate->fails()) {
@@ -65,7 +65,7 @@ class DaftarMetodePembayaranController extends Controller
         }
 
         payment_method::create([
-            'payment_name' => $request->NamaPembayaran,
+            'payment_name' => $request->nama_pembayaran,
             'user_id' => $request->user()->id,
         ]);
 
@@ -83,7 +83,7 @@ class DaftarMetodePembayaranController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'NamaPembayaran' => 'required|string|max:20|min:3',
+            'nama_pembayaran' => 'required|string|max:20|min:3',
         ]);
 
         if ($validate->fails()) {
@@ -104,13 +104,13 @@ class DaftarMetodePembayaranController extends Controller
             ], 404);
         }
 
-        $payment_method->payment_name = $request->NamaPembayaran;
+        $payment_method->payment_name = $request->nama_pembayaran;
         $payment_method->user_update_id = $request->user()->id;
         $payment_method->updated_at = \Carbon\Carbon::now();
         $payment_method->save();
 
         return response()->json([
-            'message' => 'Berhasil mengupdate Cabang',
+            'message' => 'Berhasil mengupdate Metode Pembayaran',
         ], 200);
     }
 
