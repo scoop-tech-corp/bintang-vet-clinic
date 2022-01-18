@@ -209,7 +209,7 @@ class KelompokObatController extends Controller
             ], 422);
         }
 
-        $branchId = $request->Cabang;
+        $branchId = $request->cabang;
         $result_branch = json_decode($branchId, true);
 
         if (count($result_branch) == 0) {
@@ -239,7 +239,7 @@ class KelompokObatController extends Controller
 
         foreach ($result_branch as $key_branch) {
             MedicineGroup::create([
-                'group_name' => $request->NamaGrup,
+                'group_name' => $request->nama_grup,
                 'branch_id' => $key_branch,
                 'user_id' => $request->user()->id,
             ]);
