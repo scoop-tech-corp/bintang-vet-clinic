@@ -197,8 +197,7 @@ class KelompokObatController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'NamaGrup' => 'required|string|max:50',
-            // 'Cabang' => 'required|integer',
+            'nama_grup' => 'required|string|max:50',
         ]);
 
         if ($validate->fails()) {
@@ -224,8 +223,8 @@ class KelompokObatController extends Controller
 
             $find_duplicate = db::table('medicine_groups')
                 ->select('group_name')
-                ->where('group_name', '=', $request->NamaGrup)
-                ->where('branch_id', '=', $key_branch['CabangId'])
+                ->where('group_name', '=', $request->nama_grup)
+                ->where('branch_id', '=', $key_branch)
                 ->count();
 
             if ($find_duplicate != 0) {
@@ -241,7 +240,7 @@ class KelompokObatController extends Controller
         foreach ($result_branch as $key_branch) {
             MedicineGroup::create([
                 'group_name' => $request->NamaGrup,
-                'branch_id' => $request->Cabang,
+                'branch_id' => $key_branch,
                 'user_id' => $request->user()->id,
             ]);
         }
@@ -261,8 +260,8 @@ class KelompokObatController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'NamaGrup' => 'required|string|max:50',
-            'Cabang' => 'required|integer',
+            'nama_grup' => 'required|string|max:50',
+            'cabang_id' => 'required|integer',
         ]);
 
         if ($validate->fails()) {
@@ -285,8 +284,8 @@ class KelompokObatController extends Controller
 
         $find_duplicate = db::table('medicine_groups')
             ->select('group_name')
-            ->where('group_name', '=', $request->NamaGrup)
-            ->where('branch_id', '=', $request->Cabang)
+            ->where('group_name', '=', $request->nama_grup)
+            ->where('branch_id', '=', $request->cabang_id)
             ->where('id', '!=', $request->id)
             ->count();
 
@@ -299,8 +298,8 @@ class KelompokObatController extends Controller
 
         }
 
-        $medicine_groups->group_name = $request->NamaGrup;
-        $medicine_groups->branch_id = $request->Cabang;
+        $medicine_groups->group_name = $request->nama_grup;
+        $medicine_groups->branch_id = $request->cabang_id;
         $medicine_groups->user_update_id = $request->user()->id;
         $medicine_groups->updated_at = \Carbon\Carbon::now();
         $medicine_groups->save();
