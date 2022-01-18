@@ -250,7 +250,7 @@ class DaftarJasaController extends Controller
             ], 422);
         }
 
-        $branchId = $request->Cabang;
+        $branchId = $request->cabang;
         $result_branch = json_decode($branchId, true);
 
         if (count($result_branch) == 0) {
@@ -263,7 +263,7 @@ class DaftarJasaController extends Controller
         foreach ($result_branch as $key_branch) {
 
             $check_service = DB::table('list_of_services')
-                ->where('branch_id', '=', $key_branch['CabangId'])
+                ->where('branch_id', '=', $key_branch)
                 ->where('service_category_id', '=', $request->KategoriJasa)
                 ->where('service_name', '=', $request->NamaLayanan)
                 ->count();
@@ -281,7 +281,7 @@ class DaftarJasaController extends Controller
             $list_of_services = ListofServices::create([
                 'service_name' => $request->NamaLayanan,
                 'service_category_id' => $request->KategoriJasa,
-                'branch_id' => $key_branch['CabangId'],
+                'branch_id' => $key_branch,
                 'user_id' => $request->user()->id,
             ]);
         }
