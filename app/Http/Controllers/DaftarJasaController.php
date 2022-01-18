@@ -55,10 +55,7 @@ class DaftarJasaController extends Controller
             $list_of_services = $list_of_services->get();
 
             return response()->json($list_of_services, 200);
-            // $list_of_services = $list_of_services->where('list_of_services.service_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('service_categories.category_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('branches.branch_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%');
+
         } else {
 
             $list_of_services = DB::table('list_of_services')
@@ -236,9 +233,8 @@ class DaftarJasaController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'NamaLayanan' => 'required|string|min:3|max:50',
-            'KategoriJasa' => 'required|integer|max:50',
-            // 'CabangId' => 'required|integer',
+            'nama_layanan' => 'required|string|min:3|max:50',
+            'kategori_jasa' => 'required|integer|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -264,8 +260,8 @@ class DaftarJasaController extends Controller
 
             $check_service = DB::table('list_of_services')
                 ->where('branch_id', '=', $key_branch)
-                ->where('service_category_id', '=', $request->KategoriJasa)
-                ->where('service_name', '=', $request->NamaLayanan)
+                ->where('service_category_id', '=', $request->kategori_jasa)
+                ->where('service_name', '=', $request->nama_layanan)
                 ->count();
 
             if ($check_service > 0) {
@@ -279,8 +275,8 @@ class DaftarJasaController extends Controller
 
         foreach ($result_branch as $key_branch) {
             $list_of_services = ListofServices::create([
-                'service_name' => $request->NamaLayanan,
-                'service_category_id' => $request->KategoriJasa,
+                'service_name' => $request->nama_layanan,
+                'service_category_id' => $request->kategori_jasa,
                 'branch_id' => $key_branch,
                 'user_id' => $request->user()->id,
             ]);
@@ -303,9 +299,9 @@ class DaftarJasaController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'NamaLayanan' => 'required|string|min:3|max:50',
-            'KategoriJasa' => 'required|integer|max:50',
-            'CabangId' => 'required|integer',
+            'nama_layanan' => 'required|string|min:3|max:50',
+            'kategori_jasa' => 'required|integer|max:50',
+            'cabang_id' => 'required|integer',
         ]);
 
         if ($validate->fails()) {
@@ -327,8 +323,8 @@ class DaftarJasaController extends Controller
         }
 
         $find_duplicate = db::table('list_of_services')
-            ->where('branch_id', '=', $request->cabang)
-            ->where('service_name', '=', $request->nama_barang)
+            ->where('branch_id', '=', $request->cabang_id)
+            ->where('service_name', '=', $request->nama_layanan)
             ->where('id', '!=', $request->id)
             ->count();
 
@@ -341,9 +337,9 @@ class DaftarJasaController extends Controller
 
         }
 
-        $list_of_services->service_name = $request->NamaLayanan;
-        $list_of_services->service_category_id = $request->KategoriJasa;
-        $list_of_services->branch_id = $request->CabangId;
+        $list_of_services->service_name = $request->nama_layanan;
+        $list_of_services->service_category_id = $request->kategori_jasa;
+        $list_of_services->branch_id = $request->cabang_id;
         $list_of_services->user_update_id = $request->user()->id;
         $list_of_services->updated_at = \Carbon\Carbon::now();
         $list_of_services->save();

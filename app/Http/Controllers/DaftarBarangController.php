@@ -291,7 +291,6 @@ class DaftarBarangController extends Controller
             'jumlah_barang' => 'required|numeric|min:0',
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
-            // 'cabang' => 'required|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -363,7 +362,7 @@ class DaftarBarangController extends Controller
             'jumlah_barang' => 'required|numeric|min:0',
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
-            'cabang' => 'required|string|max:50',
+            'cabang_id' => 'required|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -385,7 +384,7 @@ class DaftarBarangController extends Controller
         }
 
         $find_duplicate = db::table('list_of_items')
-            ->where('branch_id', '=', $request->cabang)
+            ->where('branch_id', '=', $request->cabang_id)
             ->where('item_name', '=', $request->nama_barang)
             ->where('id', '!=', $request->id)
             ->count();
@@ -438,7 +437,7 @@ class DaftarBarangController extends Controller
         $item->total_item = $request->jumlah_barang;
         $item->unit_item_id = $request->satuan_barang;
         $item->category_item_id = $request->kategori_barang;
-        $item->branch_id = $request->cabang;
+        $item->branch_id = $request->cabang_id;
         $item->user_update_id = $request->user()->id;
         $item->updated_at = \Carbon\Carbon::now();
         $item->save();
