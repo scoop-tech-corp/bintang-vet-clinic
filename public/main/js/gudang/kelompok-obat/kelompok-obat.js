@@ -1,297 +1,299 @@
 $(document).ready(function() {
-	let optCabang1 = '';
-	let optCabang2 = '';
+  let optCabang1 = '';
+  let optCabang2 = '';
 
-	let getId = null;
-	let modalState = '';
-	let isValidNamaKelompok = false;
-	let isValidSelectedCabang = false;
-	let isBeErr = false;
+  let getId = null;
+  let modalState = '';
+  let isValidNamaKelompok = false;
+  let isValidSelectedCabang = false;
+  let isBeErr = false;
 
-	let paramUrlSetup = {
-		orderby:'',
-		column: '',
-		keyword: '',
-		branchId: ''
-	};
+  let paramUrlSetup = {
+    orderby:'',
+    column: '',
+    keyword: '',
+    branchId: ''
+  };
 
-	if (role.toLowerCase() != 'admin') {
+  if (role.toLowerCase() != 'admin') {
     $('.columnAction').hide(); $('#filterCabang').hide();
   } else {
-		$('.section-left-box-title').append(
-			`<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>
-			<button class="btn btn-info openFormUpload">Upload Sekaligus</button>`);
+    $('.section-left-box-title').append(
+      `<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>
+      <button class="btn btn-info openFormUpload">Upload Sekaligus</button>`);
 
-		$('.section-right-box-title').addClass('width-350px');
-		$('.section-right-box-title').append(`<select id="filterCabang" style="width: 50%"></select>`);
+    $('.section-right-box-title').addClass('width-350px');
+    $('.section-right-box-title').append(`<select id="filterCabang" style="width: 50%"></select>`);
 
-		$('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
-		$('#filterCabang').append(`<option value=''>Cabang</option>`);
-		
-		loadCabang(); // load cabang
-	}
+    $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
+    $('#filterCabang').append(`<option value=''>Cabang</option>`);
+    
+    loadCabang(); // load cabang
+  }
 
-	loadKelompokObat(); // load kelompok obat	
+  loadKelompokObat(); // load kelompok obat 
 
-	$('.input-search-section .fa').click(function() {
-		onSearch($('.input-search-section input').val());
-	});
+  $('.input-search-section .fa').click(function() {
+    onSearch($('.input-search-section input').val());
+  });
 
-	$('.input-search-section input').keypress(function(e) {
-		if (e.which == 13) { onSearch($(this).val()); }
-	});
-	
-	$('.onOrdering').click(function() {
-		const column = $(this).attr('data');
-		const orderBy = $(this).attr('orderby');
-		$('.onOrdering[data="'+column+'"]').children().remove();
+  $('.input-search-section input').keypress(function(e) {
+    if (e.which == 13) { onSearch($(this).val()); }
+  });
+  
+  $('.onOrdering').click(function() {
+    const column = $(this).attr('data');
+    const orderBy = $(this).attr('orderby');
+    $('.onOrdering[data="'+column+'"]').children().remove();
 
-		if (orderBy == 'none' || orderBy == 'asc') {
-			$(this).attr('orderby', 'desc');
-			$(this).append('<span class="fa fa-sort-desc"></span>');
+    if (orderBy == 'none' || orderBy == 'asc') {
+      $(this).attr('orderby', 'desc');
+      $(this).append('<span class="fa fa-sort-desc"></span>');
 
-		} else if(orderBy == 'desc') {
-			$(this).attr('orderby', 'asc');
-			$(this).append('<span class="fa fa-sort-asc"></span>');
-		}
+    } else if(orderBy == 'desc') {
+      $(this).attr('orderby', 'asc');
+      $(this).append('<span class="fa fa-sort-asc"></span>');
+    }
 
-		paramUrlSetup.orderby = $(this).attr('orderby');
-		paramUrlSetup.column = column;
+    paramUrlSetup.orderby = $(this).attr('orderby');
+    paramUrlSetup.column = column;
 
-		loadKelompokObat();
-	});
+    loadKelompokObat();
+  });
 
-	$('#namaKelompok').keyup(function () { validationForm(); });
-	$('#selectedCabang').change(function () { validationForm(); });
-	
-	$('.openFormAdd').click(function() {
-		modalState = 'add';
-		$('.modal-title').text('Tambah Kelompok Obat');
-		refreshForm(); formConfigure();
-	});
+  $('#namaKelompok').keyup(function () { validationForm(); });
+  $('#selectedCabang').change(function () { validationForm(); });
+  
+  $('.openFormAdd').click(function() {
+    modalState = 'add';
+    $('.modal-title').text('Tambah Kelompok Obat');
+    $('#selectedCabang').attr('multiple', 'multiple');
 
-	$('.openFormUpload').click(function() {
-		$('#modal-upload-kelompok-obat .modal-title').text('Upload Kelompok Obat Sekaligus');
-		$('#modal-upload-kelompok-obat').modal('show');
-		$('.validate-error').html('');
-	});
+    refreshForm(); formConfigure();
+  });
 
-	$('.btn-download-template').click(function() {
-		$.ajax({
-			url     : $('.baseUrl').val() + '/api/kelompok-obat/download-template',
-			headers : { 'Authorization': `Bearer ${token}` },
-			type    : 'GET',
-			xhrFields: { responseType: 'blob' },
-			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data, status, xhr) {
-				let disposition = xhr.getResponseHeader('content-disposition');
-				let matches = /"([^"]*)"/.exec(disposition);
-				let filename = (matches != null && matches[1] ? matches[1] : 'file.xlsx');
-				let blob = new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-				let downloadUrl = URL.createObjectURL(blob);
-				let a = document.createElement("a");
+  $('.openFormUpload').click(function() {
+    $('#modal-upload-kelompok-obat .modal-title').text('Upload Kelompok Obat Sekaligus');
+    $('#modal-upload-kelompok-obat').modal('show');
+    $('.validate-error').html('');
+  });
 
-				a.href = downloadUrl;
-				a.download = filename
-				document.body.appendChild(a);
-				a.click();
+  $('.btn-download-template').click(function() {
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/kelompok-obat/download-template',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      xhrFields: { responseType: 'blob' },
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data, status, xhr) {
+        let disposition = xhr.getResponseHeader('content-disposition');
+        let matches = /"([^"]*)"/.exec(disposition);
+        let filename = (matches != null && matches[1] ? matches[1] : 'file.xlsx');
+        let blob = new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        let downloadUrl = URL.createObjectURL(blob);
+        let a = document.createElement("a");
 
-			}, complete: function() { $('#loading-screen').hide(); },
-			error: function(err) {
-				if (err.status == 401) {
-					localStorage.removeItem('vet-clinic');
-					location.href = $('.baseUrl').val() + '/masuk';
-				}
-			}
-		});
+        a.href = downloadUrl;
+        a.download = filename
+        document.body.appendChild(a);
+        a.click();
 
-	});
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
 
-	$("#fileupload").fileupload({
-		url: $('.baseUrl').val() + '/api/kelompok-obat/upload-template',
-		headers : { 'Authorization': `Bearer ${token}` },
-		dropZone: '#dropZone',
-		dataType: 'json',
-		autoUpload: false,
-	}).on('fileuploadadd', function (e, data) {
-		let fileTypeAllowed = /.\.(xlsx|xls)$/i;
-		let fileName = data.originalFiles[0]['name'];
-		let fileSize = data.originalFiles[0]['size'];
-		
-		if (!fileTypeAllowed.test(fileName)) {
-			$('.validate-error').html('File harus berformat .xlsx atau .xls');
-		} else {
-			$('.validate-error').html('');
-			data.submit();
-		}
-	}).on('fileuploaddone', function(e, data) {
-		$('#modal-confirmation').hide();
+  });
 
-		$("#msg-box .modal-body").text('Berhasil Upload Barang');
-		$('#msg-box').modal('show');
-		setTimeout(() => {
-			$('#modal-upload-kelompok-obat').modal('toggle');
-			loadKelompokObat();
-		}, 1000);
-	}).on('fileuploadfail', function(e, data) {
-		const getResponsError = data._response.jqXHR.responseJSON.errors.hasOwnProperty('file') ? data._response.jqXHR.responseJSON.errors.file 
-			: data._response.jqXHR.responseJSON.errors;
+  $("#fileupload").fileupload({
+    url: $('.baseUrl').val() + '/api/kelompok-obat/upload-template',
+    headers : { 'Authorization': `Bearer ${token}` },
+    dropZone: '#dropZone',
+    dataType: 'json',
+    autoUpload: false,
+  }).on('fileuploadadd', function (e, data) {
+    let fileTypeAllowed = /.\.(xlsx|xls)$/i;
+    let fileName = data.originalFiles[0]['name'];
+    let fileSize = data.originalFiles[0]['size'];
+    
+    if (!fileTypeAllowed.test(fileName)) {
+      $('.validate-error').html('File harus berformat .xlsx atau .xls');
+    } else {
+      $('.validate-error').html('');
+      data.submit();
+    }
+  }).on('fileuploaddone', function(e, data) {
+    $('#modal-confirmation').hide();
 
-		let errText = '';
-		$.each(getResponsError, function(idx, v) {
-			errText += v + ((idx !== getResponsError.length - 1) ? '<br/>' : '');
-		});
-		$('.validate-error').append(errText)
-	}).on('fileuploadprogressall', function(e,data) {
-	});
+    $("#msg-box .modal-body").text('Berhasil Upload Barang');
+    $('#msg-box').modal('show');
+    setTimeout(() => {
+      $('#modal-upload-kelompok-obat').modal('toggle');
+      loadKelompokObat();
+    }, 1000);
+  }).on('fileuploadfail', function(e, data) {
+    const getResponsError = data._response.jqXHR.responseJSON.errors.hasOwnProperty('file') ? data._response.jqXHR.responseJSON.errors.file 
+      : data._response.jqXHR.responseJSON.errors;
 
-	$('#btnSubmitKelompokObat').click(function() {
+    let errText = '';
+    $.each(getResponsError, function(idx, v) {
+      errText += v + ((idx !== getResponsError.length - 1) ? '<br/>' : '');
+    });
+    $('.validate-error').append(errText)
+  }).on('fileuploadprogressall', function(e,data) {
+  });
 
-		if (modalState == 'add') {
+  $('#btnSubmitKelompokObat').click(function() {
 
-			const fd = new FormData();
-			fd.append('NamaGrup', $('#namaKelompok').val());
-			fd.append('Cabang', $('#selectedCabang').val());
+    if (modalState == 'add') {
 
-			$.ajax({
-				url : $('.baseUrl').val() + '/api/kelompok-obat',
-				type: 'POST',
-				dataType: 'JSON',
-				headers: { 'Authorization': `Bearer ${token}` },
-				data: fd, contentType: false, cache: false,
-				processData: false,
-				beforeSend: function() { $('#loading-screen').show(); },
-				success: function(resp) {
+      const fd = new FormData();
+      fd.append('nama_grup', $('#namaKelompok').val());
+      fd.append('cabang', JSON.stringify($('#selectedCabang').val().map(x => +x)));
 
-					$("#msg-box .modal-body").text('Berhasil Menambah Data');
-					$('#msg-box').modal('show');
+      $.ajax({
+        url : $('.baseUrl').val() + '/api/kelompok-obat',
+        type: 'POST',
+        dataType: 'JSON',
+        headers: { 'Authorization': `Bearer ${token}` },
+        data: fd, contentType: false, cache: false,
+        processData: false,
+        beforeSend: function() { $('#loading-screen').show(); },
+        success: function(resp) {
 
-					setTimeout(() => {
-						$('#modal-kelompok-obat').modal('toggle');
-						refreshForm(); loadKelompokObat();
-					}, 1000);
-				}, complete: function() { $('#loading-screen').hide(); }
-				, error: function(err) {
-					if (err.status === 422) {
-						let errText = ''; $('#beErr').empty(); $('#btnSubmitKelompokObat').attr('disabled', true);
-						$.each(err.responseJSON.errors, function(idx, v) {
-							errText += v + ((idx !== err.responseJSON.errors.length - 1) ? '<br/>' : '');
-						});
-						$('#beErr').append(errText); isBeErr = true;
-					} else if (err.status == 401) {
-						localStorage.removeItem('vet-clinic');
-						location.href = $('.baseUrl').val() + '/masuk';
-					}
-				}
-			});
+          $("#msg-box .modal-body").text('Berhasil Menambah Data');
+          $('#msg-box').modal('show');
 
-		} else {
-			// edit
-			$('#modal-confirmation .modal-title').text('Peringatan');
-			$('#modal-confirmation .box-body').text('Anda yakin untuk mengubah data ini ?');
-			$('#modal-confirmation').modal('show');
-		}
-	});
+          setTimeout(() => {
+            $('#modal-kelompok-obat').modal('toggle');
+            refreshForm(); loadKelompokObat();
+          }, 1000);
+        }, complete: function() { $('#loading-screen').hide(); }
+        , error: function(err) {
+          if (err.status === 422) {
+            let errText = ''; $('#beErr').empty(); $('#btnSubmitKelompokObat').attr('disabled', true);
+            $.each(err.responseJSON.errors, function(idx, v) {
+              errText += v + ((idx !== err.responseJSON.errors.length - 1) ? '<br/>' : '');
+            });
+            $('#beErr').append(errText); isBeErr = true;
+          } else if (err.status == 401) {
+            localStorage.removeItem('vet-clinic');
+            location.href = $('.baseUrl').val() + '/masuk';
+          }
+        }
+      });
 
-	$('#submitConfirm').click(function() {
+    } else {
+      // edit
+      $('#modal-confirmation .modal-title').text('Peringatan');
+      $('#modal-confirmation .box-body').text('Anda yakin untuk mengubah data ini ?');
+      $('#modal-confirmation').modal('show');
+    }
+  });
 
-		if (modalState == 'edit') {
-			// process edit
-			const datas = {
-				id: getId,
-				NamaGrup: $('#namaKelompok').val(),
-				Cabang: $('#selectedCabang').val()
-			};
+  $('#submitConfirm').click(function() {
 
-			$.ajax({
-				url : $('.baseUrl').val() + '/api/kelompok-obat',
-				type: 'PUT',
-				dataType: 'JSON',
-				headers: { 'Authorization': `Bearer ${token}` },
-				data: datas,
-				beforeSend: function() { $('#loading-screen').show(); },
-				success: function(data) {
-					$('#modal-confirmation .modal-title').text('Peringatan');
-					$('#modal-confirmation').modal('toggle');
+    if (modalState == 'edit') {
+      // process edit
+      const datas = {
+        id: getId,
+        nama_grup: $('#namaKelompok').val(),
+        cabang_id: $('#selectedCabang').val()
+      };
 
-					$("#msg-box .modal-body").text('Berhasil Mengubah Data');
-					$('#msg-box').modal('show');
+      $.ajax({
+        url : $('.baseUrl').val() + '/api/kelompok-obat',
+        type: 'PUT',
+        dataType: 'JSON',
+        headers: { 'Authorization': `Bearer ${token}` },
+        data: datas,
+        beforeSend: function() { $('#loading-screen').show(); },
+        success: function(data) {
+          $('#modal-confirmation .modal-title').text('Peringatan');
+          $('#modal-confirmation').modal('toggle');
 
-					setTimeout(() => {
-						$('#modal-kelompok-obat').modal('toggle');
-						refreshForm(); loadKelompokObat();
-					}, 1000);
+          $("#msg-box .modal-body").text('Berhasil Mengubah Data');
+          $('#msg-box').modal('show');
 
-				}, complete: function() { $('#loading-screen').hide(); }
-				, error: function(err) {
-					if (err.status === 422) {
-						$('#modal-confirmation .modal-title').text('Peringatan');
-						$('#modal-confirmation').modal('toggle');
+          setTimeout(() => {
+            $('#modal-kelompok-obat').modal('toggle');
+            refreshForm(); loadKelompokObat();
+          }, 1000);
 
-						let errText = ''; $('#beErr').empty(); $('#btnSubmitKelompokObat').attr('disabled', true);
-						$.each(err.responseJSON.errors, function(idx, v) {
-							errText += v + ((idx !== err.responseJSON.errors.length - 1) ? '<br/>' : '');
-						});
-						$('#beErr').append(errText); isBeErr = true;
-					} else if (err.status == 401) {
-						localStorage.removeItem('vet-clinic');
-						location.href = $('.baseUrl').val() + '/masuk';
-					}
-				}
-			});
-		} else {
-			// process delete
-			$.ajax({
-				url     : $('.baseUrl').val() + '/api/kelompok-obat',
-				headers : { 'Authorization': `Bearer ${token}` },
-				type    : 'DELETE',
-				data	  : { id: getId },
-				beforeSend: function() { $('#loading-screen').show(); },
-				success: function(data) {
-					$('#modal-confirmation .modal-title').text('Peringatan');
-					$('#modal-confirmation').modal('toggle');
+        }, complete: function() { $('#loading-screen').hide(); }
+        , error: function(err) {
+          if (err.status === 422) {
+            $('#modal-confirmation .modal-title').text('Peringatan');
+            $('#modal-confirmation').modal('toggle');
 
-					$("#msg-box .modal-body").text('Berhasil menghapus data');
-					$('#msg-box').modal('show');
+            let errText = ''; $('#beErr').empty(); $('#btnSubmitKelompokObat').attr('disabled', true);
+            $.each(err.responseJSON.errors, function(idx, v) {
+              errText += v + ((idx !== err.responseJSON.errors.length - 1) ? '<br/>' : '');
+            });
+            $('#beErr').append(errText); isBeErr = true;
+          } else if (err.status == 401) {
+            localStorage.removeItem('vet-clinic');
+            location.href = $('.baseUrl').val() + '/masuk';
+          }
+        }
+      });
+    } else {
+      // process delete
+      $.ajax({
+        url     : $('.baseUrl').val() + '/api/kelompok-obat',
+        headers : { 'Authorization': `Bearer ${token}` },
+        type    : 'DELETE',
+        data    : { id: getId },
+        beforeSend: function() { $('#loading-screen').show(); },
+        success: function(data) {
+          $('#modal-confirmation .modal-title').text('Peringatan');
+          $('#modal-confirmation').modal('toggle');
 
-					loadKelompokObat();
+          $("#msg-box .modal-body").text('Berhasil menghapus data');
+          $('#msg-box').modal('show');
 
-				}, complete: function() { $('#loading-screen').hide(); }
-				, error: function(err) {
-					if (err.status == 401) {
-						localStorage.removeItem('vet-clinic');
-						location.href = $('.baseUrl').val() + '/masuk';
-					}
-				}
-			});
-		}
-	});
+          loadKelompokObat();
 
-	$('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
+        }, complete: function() { $('#loading-screen').hide(); }
+        , error: function(err) {
+          if (err.status == 401) {
+            localStorage.removeItem('vet-clinic');
+            location.href = $('.baseUrl').val() + '/masuk';
+          }
+        }
+      });
+    }
+  });
+
+  $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
 
   function onFilterCabang(value) {
     paramUrlSetup.branchId = value;
-		loadKelompokObat();
+    loadKelompokObat();
   }
 
-	function onSearch(keyword) {
-		paramUrlSetup.keyword = keyword;
-		loadKelompokObat();
-	}
+  function onSearch(keyword) {
+    paramUrlSetup.keyword = keyword;
+    loadKelompokObat();
+  }
 
-	function loadKelompokObat() {
-		getId = null;
-		modalState = '';
-		$.ajax({
-			url     : $('.baseUrl').val() + '/api/kelompok-obat',
-			headers : { 'Authorization': `Bearer ${token}` },
-			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
-			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {
-				let listKelompokObat = '';
-				$('#list-kelompok-obat tr').remove();
+  function loadKelompokObat() {
+    getId = null;
+    modalState = '';
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/kelompok-obat',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      data    : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data) {
+        let listKelompokObat = '';
+        $('#list-kelompok-obat tr').remove();
 
         if (data.length) {
           $.each(data, function(idx, v) {
@@ -310,101 +312,102 @@ $(document).ready(function() {
         } else {
           listKelompokObat += `<tr class="text-center"><td colspan="6">Tidak ada data.</td></tr>`;
         }
-				$('#list-kelompok-obat').append(listKelompokObat);
+        $('#list-kelompok-obat').append(listKelompokObat);
 
-				$('.openFormEdit').click(function() {
-					const getObj = data.find(x => x.id == $(this).val());
-					modalState = 'edit';
+        $('.openFormEdit').click(function() {
+          const getObj = data.find(x => x.id == $(this).val());
+          modalState = 'edit';
 
-					$('.modal-title').text('Edit Kelompok Obat');
-					refreshForm();
+          $('.modal-title').text('Edit Kelompok Obat');
+          $('#selectedCabang').removeAttr('multiple');
+          refreshForm();
 
-					formConfigure();
-					getId = getObj.id;
-					$('#namaKelompok').val(getObj.group_name);
-					$('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
-				});
-			
-				$('.openFormDelete').click(function() {
-					getId = $(this).val();
-					modalState = 'delete';
+          formConfigure();
+          getId = getObj.id;
+          $('#namaKelompok').val(getObj.group_name);
+          $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
+        });
+      
+        $('.openFormDelete').click(function() {
+          getId = $(this).val();
+          modalState = 'delete';
 
-					$('#modal-confirmation .modal-title').text('Peringatan');
-					$('#modal-confirmation .box-body').text('Anda yakin ingin menghapus data ini?');
-					$('#modal-confirmation').modal('show');
-				});
+          $('#modal-confirmation .modal-title').text('Peringatan');
+          $('#modal-confirmation .box-body').text('Anda yakin ingin menghapus data ini?');
+          $('#modal-confirmation').modal('show');
+        });
 
-			}, complete: function() { $('#loading-screen').hide(); },
-			error: function(err) {
-				if (err.status == 401) {
-					localStorage.removeItem('vet-clinic');
-					location.href = $('.baseUrl').val() + '/masuk';
-				}
-			}
-		});
-	}
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+  }
 
-	function formConfigure() {
-		$('#selectedCabang').select2();
-		$('#modal-kelompok-obat').modal('show');
-		$('#btnSubmitKelompokObat').attr('disabled', true);
-	}
+  function formConfigure() {
+    $('#selectedCabang').select2({placeholder: 'Pilih Cabang'});
+    $('#modal-kelompok-obat').modal('show');
+    $('#btnSubmitKelompokObat').attr('disabled', true);
+  }
 
-	function refreshForm() {
-		$('#namaKelompok').val(null);
-		$('#selectedCabang').val(null);
-		$('#namaKelompokErr1').text(''); isValidNamaKelompok = true;
-		$('#cabangErr1').text(''); isValidSelectedCabang = true;
-		$('#beErr').empty(); isBeErr = false;
-	}
+  function refreshForm() {
+    $('#namaKelompok').val(null);
+    $('#selectedCabang').val(null);
+    $('#namaKelompokErr1').text(''); isValidNamaKelompok = true;
+    $('#cabangErr1').text(''); isValidSelectedCabang = true;
+    $('#beErr').empty(); isBeErr = false;
+  }
 
-	function validationForm() {
-		if (!$('#namaKelompok').val()) {
-			$('#namaKelompokErr1').text('Nama kelompok harus di isi'); isValidNamaKelompok = false;
-		} else { 
-			$('#namaKelompokErr1').text(''); isValidNamaKelompok = true;
-		}
+  function validationForm() {
+    if (!$('#namaKelompok').val()) {
+      $('#namaKelompokErr1').text('Nama kelompok harus di isi'); isValidNamaKelompok = false;
+    } else { 
+      $('#namaKelompokErr1').text(''); isValidNamaKelompok = true;
+    }
 
-		if (!$('#selectedCabang').val()) {
-			$('#cabangErr1').text('Cabang harus di isi'); isValidSelectedCabang = false;
-		} else {
-			$('#cabangErr1').text(''); isValidSelectedCabang = true;
-		}
+    const getSelectedCabang = $('#selectedCabang').val();
+    if ((Array.isArray(getSelectedCabang) && !getSelectedCabang.length) || (!Array.isArray(getSelectedCabang) && !getSelectedCabang)) {
+      $('#cabangErr1').text('Cabang harus di isi'); isValidSelectedCabang = false;
+    } else {
+      $('#cabangErr1').text(''); isValidSelectedCabang = true;
+    }
 
-		$('#beErr').empty(); isBeErr = false;
+    $('#beErr').empty(); isBeErr = false;
 
-		if (!isValidNamaKelompok || !isValidSelectedCabang || isBeErr) {
-			$('#btnSubmitKelompokObat').attr('disabled', true);
-		} else {
-			$('#btnSubmitKelompokObat').attr('disabled', false);
-		}
-	}
+    if (!isValidNamaKelompok || !isValidSelectedCabang || isBeErr) {
+      $('#btnSubmitKelompokObat').attr('disabled', true);
+    } else {
+      $('#btnSubmitKelompokObat').attr('disabled', false);
+    }
+  }
 
-	function loadCabang() {
-		$.ajax({
-			url     : $('.baseUrl').val() + '/api/cabang',
-			headers : { 'Authorization': `Bearer ${token}` },
-			type    : 'GET',
-			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {
-				optCabang1 += `<option value=''>Pilih Cabang</option>`;
-				optCabang2 += `<option value=''>Cabang</option>`;
-	
-				if (data.length) {
-					for (let i = 0 ; i < data.length ; i++) {
-						optCabang1 += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
-						optCabang2 += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
-					}
-				}
-				$('#selectedCabang').append(optCabang1); $('#filterCabang').append(optCabang2);
-			}, complete: function() { $('#loading-screen').hide(); },
-			error: function(err) {
-				if (err.status == 401) {
-					localStorage.removeItem('vet-clinic');
-					location.href = $('.baseUrl').val() + '/masuk';
-				}
-			}
-		});
-	}
+  function loadCabang() {
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/cabang',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data) {
+        optCabang2 += `<option value=''>Cabang</option>`;
+  
+        if (data.length) {
+          for (let i = 0 ; i < data.length ; i++) {
+            optCabang1 += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
+            optCabang2 += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
+          }
+        }
+        $('#selectedCabang').append(optCabang1); $('#filterCabang').append(optCabang2);
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+  }
 
 });
