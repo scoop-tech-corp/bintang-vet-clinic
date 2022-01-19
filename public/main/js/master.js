@@ -72,7 +72,7 @@ $(document).ready(function() {
       if (pathName === '/kategori-barang' || pathName === '/satuan-barang'  || pathName === '/daftar-barang'
         || pathName === '/pembagian-harga-barang' || pathName === '/kelompok-obat' || pathName === '/pembagian-harga-kelompok-obat') {
         $('.menuGudang').addClass('active');
-      } else if(pathName === '/kategori-jasa' || pathName === '/daftar-jasa' || pathName === '/pembagian-harga-jasa') {
+      } else if(pathName === '/kategori-jasa' || pathName === '/daftar-jasa' || pathName === '/pembagian-harga-jasa' || pathName === '/metode-pembayaran' ) {
         $('.menuLayanan').addClass('active');
       } else if (pathName === '/rawat-jalan' || pathName === '/rawat-inap') {
         $('.menuPendaftaran').addClass('active');
