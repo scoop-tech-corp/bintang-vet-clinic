@@ -73,6 +73,11 @@ Route::get('/pembagian-harga-jasa', function () {
 	return view('layanan.pembagian-harga.index');
 });
 
+Route::get('/metode-pembayaran', function () {
+	return view('layanan.metode-pembayaran.index');
+});
+
+
 // Route::get('/rawat-inap', function () {
 // 	return view('pendaftaran.rawat-inap.index');
 // });
