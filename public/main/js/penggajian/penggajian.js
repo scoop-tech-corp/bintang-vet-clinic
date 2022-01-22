@@ -10,9 +10,11 @@ $(document).ready(function() {
 	let isValidSelectedKaryawan = false;
 	let isValidPokok = false;
 	let isValidAkomodasi = false;
+	let isValidMinusTurnOver = false;
 	let isValidOmset = false;
   let isValidInap = false;
   let isValidOperasi = false;
+	let isValidGrooming = false;
 
 	let isBeErr = false;
 	let paramUrlSetup = {
@@ -74,6 +76,8 @@ $(document).ready(function() {
   $('#pokok').mask("#.##0", {reverse: true, maxlength: false});
   $('#akomodasi').mask("#.##0", {reverse: true, maxlength: false});
   $('#inputInap').mask("#.##0", {reverse: true, maxlength: false});
+	$('#inputGrooming').mask("#.##0", {reverse: true, maxlength: false});
+	$('#inputMinusTurnover').mask("#.##0", {reverse: true, maxlength: false});
 
   $('#datepicker').datepicker({
     autoclose: true,
@@ -110,6 +114,9 @@ $(document).ready(function() {
           $('#operasi-karyawan').attr('value', data.amount_surgery);
           $('#operasi-karyawan').text(data.amount_surgery !== null ? data.amount_surgery.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-');
 
+					$('#grooming-karyawan').attr('value', data.count_grooming);
+          $('#grooming-karyawan').text(data.count_grooming !== null ? data.count_grooming.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-');
+
           overallTotalCalculation();
         }, complete: function() { $('#loading-screen').hide(); },
         error: function(err) {
@@ -124,9 +131,11 @@ $(document).ready(function() {
 
   $('#pokok').keyup(function () { validationForm(); overallTotalCalculation(); });
   $('#akomodasi').keyup(function () { validationForm(); overallTotalCalculation(); });
+	$('#inputMinusTurnover').keyup(function () { validationForm(); overallTotalCalculation(); });
   $('#inputOmset').keyup(function () { validationForm(); overallTotalCalculation(); });
   $('#inputInap').keyup(function () { validationForm(); overallTotalCalculation(); });
   $('#inputOperasi').keyup(function () { validationForm(); overallTotalCalculation(); });
+	$('#inputGrooming').keyup(function () { validationForm(); overallTotalCalculation(); });
 	
 	$('.openFormAdd').click(function() {
 		modalState = 'add';
@@ -160,6 +169,12 @@ $(document).ready(function() {
       fd.append('total_surgery', parseFloat($('#totalOperasi').attr('value')));
 
       fd.append('total_overall', parseFloat($('#totalKeseluruhan').attr('value')));
+
+			fd.append('amount_grooming', $('#inputGrooming').val());
+      fd.append('count_grooming', parseFloat($('#grooming-karyawan').attr('value')));
+      fd.append('total_grooming', parseFloat($('#totalGrooming').attr('value')));
+			fd.append('minus_turnover', $('#inputMinusTurnover').val().replaceAll('.', ''));
+
 
 			$.ajax({
 				url : $('.baseUrl').val() + '/api/penggajian',
@@ -221,7 +236,11 @@ $(document).ready(function() {
         percentage_surgery: $('#inputOperasi').val(),
         amount_surgery: parseFloat($('#operasi-karyawan').attr('value')),
         total_surgery: parseFloat($('#totalOperasi').attr('value')),
-        total_overall: parseFloat($('#totalKeseluruhan').attr('value'))
+        total_overall: parseFloat($('#totalKeseluruhan').attr('value')),
+				minus_turnover: parseFloat($('#inputMinusTurnover').val().replaceAll('.', '')),
+				amount_grooming: $('#inputGrooming').val(),
+        count_grooming: parseFloat($('#grooming-karyawan').attr('value')),
+        total_grooming: parseFloat($('#totalGrooming').attr('value')),
 			};
 
 			$.ajax({
@@ -355,6 +374,7 @@ $(document).ready(function() {
 					$('#selectedNamaKaryawan').val(getObj.user_employee_id); $('#selectedNamaKaryawan').trigger('change');
           $('#pokok').val(getObj.basic_sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#akomodasi').val(getObj.accomodation.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+					$('#inputMinusTurnover').val(getObj.minus_turnover.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
 
           $('#inputOmset').val(getObj.percentage_turnover);
           $('#omset-karyawan').attr('value', getObj.amount_turnover);
@@ -373,6 +393,12 @@ $(document).ready(function() {
           $('#operasi-karyawan').text(getObj.amount_surgery !== null ? getObj.amount_surgery.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-');
           $('#totalOperasi').attr('value', getObj.total_surgery);
           $('#totalOperasi').text('Rp.' + getObj.total_surgery.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+
+					$('#inputGrooming').val(getObj.amount_grooming.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#grooming-karyawan').attr('value', getObj.count_grooming);
+          $('#grooming-karyawan').text(getObj.count_grooming !== null ? getObj.count_grooming.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-');
+          $('#totalGrooming').attr('value', getObj.total_grooming);
+          $('#totalGrooming').text('Rp.' + getObj.total_grooming.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
 
           overallTotalCalculation();
           // validationForm();
@@ -484,6 +510,7 @@ $(document).ready(function() {
 		$('#selectedNamaKaryawan').val(null);
     $('#pokok').val(null);
     $('#akomodasi').val(null);
+		$('#inputMinusTurnover').val(null);
 
     $('#inputOmset').val(null); $('#totalOmset').text('Rp -');
     $('#omset-karyawan').attr('value', null);
@@ -497,26 +524,37 @@ $(document).ready(function() {
     $('#operasi-karyawan').attr('value', null);
     $('#operasi-karyawan').text('');
 
+		$('#inputGrooming').val(null); $('#totalGrooming').text('Rp -');
+    $('#grooming-karyawan').attr('value', null);
+    $('#grooming-karyawan').text('');
+
     $('#totalKeseluruhan').text('Rp -');
 
     $('#namaKaryawanErr1').text(''); isValidSelectedKaryawan = true;
     $('#pokokErr1').text(''); isValidPokok = true;
     $('#akomodasiErr1').text(''); isValidAkomodasi = true;
+		$('#minusTurnOverErr1').text(''); isValidMinusTurnOver = true;
     $('#omsetErr1').text(''); isValidOmset = true;
     $('#inapErr1').text(''); isValidInap = true;
     $('#operasiErr1').text(''); isValidOperasi = true;
+		$('#groomingErr1').text(''); isValidGrooming = true;
     $('#beErr').empty(); isBeErr = false;
 	}
 
   function overallTotalCalculation() {
-    let totalOmset   = 0;
-    let totalInap    = 0;
-    let totalOperasi = 0;
+    let totalOmset    = 0;
+    let totalInap     = 0;
+    let totalOperasi  = 0;
+		let totalGrooming = 0;
 
     // process Omset
     const getOmset = parseFloat($('#inputOmset').val());
-    const getOmsetKaryawan = parseFloat($('#omset-karyawan').attr('value'));
+    const getDecreaseTurnover = parseFloat($('#inputMinusTurnover').val().replaceAll('.', ''));
+		let getOmsetKaryawan = parseFloat($('#omset-karyawan').attr('value'));
     if (getOmset >= 0 && getOmsetKaryawan > -1) {
+
+			getOmsetKaryawan = (getDecreaseTurnover > 0) ? getOmsetKaryawan - getDecreaseTurnover : getOmsetKaryawan;
+
       totalOmset = Math.round((getOmset / 100) * getOmsetKaryawan);
       $('#totalOmset').attr('value', totalOmset);
       $('#totalOmset').text('Rp ' + totalOmset.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
@@ -540,11 +578,20 @@ $(document).ready(function() {
       $('#totalOperasi').text('Rp ' + totalOperasi.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
     }
 
+		// process Grooming
+    const getGrooming = parseFloat($('#inputGrooming').val().replaceAll('.', ''));
+    const getGroomingKaryawan = parseFloat($('#grooming-karyawan').attr('value'));
+    if (getGrooming >= 0 && getGroomingKaryawan > -1) {
+      totalGrooming = getGrooming * getGroomingKaryawan;
+      $('#totalGrooming').attr('value', totalGrooming);
+      $('#totalGrooming').text('Rp ' + totalGrooming.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+    }
+
     // process total keseluruhan
     const pokok  = parseFloat($('#pokok').val().replaceAll('.', ''));
     const akomodasi  = parseFloat($('#akomodasi').val().replaceAll('.', ''));
-    if (totalOmset > -1 && totalInap > -1 && totalOperasi > -1 && pokok > -1 && akomodasi > -1) {
-      const total  = totalOmset + totalInap + totalOperasi + pokok + akomodasi;
+    if (totalOmset > -1 && totalInap > -1 && totalOperasi > -1 && totalGrooming > -1 && pokok > -1 && akomodasi > -1) {
+      const total  = totalOmset + totalInap + totalOperasi + totalGrooming + pokok + akomodasi;
 
       $('#totalKeseluruhan').attr('value', total);
       $('#totalKeseluruhan').text('Rp ' + total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
@@ -583,6 +630,13 @@ $(document).ready(function() {
 			$('#akomodasiErr1').text(''); isValidAkomodasi = true;
 		}
 
+		const getMinusTurnOver = parseFloat($('#inputMinusTurnover').val());
+		if(isNaN(getMinusTurnOver) || getMinusTurnOver < 0) {
+			$('#minusTurnOverErr1').text('Decrease Turn Over harus di isi dan minimal 0'); isValidMinusTurnOver = false;
+		} else {
+			$('#minusTurnOverErr1').text(''); isValidMinusTurnOver = true;
+		}
+
     if (!$('#inputOmset').val()) {
 			$('#omsetErr1').text('Omset harus di isi'); isValidOmset = false;
 		} else { 
@@ -601,12 +655,19 @@ $(document).ready(function() {
 			$('#operasiErr1').text(''); isValidOperasi = true;
 		}
 
+		if (!$('#inputGrooming').val()) {
+			$('#groomingErr1').text('Grooming harus di isi'); isValidGrooming = false;
+		} else { 
+			$('#groomingErr1').text(''); isValidGrooming = true;
+		}
+
 		$('#beErr').empty(); isBeErr = false;
 
     const getTotalKeseluruhan = parseFloat($('#totalKeseluruhan').attr('value'));
 
-		if (!isValidTanggal || !isValidSelectedKaryawan || !isValidPokok || !isValidAkomodasi || !isValidOmset
-       || !isValidInap || !isValidOperasi || isBeErr || (getTotalKeseluruhan !== 0 && !getTotalKeseluruhan)) {
+		if (!isValidTanggal || !isValidSelectedKaryawan || !isValidPokok || !isValidAkomodasi || !isValidMinusTurnOver 
+				|| !isValidOmset || !isValidInap || !isValidOperasi || !isValidGrooming || isBeErr 
+				|| (getTotalKeseluruhan !== 0 && !getTotalKeseluruhan)) {
 			$('#btnSubmitPenggajian').attr('disabled', true);
 		} else {
 			$('#btnSubmitPenggajian').attr('disabled', false);
