@@ -36,6 +36,11 @@
 							<input id="akomodasi" type="text" class="form-control" min="0" placeholder="Masukan Nominal Akomodasi">
 							<div id="akomodasiErr1" class="validate-error"></div>
 						</div>
+            <div class="form-group">
+							<label for="decrease">Decrease Turnover</label>
+              <input id="inputMinusTurnover" type="text" class="form-control" min="0" placeholder="Masukan Nominal Decrease Turnover">
+              <div id="minusTurnOverErr1" class="validate-error"></div>
+						</div>
 
             <table class="form-group">
               <tr>
@@ -81,6 +86,22 @@
               </tr>
               <tr>
                 <td><div id="operasiErr1" class="validate-error"></div></td>
+              </tr>
+              <tr>
+                <td class="p-top-10px"><label for="grooming">Grooming</label></td>
+              </tr>
+              <tr>
+                <td class="d-flex">
+                  <div class="p-top-5px p-right-5px">Rp</div><input id="inputGrooming" type="number" class="form-control" min="0">
+                </td>
+                <td></td>
+                <td class="p-left-15px">X</td>
+                <td class="p-left-15px"><span id="grooming-karyawan"></span></td>
+                <td class="p-left-15px">=</td>
+                <td class="p-left-15px"><span id="totalGrooming"></span></td>
+              </tr>
+              <tr>
+                <td><div id="groomingErr1" class="validate-error"></div></td>
               </tr>
             </table>
 
