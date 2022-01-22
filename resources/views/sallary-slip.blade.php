@@ -301,8 +301,20 @@
         </tr>
 
         <tr>
+          <td>
+              &nbsp;
+          </td>
+          <td>
+
+          </td>
+          <td>
+
+          </td>
+      </tr>
+
+        <tr>
             <td style="text-align: center">
-                <label>5</label>
+                <label>6</label>
             </td>
             <td>
                 <label>Bonus Grooming</label>

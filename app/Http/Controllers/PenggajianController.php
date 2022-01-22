@@ -41,6 +41,11 @@ class PenggajianController extends Controller
                     DB::raw("TRIM(py.amount_surgery)+0 as amount_surgery"),
                     DB::raw("TRIM(py.total_surgery)+0 as total_surgery"),
                     DB::raw("TRIM(py.total_overall)+0 as total_overall"),
+
+                    DB::raw("TRIM(py.amount_grooming)+0 as amount_grooming"),
+                    DB::raw("TRIM(py.count_grooming)+0 as count_grooming"),
+                    DB::raw("TRIM(py.total_grooming)+0 as total_grooming"),
+                    DB::raw("TRIM(py.minus_turnover)+0 as minus_turnover"),
                 )
                 ->where('py.isDeleted', '=', 0);
 
