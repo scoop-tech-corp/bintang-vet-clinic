@@ -172,8 +172,9 @@ $(document).ready(function() {
     });
 
     arrayKelompokObat.forEach(ko => {
-      let newObj = {medicine_group_id: null, list_of_medicine: []};
+      let newObj = {medicine_group_id: null, quantity: null, list_of_medicine: []};
       newObj.medicine_group_id = ko.kelompokObatId;
+      newObj.quantity = ko.quantity;
 
       ko.selectedListBarang.forEach(lb => {
         newObj.list_of_medicine.push({price_item_id: lb.price_item_id, quantity: lb.quantity, price_overall: lb.price_overall});
@@ -239,9 +240,10 @@ $(document).ready(function() {
     });
 
     arrayKelompokObatDelete.forEach(ko => {
-      let newObj = {id: null, medicine_group_id: null, list_of_medicine: [], status: 'del'};
+      let newObj = {id: null, medicine_group_id: null, quantity: null, list_of_medicine: [], status: 'del'};
       newObj.id = ko.id;
       newObj.medicine_group_id = ko.kelompokObatId;
+      newObj.quantity = ko.quantity;
 
       ko.deletedUpdateListBarang.forEach(dul => {
         newObj.list_of_medicine.push({id: dul.id, price_item_id: dul.price_item_id, quantity: dul.quantity, price_overall: dul.price_overall, status: 'del'});
@@ -255,9 +257,10 @@ $(document).ready(function() {
     });
 
     arrayKelompokObat.forEach(ko => {
-      let newObj = {id: null, medicine_group_id: null, list_of_medicine: [], status: ''};
+      let newObj = {id: null, medicine_group_id: null, quantity: null, list_of_medicine: [], status: ''};
       newObj.id = ko.id;
       newObj.medicine_group_id = ko.kelompokObatId;
+      newObj.quantity = ko.quantity;
 
       ko.deletedUpdateListBarang.forEach(dul => {
         newObj.list_of_medicine.push({id: dul.id, price_item_id: dul.price_item_id, quantity: dul.quantity, price_overall: dul.price_overall, status: 'del'});
@@ -496,6 +499,7 @@ $(document).ready(function() {
             let newObj = { id: null, kelompokObatId: null, selectDropdownBarang: [], selectedListBarang: [], deletedUpdateListBarang: [] };
             newObj.id = item.id; // untuk membedakan data lama dan baru
             newObj.kelompokObatId = item.medicine_group_id;
+            newObj.quantity = item.quantity;
             item.list_of_medicine.forEach(lom => {
               newObj.selectDropdownBarang.push(lom.price_item_id);
               newObj.selectedListBarang.push({
