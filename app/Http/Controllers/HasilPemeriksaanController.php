@@ -29,33 +29,7 @@ class HasilPemeriksaanController extends Controller
             ], 403);
         }
 
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->join('owners', 'patients.owner_id', '=', 'owners.id')
-            ->select(
-                'check_up_results.id',
-                'registrations.id_number as registration_number',
-                'patients.id as patient_id',
-                'patients.id_member as patient_number',
-                'patients.pet_category',
-                'patients.pet_name',
-                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
-                'registrations.complaint',
-                'check_up_results.status_finish',
-                'check_up_results.status_outpatient_inpatient',
-                'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"))
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
+        $items_per_page = 50;
 
         if ($request->keyword) {
 
@@ -85,7 +59,8 @@ class HasilPemeriksaanController extends Controller
                 $data = $data->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(['total_paging' => 0,
+                    'data' => $data], 200);
             }
 
             if ($request->user()->role == 'dokter') {
@@ -102,9 +77,17 @@ class HasilPemeriksaanController extends Controller
 
             $data = $data->orderBy('check_up_results.id', 'desc');
 
-            $data = $data->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($data, 200);
+            $count_data = $data->count();
+
+            $data = $data->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(
+                ['total_paging' => ceil($total_paging),
+                    'data' => $data], 200);
         } else {
 
             $data = DB::table('check_up_results')
@@ -141,9 +124,17 @@ class HasilPemeriksaanController extends Controller
 
             $data = $data->orderBy('check_up_results.id', 'desc');
 
-            $data = $data->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($data, 200);
+            $count_data = $data->count();
+
+            $data = $data->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(
+                ['total_paging' => ceil($total_paging),
+                    'data' => $data], 200);
         }
     }
 
@@ -311,7 +302,8 @@ class HasilPemeriksaanController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('owner_name', 'like', '%' . $request->keyword . '%');
+            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%')
+            ->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
         }
 
         $data = $data->get();
@@ -569,6 +561,8 @@ class HasilPemeriksaanController extends Controller
                         ->where('id', '=', $check_price_item->list_of_items_id)
                         ->first();
 
+                        info($check_price_item->list_of_items_id);
+
                     if (is_null($check_storage_name)) {
                         return response()->json([
                             'message' => 'The data was invalid.',
@@ -778,6 +772,7 @@ class HasilPemeriksaanController extends Controller
                     'check_up_result_id' => $item->id,
                     'medicine_group_id' => $res_group['medicine_group_id'],
                     'status_paid_off' => 0,
+                    'quantity' => $res_group['quantity'],
                     'user_id' => $request->user()->id,
                 ]);
 
@@ -922,6 +917,7 @@ class HasilPemeriksaanController extends Controller
                 'price_medicine_groups.id as price_medicine_group_id',
                 DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
                 'detail_medicine_group_check_up_results.medicine_group_id as medicine_group_id',
+                'detail_medicine_group_check_up_results.quantity as quantity',
                 'medicine_groups.group_name',
                 'branches.id as branch_id',
                 'branches.branch_name')
@@ -1613,6 +1609,7 @@ class HasilPemeriksaanController extends Controller
                     $detail_medicine_group = Detail_medicine_group_check_up_result::find($res_group['id']);
 
                     $detail_medicine_group->medicine_group_id = $res_group['medicine_group_id'];
+                    $detail_medicine_group->quantity = $res_group['quantity'];
                     $detail_medicine_group->user_update_id = $request->user()->id;
                     $detail_medicine_group->updated_at = \Carbon\Carbon::now();
                     $detail_medicine_group->save();
@@ -1789,6 +1786,7 @@ class HasilPemeriksaanController extends Controller
                     $add_parent = Detail_medicine_group_check_up_result::create([
                         'check_up_result_id' => $check_up_result->id,
                         'medicine_group_id' => $res_group['medicine_group_id'],
+                        'quantity' => $res_group['quantity'],
                         'status_paid_off' => 0,
                         'user_id' => $request->user()->id,
                     ]);
