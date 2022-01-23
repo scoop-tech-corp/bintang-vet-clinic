@@ -26,15 +26,16 @@
             <th class="onOrdering columnCabang" data='branch_name' orderby="none">Cabang <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='basic_salary' orderby="none">Pokok <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='accomodation' orderby="none">Akomodasi <span class="fa fa-sort"></span></th>
-            <th class="onOrdering" data='total_turnover' orderby="none">Omset <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='total_turnover' orderby="none">Omzet <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='total_inpatient' orderby="none">Inap <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='total_surgery' orderby="none">Operasi <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='total_grooming' orderby="none">Grooming <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='total_overall' orderby="none">Total Keseluruhan <span class="fa fa-sort"></span></th>
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>
         <tbody id="list-penggajian">
-          <tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>
+          <tr class="text-center"><td colspan="12">Tidak ada data.</td></tr>
         </tbody>
       </table>
     </div>

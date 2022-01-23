@@ -37,8 +37,8 @@
 							<div id="akomodasiErr1" class="validate-error"></div>
 						</div>
             <div class="form-group">
-							<label for="decrease">Decrease Turnover</label>
-              <input id="inputMinusTurnover" type="text" class="form-control" min="0" placeholder="Masukan Nominal Decrease Turnover">
+							<label for="decrease">Pengurangan Omzet</label>
+              <input id="inputMinusTurnover" type="text" class="form-control" min="0" placeholder="Masukan Pengurangan Omzet">
               <div id="minusTurnOverErr1" class="validate-error"></div>
 						</div>
 

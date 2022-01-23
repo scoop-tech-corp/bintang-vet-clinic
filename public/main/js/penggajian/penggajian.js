@@ -341,6 +341,7 @@ $(document).ready(function() {
               <td>Rp ${typeof(v.total_turnover) == 'number' ? v.total_turnover.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
               <td>Rp ${typeof(v.total_inpatient) == 'number' ? v.total_inpatient.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
               <td>Rp ${typeof(v.total_surgery) == 'number' ? v.total_surgery.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
+							<td>Rp ${typeof(v.total_grooming) == 'number' ? v.total_grooming.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
               <td>Rp ${typeof(v.total_overall) == 'number' ? v.total_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>`
               +`<td>
                 <button type="button" class="btn btn-info onCetak m-r-3px" value=${v.id}><i class="fa fa-print" aria-hidden="true"></i></button>`
@@ -353,7 +354,7 @@ $(document).ready(function() {
             </tr>`;
           });
         } else {
-          listPenggajian += `<tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>`;
+          listPenggajian += `<tr class="text-center"><td colspan="12">Tidak ada data.</td></tr>`;
         }
 				$('#list-penggajian').append(listPenggajian);
 
@@ -632,7 +633,7 @@ $(document).ready(function() {
 
 		const getMinusTurnOver = parseFloat($('#inputMinusTurnover').val());
 		if(isNaN(getMinusTurnOver) || getMinusTurnOver < 0) {
-			$('#minusTurnOverErr1').text('Decrease Turn Over harus di isi dan minimal 0'); isValidMinusTurnOver = false;
+			$('#minusTurnOverErr1').text('Pengurangan Omzet harus di isi dan minimal 0'); isValidMinusTurnOver = false;
 		} else {
 			$('#minusTurnOverErr1').text(''); isValidMinusTurnOver = true;
 		}
