@@ -7,7 +7,7 @@ let selectedListBarang = [];
 $(document).ready(function() {
 
   $('#btnTambahKelompokObat').click(function() {
-    arrayKelompokObat.push({ id: null, kelompokObatId: null, selectDropdownBarang: [], selectedListBarang: [], deletedUpdateListBarang: [] });
+    arrayKelompokObat.push({ id: null, kelompokObatId: null, quantity: null ,selectDropdownBarang: [], selectedListBarang: [], deletedUpdateListBarang: [] });
     drawListKelompokObat();
     validationForm();
   });
@@ -22,13 +22,14 @@ function drawListKelompokObat() {
   arrayKelompokObat.forEach((ko, idx) => {
     let rowSelectedListBarang = appendListSelectBarang(ko.selectedListBarang, idx);
 
-    rowKelompokObat += `<div class="target" style="margin-bottom: 30px">`
-      + `<div class="font-weight-700 m-b-10px">Kelompok Obat ${no} `
+    rowKelompokObat += `<div class="target" style="margin: 30px 0px">`
+      + `<div class="font-weight-700">Kelompok Obat ${no} `
       + `<button type="button" class="btn btn-xs btn-danger btnRemoveKelompokObat" title="Hapus Kelompok Obat" value=${idx} style="margin-left: 5px;"><i class="fa fa-trash-o" aria-hidden="true"></i></button>`
       + `</div>`
       + `<div class="m-b-10px">`
       +  `<select class="selectedKelompokObat" class="form-control" style="width: 100%" idx=${idx}></select>`
       + `</div>`
+      + `<div class="m-b-10px"><input type="number" min="0" class="qty-kelompok-obat form-control" placeholder="Masukan Jumlah" index=${idx} value=${ko.quantity}></div>`
       + `<div class="m-b-10px">`
       +  `<select class="form-control selectedBarang" id="selectedBarang-${idx}" style="width: 100%" multiple="multiple" idx=${idx}></select>`
       + `</div>`
@@ -73,6 +74,14 @@ function drawListKelompokObat() {
     const getIdx = parseInt(e.target.getAttribute('idx'));
 
     processSelectedBarang(e.params.data.id, e.params.data.selected, getIdx);
+    validationForm();
+  });
+
+  $('.qty-kelompok-obat').keyup(function (e) {
+    const getIdx = parseInt(e.target.getAttribute('index'));
+    const value  = parseFloat($(this).val());
+    arrayKelompokObat[getIdx].quantity = value;
+
     validationForm();
   });
 

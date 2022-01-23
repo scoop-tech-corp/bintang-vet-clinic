@@ -146,7 +146,6 @@ body {
   background: #222d32 !important ;
 }
 
-
 input:disabled {
   cursor: not-allowed !important;
   background: #eee;
@@ -155,6 +154,10 @@ input:disabled {
 
 .width-350px {
   width: 350px;
+}
+
+.align-item-c {
+  align-items: center;
 }
 
 .d-flex {
