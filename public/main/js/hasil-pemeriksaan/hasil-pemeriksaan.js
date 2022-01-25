@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
   let optCabang = '';
+	let getCurrentPage = 1;
 
   let paramUrlSetup = {
 		orderby:'',
@@ -101,7 +102,7 @@ $(document).ready(function() {
 			url     : $('.baseUrl').val() + '/api/hasil-pemeriksaan',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId, page: getCurrentPage },
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(resp) {
 				const getData = resp.data;
@@ -133,6 +134,8 @@ $(document).ready(function() {
           listHasilPemeriksaan += `<tr class="text-center"><td colspan="12">Tidak ada data.</td></tr>`;
         }
 				$('#list-hasil-pemeriksaan').append(listHasilPemeriksaan);
+
+				generatePagination(getCurrentPage, resp.total_paging);
 
 				function generateBedge(status) {
 					let bedge = '';
@@ -171,6 +174,24 @@ $(document).ready(function() {
 						$('#modal-confirmation .box-body').text('Anda yakin ingin menghapus data ini?');
 						$('#modal-confirmation').modal('show');
 					}
+				});
+
+				$('.pagination > li > a').click(function() {
+					const getClassName = this.className;
+					const getNumber = parseFloat($(this).text());
+
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+
+					if (getClassName.includes('arrow-left')) {
+						getCurrentPage = getCurrentPage - 1;
+					} else if (getClassName.includes('arrow-right')) {
+						getCurrentPage = getCurrentPage + 1;
+					} else {
+						getCurrentPage = getNumber;
+					}
+
+					loadHasilPemeriksaan()
 				});
 
 			}, complete: function() { $('#loading-screen').hide(); },
