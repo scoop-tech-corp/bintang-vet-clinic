@@ -672,8 +672,8 @@ class PembayaranController extends Controller
                         'medicine_group_id' => $value_item['medicine_group_id'],
                         'user_id' => $request->user()->id,
                         'payment_method_id' => $request->payment_method_id,
-                        'discount' => $request->discount,
-                        'amount_discount' => $request->amount_discount,
+                        'discount' => $value_item['discount'],
+                        'amount_discount' => $value_item['amount_discount'],
                     ]);
 
                     $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])
