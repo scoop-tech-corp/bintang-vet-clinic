@@ -12,7 +12,7 @@ use Validator;
 class HargaKelompokObatController extends Controller
 {
     public function index(Request $request)
-    {//masih error
+    {
         $price_medicine_groups = DB::table('price_medicine_groups')
             ->join('users', 'price_medicine_groups.user_id', '=', 'users.id')
             ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')

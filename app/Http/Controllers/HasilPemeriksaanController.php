@@ -303,7 +303,7 @@ class HasilPemeriksaanController extends Controller
 
         if ($request->keyword) {
             $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%')
-            ->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
+                ->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
         }
 
         $data = $data->get();
@@ -386,7 +386,6 @@ class HasilPemeriksaanController extends Controller
 
     public function create(Request $request)
     {
-        info($request);
         if ($request->user()->role == 'resepsionis') {
             return response()->json([
                 'message' => 'The user role was invalid.',
@@ -560,8 +559,6 @@ class HasilPemeriksaanController extends Controller
                         ->select('item_name')
                         ->where('id', '=', $check_price_item->list_of_items_id)
                         ->first();
-
-                        info($check_price_item->list_of_items_id);
 
                     if (is_null($check_storage_name)) {
                         return response()->json([
@@ -2407,24 +2404,66 @@ class HasilPemeriksaanController extends Controller
 
         $data['services'] = $services;
 
-        $item = DB::table('detail_medicine_group_check_up_results as dmg')
-            ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
-            ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
-            ->join('users', 'dmg.user_id', '=', 'users.id')
-            ->select(
-                'dmg.id as id',
-                'dmg.check_up_result_id',
-                'dmg.medicine_group_id',
-                'medicine_groups.group_name',
-                DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
-                DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
-                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
-                'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
-            ->where('dmg.check_up_result_id', '=', $data->id)
-            ->groupby('dmg.medicine_group_id')
-            ->orderBy('dmg.id', 'asc')
+        $check = DB::table('detail_medicine_group_check_up_results')
+            ->select('quantity')
+            ->where('check_up_result_id', '=', $data->id)
             ->get();
+
+        $valid = false;
+
+        foreach ($check as $key) {
+
+            if ($key->quantity == 0) {
+                $valid = false;
+            } else {
+                $valid = true;
+            }
+
+        }
+
+        if ($valid == true) {
+
+            $item = DB::table('detail_medicine_group_check_up_results as dmg')
+                ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+                ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+                ->join('users', 'dmg.user_id', '=', 'users.id')
+                ->select(
+                    'dmg.id as id',
+                    'dmg.check_up_result_id',
+                    'dmg.medicine_group_id',
+                    'medicine_groups.group_name',
+                    DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                    //DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
+                    'dmg.quantity as quantity',
+                    //DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+                    DB::raw("TRIM(pmg.selling_price * dmg.quantity)+0 as price_overall"),
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+                ->where('dmg.check_up_result_id', '=', $data->id)
+            //->groupby('dmg.medicine_group_id')
+                ->orderBy('dmg.id', 'asc')
+                ->get();
+
+        } else {
+            $item = DB::table('detail_medicine_group_check_up_results as dmg')
+                ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+                ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+                ->join('users', 'dmg.user_id', '=', 'users.id')
+                ->select(
+                    'dmg.id as id',
+                    'dmg.check_up_result_id',
+                    'dmg.medicine_group_id',
+                    'medicine_groups.group_name',
+                    DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                    DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
+                    DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+                ->where('dmg.check_up_result_id', '=', $data->id)
+                ->groupby('dmg.medicine_group_id')
+                ->orderBy('dmg.id', 'asc')
+                ->get();
+        }
 
         $data['item'] = $item;
 

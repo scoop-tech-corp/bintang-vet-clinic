@@ -54,6 +54,8 @@ class PembayaranController extends Controller
     public function index(Request $request)
     {
 
+        $items_per_page = 50;
+
         if ($request->keyword) {
             $res = $this->Search($request);
 
@@ -78,7 +80,9 @@ class PembayaranController extends Controller
                 $data = $data->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(
+                    ['total_paging' => 0,
+                        'data' => $data], 200);
             }
 
             if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
@@ -95,9 +99,17 @@ class PembayaranController extends Controller
 
             $data = $data->orderBy('check_up_results.id', 'desc');
 
-            $data = $data->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($data, 200);
+            $count_data = $data->count();
+
+            $data = $data->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(
+                ['total_paging' => ceil($total_paging),
+                    'data' => $data], 200);
         } else {
 
             $data = DB::table('list_of_payments')
@@ -131,9 +143,17 @@ class PembayaranController extends Controller
 
             $data = $data->orderBy('check_up_results.id', 'desc');
 
-            $data = $data->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($data, 200);
+            $count_data = $data->count();
+
+            $data = $data->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(
+                ['total_paging' => ceil($total_paging),
+                    'data' => $data], 200);
         }
 
     }
@@ -509,7 +529,6 @@ class PembayaranController extends Controller
     public function create(Request $request)
     {
 
-        //validasi
         $check_list_of_payment = DB::table('list_of_payments')
             ->where('check_up_result_id', '=', $request->check_up_result_id)
             ->count();
@@ -620,6 +639,9 @@ class PembayaranController extends Controller
                     'check_up_result_id' => $request->check_up_result_id,
                     'list_of_payment_id' => $list_of_payment->id,
                     'user_id' => $request->user()->id,
+                    'payment_method_id' => $request->payment_method_id,
+                    'discount' => $key_service['discount'],
+                    'amount_discount' => $key_service['amount_discount'],
                 ]);
 
                 $check_service = DetailServicePatient::find($key_service['detail_service_patient_id']);
@@ -649,6 +671,9 @@ class PembayaranController extends Controller
                         'list_of_payment_id' => $list_of_payment->id,
                         'medicine_group_id' => $value_item['medicine_group_id'],
                         'user_id' => $request->user()->id,
+                        'payment_method_id' => $request->payment_method_id,
+                        'discount' => $request->discount,
+                        'amount_discount' => $request->amount_discount,
                     ]);
 
                     $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])
@@ -870,12 +895,15 @@ class PembayaranController extends Controller
         foreach ($result_services as $key_service) {
 
             if ($key_service['detail_service_patient_id'] && is_null($key_service['status'])) {
-
+                return "tambah baru";
                 $item = ListofPaymentService::create([
                     'detail_service_patient_id' => $key_service['detail_service_patient_id'],
                     'check_up_result_id' => $request->check_up_result_id,
                     'list_of_payment_id' => $data_list_of_payment->id,
                     'user_id' => $request->user()->id,
+                    'payment_method_id' => $request->payment_method_id,
+                    'discount' => $key_service['discount'],
+                    'amount_discount' => $key_service['amount_discount'],
                 ]);
 
                 $check_service = DetailServicePatient::find($key_service['detail_service_patient_id']);
@@ -896,6 +924,14 @@ class PembayaranController extends Controller
 
                 $delete_payment_service = DB::table('list_of_payment_services')
                     ->where('detail_service_patient_id', $key_service['detail_service_patient_id'])->delete();
+            } else {
+
+                $check_service = DB::table('list_of_payment_services')
+                    ->select('discount')
+                    ->where('detail_service_patient_id', $key_service['detail_service_patient_id'])
+                    ->get();
+
+                    return $check_service;
             }
         }
 
@@ -928,6 +964,9 @@ class PembayaranController extends Controller
                             'list_of_payment_id' => $list_of_payment->id,
                             'medicine_group_id' => $value_item['medicine_group_id'],
                             'user_id' => $request->user()->id,
+                            'payment_method_id' => $request->payment_method_id,
+                            'discount' => $value_item['discount'],
+                            'amount_discount' => $value_item['amount_discount'],
                         ]);
 
                         $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])

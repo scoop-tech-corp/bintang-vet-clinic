@@ -12,6 +12,8 @@ class HargaJasaController extends Controller
     public function index(Request $request)
     {
 
+        $items_per_page = 50;
+
         $price_services = DB::table('price_services')
             ->join('users', 'price_services.user_id', '=', 'users.id')
             ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
@@ -54,7 +56,9 @@ class HargaJasaController extends Controller
                 $price_services = $price_services->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(
+                  ['total_paging' => 0,
+                      'data' => $price_services], 200);
             }
 
             if ($request->branch_id && $request->user()->role == 'admin') {
@@ -71,15 +75,18 @@ class HargaJasaController extends Controller
 
             $price_services = $price_services->orderBy('price_services.id', 'desc');
 
-            $price_services = $price_services->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($price_services, 200);
-            // $price_services = $price_services
-            //     ->where('list_of_services.service_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('service_categories.category_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('branches.branch_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('price_services.created_at', 'like', '%' . $request->keyword . '%');
+            $count_data = $price_services->count();
+
+            $price_services = $price_services->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(
+                ['total_paging' => ceil($total_paging),
+                    'data' => $price_services], 200);
+
         } else {
 
             $price_services = DB::table('price_services')
@@ -109,9 +116,17 @@ class HargaJasaController extends Controller
 
             $price_services = $price_services->orderBy('price_services.id', 'desc');
 
-            $price_services = $price_services->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($price_services, 200);
+            $count_data = $price_services->count();
+
+            $price_services = $price_services->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(
+                ['total_paging' => ceil($total_paging),
+                    'data' => $price_services], 200);
         }
     }
 
