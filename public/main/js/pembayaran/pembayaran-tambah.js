@@ -1,6 +1,8 @@
 $(document).ready(function () {
   let optPasien = '';
+  let optMetodePembayaran = '';
   let isValidSelectedPasien = false;
+  let isValidMetodePembayaran = false;
   let isValidCalculationPay = false;
   let listPasien = [];
   let selectedListJasa = [];
@@ -16,12 +18,17 @@ $(document).ready(function () {
   // }
 
   loadPasien();
+  loadMetodePembayaran();
   refreshText();
   refreshForm();
   formConfigure();
 
   $('.btn-back-to-list .text, #btnKembali').click(function () {
     window.location.href = $('.baseUrl').val() + '/pembayaran';
+  });
+
+  $('#metodePembayaran').on('select2:select', function (e) {
+    validationForm();
   });
 
   $('#selectedPasien').on('select2:select', function (e) {
@@ -44,6 +51,7 @@ $(document).ready(function () {
           $('#keluhanTxt').text(data.registration.complaint); $('#namaPendaftarTxt').text(data.registration.registrant);
           $('#rawatInapTxt').text(data.status_outpatient_inpatient ? 'Ya' : 'Tidak'); $('#statusPemeriksaanTxt').text(data.status_finish ? 'Selesai' : 'Belum');
 
+          data.services.forEach(s => { s.new_price_overall = s.price_overall; }); data.item.forEach(i => { i.new_price_overall = i.price_overall; });
           selectedListJasa = data.services; selectedListBarang = data.item;
           processAppendListSelectedJasa(); processAppendListSelectedBarang();
 
@@ -72,22 +80,54 @@ $(document).ready(function () {
     $('#modal-confirmation').modal('show');
   });
 
+  $('#list-selected-jasa').on('input', '.diskon-list-jasa', function() {
+    const idx = $(this).attr('index');
+    const getPriceOverall = selectedListJasa[idx].price_overall;
+    let newPriceOverall = selectedListJasa[idx].price_overall;
+
+    selectedListJasa[idx].discount = parseFloat($(this).val());
+    selectedListJasa[idx].amount_discount = (parseFloat($(this).val()) / 100) * getPriceOverall;
+    newPriceOverall = getPriceOverall - selectedListJasa[idx].amount_discount;
+
+    selectedListJasa[idx].new_price_overall = newPriceOverall;
+
+    $(`#totalJasa-${idx}`).text(
+      newPriceOverall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+  });
+
+  $('#list-selected-barang').on('input', '.diskon-list-barang', function() {
+    const idx = $(this).attr('index');
+    const getPriceOverall = selectedListBarang[idx].price_overall;
+    let newPriceOverall = selectedListBarang[idx].price_overall;
+
+    selectedListBarang[idx].discount = parseFloat($(this).val());
+    selectedListBarang[idx].amount_discount = (parseFloat($(this).val()) / 100) * getPriceOverall;
+    newPriceOverall = getPriceOverall - selectedListBarang[idx].amount_discount;
+
+    selectedListBarang[idx].new_price_overall = newPriceOverall;
+
+    $(`#totalBarang-${idx}`).text(
+      newPriceOverall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+  });
+
   function processSaved() {
 
     let finalSelectedJasa = []; let finalSelectedBarang = [];
 
     const fd = new FormData();
     fd.append('check_up_result_id', $('#selectedPasien').val());
+    fd.append('payment_method_id', $('#metodePembayaran').val());
+    
     calculationPay.forEach(dt => {
       if (dt.type == 'jasa') {
-        finalSelectedJasa.push({ detail_service_patient_id: dt.id });
+        finalSelectedJasa.push({ detail_service_patient_id: dt.id, discount: dt.discount, amount_discount: dt.amount_discount });
       } else {
-        finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity });
+        finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity, discount: dt.discount, amount_discount: dt.amount_discount });
       }
     });
     fd.append('service_payment', JSON.stringify(finalSelectedJasa));
     fd.append('item_payment', JSON.stringify(finalSelectedBarang));
-
+    console.log(Object.fromEntries(fd));
     $.ajax({
       url: $('.baseUrl').val() + '/api/pembayaran',
       type: 'POST',
@@ -124,6 +164,7 @@ $(document).ready(function () {
 
   function formConfigure() {
     $('#selectedPasien').select2();
+    $('#metodePembayaran').select2({placeholder: 'Pilih Metode Pembayaran'});
     $('#btnSubmitPembayaran').attr('disabled', true);
   }
 
@@ -141,7 +182,12 @@ $(document).ready(function () {
         + `<td>${lj.service_name}</td>`
         + `<td>${lj.quantity}</td>`
         + `<td>${typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td>${typeof (lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td class="d-flex align-item-c">
+            <input type="number" min="0" max="100" maxlength="3" class="form-control diskon-list-jasa" index=${idx} value=${lj.discount}>&nbsp;%
+          </td>`
+        + `<td>
+              <span id="totalJasa-${idx}">${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
+          </td>`
         + `<td><input type="checkbox" index=${idx} class="isBayarJasa"/></td>`
         + `</tr>`;
       ++no;
@@ -154,7 +200,8 @@ $(document).ready(function () {
 
       if (this.checked) {
         listTagihanJasa.push(getDetailJasa);
-        calculationPay.push({ id: getDetailJasa.detail_service_patient_id, type: 'jasa', price: getDetailJasa.price_overall });
+        calculationPay.push({ id: getDetailJasa.detail_service_patient_id, type: 'jasa', price: getDetailJasa.new_price_overall,
+          discount: getDetailJasa.discount, amount_discount: getDetailJasa.amount_discount });
       } else {
         const getIdxTagihanJasa = listTagihanJasa.findIndex(i => i.detail_service_patient_id == getDetailJasa.detail_service_patient_id);
         const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'jasa' && i.id == getDetailJasa.detail_service_patient_id));
@@ -184,7 +231,7 @@ $(document).ready(function () {
           + `<td>${lj.service_name}</td>`
           + `<td>${lj.quantity}</td>`
           + `<td>${typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof (lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${typeof (lj.new_price_overall) == 'number' ? lj.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
           + `</tr>`;
         ++no;
       });
@@ -205,7 +252,12 @@ $(document).ready(function () {
         + `<td>${lb.group_name}</td>`
         + `<td>${lb.quantity}</td>`
         + `<td>${typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td>${typeof (lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td class="d-flex align-item-c">
+            <input type="number" min="0" max="100" maxlength="3" class="form-control diskon-list-barang" index=${idx} value=${lb.discount}>&nbsp;%
+          </td>`
+        + `<td>
+              <span id="totalBarang-${idx}">${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
+          </td>`
         + `<td><input type="checkbox" index=${idx} class="isBayarBarang"/></td>`
         + `</tr>`;
       ++no;
@@ -219,7 +271,7 @@ $(document).ready(function () {
       if (this.checked) {
         listTagihanBarang.push(getDetailBarang);
         calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, type: 'barang',
-        quantity: getDetailBarang.quantity, price: getDetailBarang.price_overall });
+        quantity: getDetailBarang.quantity, price: getDetailBarang.new_price_overall, discount: getDetailBarang.discount, amount_discount: getDetailBarang.amount_discount });
       } else {
         const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
         const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
@@ -249,7 +301,7 @@ $(document).ready(function () {
           + `<td>${lb.group_name}</td>`
           + `<td>${lb.quantity}</td>`
           + `<td>${typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof (lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${typeof (lb.new_price_overall) == 'number' ? lb.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
           + `</tr>`;
         ++no;
       });
@@ -297,6 +349,33 @@ $(document).ready(function () {
     });
   }
 
+  function loadMetodePembayaran() {
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/metode-pembayaran',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(resp) {
+        const getData = resp.data;
+        optMetodePembayaran += `<option value=""></option>`;
+
+				if (getData.length) {
+					for (let i = 0 ; i < getData.length ; i++) {
+						optMetodePembayaran += `<option value=${getData[i].id}>${getData[i].payment_name}</option>`;
+					}
+				}
+				$('#metodePembayaran').append(optMetodePembayaran);
+
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+  }
+
   function validationForm() {
     if (!$('#selectedPasien').val()) {
       $('#pasienErr1').text('Pasien harus di isi'); isValidSelectedPasien = false;
@@ -304,11 +383,17 @@ $(document).ready(function () {
       $('#pasienErr1').text(''); isValidSelectedPasien = true;
     }
 
+    if (!$('#metodePembayaran').val()) {
+      $('#metodePembayaranErr1').text('Metode pembayaran harus di isi'); isValidMetodePembayaran = false;
+    } else {
+      $('#metodePembayaranErr1').text(''); isValidMetodePembayaran = true;
+    }
+
     isValidCalculationPay = (!calculationPay.length) ? false : true;
 
     $('#beErr').empty(); isBeErr = false;
 
-    $('#btnSubmitPembayaran').attr('disabled', (!isValidSelectedPasien || !isValidCalculationPay || isBeErr) ? true : false);
+    $('#btnSubmitPembayaran').attr('disabled', (!isValidSelectedPasien || !isValidMetodePembayaran || !isValidCalculationPay || isBeErr) ? true : false);
   }
 
   function refreshText() {
@@ -325,6 +410,8 @@ $(document).ready(function () {
   function refreshForm() {
     $('#selectedPasien').val(null);
     $('#pasienErr1').text(''); isValidSelectedPasien = true;
+    $('#metodePembayaran').val(null);
+    $('#metodePembayaranErr1').text(''); isValidMetodePembayaran = true;
     $('#beErr').empty(); isBeErr = false;
   }
 
