@@ -15,6 +15,8 @@ class KelompokObatController extends Controller
     public function index(Request $request)
     {
 
+        $items_per_page = 50;
+
         if ($request->keyword) {
 
             $res = $this->Search($request);
