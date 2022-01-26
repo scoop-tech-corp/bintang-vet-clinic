@@ -70,6 +70,11 @@
           </div>
         </div>
         <div class="col-md-12 m-b-10px">
+          <label for="metodePembayaran">Metode Pembayaran</label>
+          <select id="metodePembayaran" class="form-control" style="width: 100%"></select>
+          <div id="metodePembayaranErr1" class="validate-error"></div>
+        </div>
+        <div class="col-md-12 m-b-10px">
           <div class="label-detail-div m-b-10px">Jasa</div>
           <div class="table-responsive">
             <table class="table table-striped text-nowrap">
@@ -82,6 +87,7 @@
                   <th>Kategori Jasa</th>
                   <th>Jumlah</th>
                   <th>Harga Satuan</th>
+                  <th>Diskon</th>
                   <th>Harga Keseluruhan</th>
                   <th>Pembayaran</th>
                 </tr>
@@ -102,6 +108,7 @@
                   <th>Kelompok Obat</th>
                   <th>Jumlah</th>
                   <th>Harga Satuan</th>
+                  <th>Diskon</th>
                   <th>Harga Keseluruhan</th>
                   <th>Pembayaran</th>
                 </tr>
