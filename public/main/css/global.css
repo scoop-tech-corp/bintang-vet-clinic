@@ -152,6 +152,22 @@ input:disabled {
   opacity: 1;
 }
 
+.pagination > li > a {
+  cursor: pointer;
+}
+
+.pagination > li > a.active {
+  z-index: 2;
+  color: #23527c;
+  background-color: #eee;
+  border-color: #ddd;
+}
+
+.pagination > li > a.disabled { 
+  cursor: not-allowed;
+  background-color: lightgray;
+}
+
 .width-350px {
   width: 350px;
 }

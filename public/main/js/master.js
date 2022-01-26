@@ -165,6 +165,31 @@ $(document).ready(function() {
   setInterval(showTime, 500);
 });
 
-// <script type='text/javascript'>
+function generatePagination(currentPage, totalPage) {
 
-// 		</script>
+  let showPage = 5; // Links per page 
+  let rangeMiddle = 3;
+  let min = null;
+  let max = null;
+  let stringPaginationNumber = '';
+
+  if ((currentPage <= rangeMiddle) || (totalPage <= showPage)) {
+    min = 1;
+    max = (totalPage <= showPage) ? totalPage : showPage;
+  } else {
+    let etPage = currentPage + (rangeMiddle - 1);
+    max = (etPage <= totalPage) ? etPage : totalPage;
+    min = max - (showPage - 1);
+  }
+  
+  $('.pagination li').remove();
+  stringPaginationNumber += `<li><a class="arrow-left ${(currentPage === 1) ? 'disabled': ''}">«</a></li>`;
+
+  for (let i = min; i <= max; i++) {
+    stringPaginationNumber += `<li><a class="number-pagination ${(i === currentPage) ? 'active': ''}">${i}</a></li>`;
+  }
+
+  stringPaginationNumber += `<li><a class="arrow-right ${(currentPage === totalPage) ? 'disabled': ''}">»</a></li>`;
+
+  $('.pagination').append(stringPaginationNumber);
+}
