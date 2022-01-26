@@ -4,6 +4,7 @@ $(document).ready(function() {
   let optCabang = '';
   let optKategoriJasa = '';
   let optJenisPelayanan = '';
+  let getCurrentPage = 1;
 
   let isValidSelectedKategoriJasa = false;
   let isValidSelectedCabang = false;
@@ -262,14 +263,16 @@ $(document).ready(function() {
 			url     : $('.baseUrl').val() + '/api/pembagian-harga-jasa',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId, page: getCurrentPage },
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {
+			success: function(resp) {
+        const getData = resp.data;
+
 				let listHargaJasa = '';
 				$('#list-harga-jasa tr').remove();
 
-        if (data.length) {
-          $.each(data, function(idx, v) {
+        if (getData.length) {
+          $.each(getData, function(idx, v) {
             listHargaJasa += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.service_name}</td>`
@@ -291,6 +294,8 @@ $(document).ready(function() {
           listHargaJasa += `<tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>`;
         }
 				$('#list-harga-jasa').append(listHargaJasa);
+
+        generatePagination(getCurrentPage, resp.total_paging);
 
 				$('.openFormEdit').click(function() {
 					const getObj = data.find(x => x.id == $(this).val());
@@ -318,6 +323,24 @@ $(document).ready(function() {
 					$('#modal-confirmation .modal-title').text('Peringatan');
 					$('#modal-confirmation .box-body').text('Anda yakin ingin menghapus data ini?');
 					$('#modal-confirmation').modal('show');
+				});
+
+        $('.pagination > li > a').click(function() {
+					const getClassName = this.className;
+					const getNumber = parseFloat($(this).text());
+
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+
+					if (getClassName.includes('arrow-left')) {
+						getCurrentPage = getCurrentPage - 1;
+					} else if (getClassName.includes('arrow-right')) {
+						getCurrentPage = getCurrentPage + 1;
+					} else {
+						getCurrentPage = getNumber;
+					}
+
+					loadHargaJasa();
 				});
 
 			}, complete: function() { $('#loading-screen').hide(); },

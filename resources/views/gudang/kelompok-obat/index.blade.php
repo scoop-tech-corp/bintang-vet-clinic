@@ -32,6 +32,8 @@
           <tr class="text-center"><td colspan="6">Tidak ada data.</td></tr>
         </tbody>
       </table>
+
+      <ul class="pagination pagination-sm m-t-10px pull-left"></ul>
     </div>
   </div>
   <!-- /.box-body -->
