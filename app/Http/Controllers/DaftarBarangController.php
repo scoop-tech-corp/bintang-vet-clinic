@@ -17,6 +17,9 @@ class DaftarBarangController extends Controller
 {
     public function index(Request $request)
     {
+
+        $items_per_page = 50;
+
         if ($request->keyword) {
 
             $res = $this->Search($request);
@@ -44,7 +47,8 @@ class DaftarBarangController extends Controller
                 $item = $item->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(['total_paging' => 0,
+                    'data' => $data], 200);
             }
 
             if ($request->branch_id && $request->user()->role == 'admin') {
@@ -61,9 +65,16 @@ class DaftarBarangController extends Controller
 
             $item = $item->orderBy('list_of_items.id', 'desc');
 
-            $item = $item->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($item, 200);
+            $count_data = $item->count();
+
+            $item = $item->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(['total_paging' => ceil($total_paging),
+                'data' => $item], 200);
 
         } else {
 
@@ -100,9 +111,16 @@ class DaftarBarangController extends Controller
 
             $item = $item->orderBy('list_of_items.id', 'desc');
 
-            $item = $item->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($item, 200);
+            $count_data = $item->count();
+
+            $item = $item->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(['total_paging' => ceil($total_paging),
+                'data' => $item], 200);
         }
 
     }

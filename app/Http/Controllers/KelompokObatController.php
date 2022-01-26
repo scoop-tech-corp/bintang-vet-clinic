@@ -35,7 +35,8 @@ class KelompokObatController extends Controller
                 $medicine_groups = $medicine_groups->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $medicine_groups = [];
-                return response()->json($medicine_groups, 200);
+                return response()->json(['total_paging' => 0,
+                    'data' => $data], 200);
             }
 
             if ($request->branch_id && $request->user()->role == 'admin') {
@@ -52,11 +53,17 @@ class KelompokObatController extends Controller
 
             $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
 
-            $medicine_groups = $medicine_groups->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($medicine_groups, 200);
-            // $medicine_groups = $medicine_groups->where('group_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('created_by', 'like', '%' . $request->keyword . '%');
+            $count_data = $medicine_groups->count();
+
+            $medicine_groups = $medicine_groups->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(['total_paging' => ceil($total_paging),
+                'data' => $medicine_groups], 200);
+
         } else {
 
             $medicine_groups = DB::table('medicine_groups')
@@ -85,9 +92,16 @@ class KelompokObatController extends Controller
 
             $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
 
-            $medicine_groups = $medicine_groups->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($medicine_groups, 200);
+            $count_data = $medicine_groups->count();
+
+            $medicine_groups = $medicine_groups->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(['total_paging' => ceil($total_paging),
+                'data' => $medicine_groups], 200);
         }
 
     }

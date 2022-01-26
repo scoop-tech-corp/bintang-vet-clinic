@@ -12,6 +12,8 @@ class DaftarJasaController extends Controller
     public function index(Request $request)
     {
 
+        $items_per_page = 50;
+
         if ($request->keyword) {
 
             $res = $this->Search($request);
@@ -35,7 +37,8 @@ class DaftarJasaController extends Controller
                 $list_of_services = $list_of_services->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(['total_paging' => 0,
+                'data' => $data], 200);
             }
 
             if ($request->branch_id && $request->user()->role == 'admin') {
@@ -52,9 +55,16 @@ class DaftarJasaController extends Controller
 
             $list_of_services = $list_of_services->orderBy('list_of_services.id', 'desc');
 
-            $list_of_services = $list_of_services->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($list_of_services, 200);
+            $count_data = $list_of_services->count();
+
+            $list_of_services = $list_of_services->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(['total_paging' => ceil($total_paging),
+                'data' => $list_of_services], 200);
 
         } else {
 
@@ -87,9 +97,16 @@ class DaftarJasaController extends Controller
 
             $list_of_services = $list_of_services->orderBy('list_of_services.id', 'desc');
 
-            $list_of_services = $list_of_services->get();
+            $offset = ($request->page - 1) * $items_per_page;
 
-            return response()->json($list_of_services, 200);
+            $count_data = $list_of_services->count();
+
+            $list_of_services = $list_of_services->offset($offset)->limit($items_per_page)->get();
+
+            $total_paging = $count_data / $items_per_page;
+
+            return response()->json(['total_paging' => ceil($total_paging),
+                'data' => $list_of_services], 200);
         }
 
     }

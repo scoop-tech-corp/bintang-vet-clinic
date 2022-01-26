@@ -18,6 +18,8 @@ class DaftarMetodePembayaranController extends Controller
             ], 403);
         }
 
+        $items_per_page = 50;
+
         $payment_method = DB::table('payment_methods')
             ->join('users', 'payment_methods.user_id', '=', 'users.id')
             ->select('payment_methods.id', 'payment_name',
@@ -37,9 +39,16 @@ class DaftarMetodePembayaranController extends Controller
 
         $payment_method = $payment_method->orderBy('id', 'desc');
 
-        $payment_method = $payment_method->get();
+        $offset = ($request->page - 1) * $items_per_page;
 
-        return response()->json($payment_method, 200);
+        $count_data = $payment_method->count();
+
+        $payment_method = $payment_method->offset($offset)->limit($items_per_page)->get();
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $payment_method], 200);
     }
 
     public function create(Request $request)
@@ -52,7 +61,7 @@ class DaftarMetodePembayaranController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'nama_pembayaran' => 'required|string|max:20|min:3|unique:payment_methods,payment_name',
+            'nama_pembayaran' => 'required|string|max:20|min:3',
         ]);
 
         if ($validate->fails()) {
@@ -61,6 +70,19 @@ class DaftarMetodePembayaranController extends Controller
             return response()->json([
                 'message' => 'The given data was invalid.',
                 'errors' => $errors,
+            ], 422);
+        }
+
+        $check_payment = DB::table('payment_methods')
+            ->where('payment_name', '=', $request->nama_pembayaran)
+            ->where('isdeleted', '=', 0)
+            ->count();
+
+        if ($check_payment > 0) {
+
+            return response()->json([
+                'message' => 'The data was invalid.',
+                'errors' => ['Data sudah ada!'],
             ], 422);
         }
 
