@@ -61,7 +61,7 @@ class PembayaranController extends Controller
 
             $data = DB::table('list_of_payments')
                 ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('users', 'list_of_payments.user_id', '=', 'users.id')
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
                 ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
@@ -74,7 +74,7 @@ class PembayaranController extends Controller
                     'registrations.complaint',
                     'check_up_results.status_outpatient_inpatient',
                     'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"));
+                    DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y') as created_at"));
 
             if ($res) {
                 $data = $data->where($res, 'like', '%' . $request->keyword . '%');
@@ -97,7 +97,7 @@ class PembayaranController extends Controller
                 $data = $data->orderBy($request->column, $request->orderby);
             }
 
-            $data = $data->orderBy('check_up_results.id', 'desc');
+            $data = $data->orderBy('list_of_payments.id', 'desc');
 
             $offset = ($request->page - 1) * $items_per_page;
 
@@ -114,7 +114,7 @@ class PembayaranController extends Controller
 
             $data = DB::table('list_of_payments')
                 ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('users', 'list_of_payments.user_id', '=', 'users.id')
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
                 ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
                 ->join('patients', 'registrations.patient_id', '=', 'patients.id')
@@ -127,7 +127,7 @@ class PembayaranController extends Controller
                     'registrations.complaint',
                     'check_up_results.status_outpatient_inpatient',
                     'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"));
+                    DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y') as created_at"));
 
             if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
                 $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
@@ -141,7 +141,7 @@ class PembayaranController extends Controller
                 $data = $data->orderBy($request->column, $request->orderby);
             }
 
-            $data = $data->orderBy('check_up_results.id', 'desc');
+            $data = $data->orderBy('list_of_payments.id', 'desc');
 
             $offset = ($request->page - 1) * $items_per_page;
 
@@ -454,72 +454,173 @@ class PembayaranController extends Controller
 
         $data['services'] = $services;
 
-        $item = DB::table('detail_medicine_group_check_up_results as dmg')
-            ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
-            ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
-            ->join('users', 'dmg.user_id', '=', 'users.id')
-            ->select(
-                'dmg.id as id',
-                'dmg.check_up_result_id',
-                'dmg.medicine_group_id',
-                'medicine_groups.group_name',
-                DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
-                DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
-                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
-                'dmg.status_paid_off',
-                'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
-            ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
-            ->groupby('dmg.medicine_group_id')
-            ->orderBy('dmg.id', 'asc')
+        $check = DB::table('detail_medicine_group_check_up_results')
+            ->select('quantity')
+            ->where('check_up_result_id', '=', $data->check_up_result_id)
             ->get();
+
+        $valid = false;
+
+        foreach ($check as $key) {
+
+            if ($key->quantity == 0) {
+                $valid = false;
+            } else {
+                $valid = true;
+            }
+
+        }
+
+        if ($valid == true) {
+
+            $item = DB::table('detail_medicine_group_check_up_results as dmg')
+                ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+                ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+                ->join('users', 'dmg.user_id', '=', 'users.id')
+                ->select(
+                    'dmg.id as id',
+                    'dmg.check_up_result_id',
+                    'dmg.medicine_group_id',
+                    'medicine_groups.group_name',
+                    DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                    'dmg.quantity as quantity',
+                    DB::raw("TRIM(pmg.selling_price * dmg.quantity)+0 as price_overall"),
+                    'dmg.status_paid_off',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+                ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
+            // ->groupby('dmg.medicine_group_id')
+                ->orderBy('dmg.id', 'asc')
+                ->get();
+
+        } else {
+
+            $item = DB::table('detail_medicine_group_check_up_results as dmg')
+                ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
+                ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+                ->join('users', 'dmg.user_id', '=', 'users.id')
+                ->select(
+                    'dmg.id as id',
+                    'dmg.check_up_result_id',
+                    'dmg.medicine_group_id',
+                    'medicine_groups.group_name',
+                    DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                    DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
+                    DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+                    'dmg.status_paid_off',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+                ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
+                ->groupby('dmg.medicine_group_id')
+                ->orderBy('dmg.id', 'asc')
+                ->get();
+        }
 
         $data['item'] = $item;
 
-        $paid_services = DB::table('list_of_payment_services')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
-            ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
-            ->join('check_up_results', 'list_of_payment_services.check_up_result_id', '=', 'check_up_results.id')
-            ->join('users', 'detail_service_patients.user_id', '=', 'users.id')
-            ->select('list_of_payment_services.id as list_of_payment_service_id',
-                'list_of_services.id as detail_service_patient_id',
-                DB::raw("DATE_FORMAT(list_of_payment_services.created_at, '%d %b %Y') as paid_date"),
-                DB::raw("DATE_FORMAT(list_of_payment_services.created_at, '%d %b %Y') as created_at"),
-                'users.fullname as created_by', 'list_of_services.service_name',
-                'detail_service_patients.quantity', DB::raw("TRIM(detail_service_patients.price_overall)+0 as price_overall"),
-                'service_categories.category_name', DB::raw("TRIM(price_services.selling_price)+0 as selling_price"))
-            ->where('list_of_payment_services.list_of_payment_id', '=', $request->list_of_payment_id)
-            ->orderBy('list_of_payment_services.id', 'desc')
+        $paid_services = DB::table('list_of_payment_services as lops')
+            ->join('detail_service_patients as dsp', 'lops.detail_service_patient_id', '=', 'dsp.id')
+            ->join('price_services', 'dsp.price_service_id', '=', 'price_services.id')
+            ->join('list_of_services as los', 'price_services.list_of_services_id', '=', 'los.id')
+            ->join('service_categories', 'los.service_category_id', '=', 'service_categories.id')
+            ->join('check_up_results', 'lops.check_up_result_id', '=', 'check_up_results.id')
+            ->join('users', 'dsp.user_id', '=', 'users.id')
+            ->join('payment_methods', 'lops.payment_method_id', '=', 'payment_methods.id')
+            ->select('lops.id as list_of_payment_service_id',
+                'los.id as detail_service_patient_id',
+                DB::raw("DATE_FORMAT(lops.created_at, '%d %b %Y') as paid_date"),
+                DB::raw("DATE_FORMAT(lops.created_at, '%d %b %Y') as created_at"),
+                'users.fullname as created_by', 'los.service_name',
+                'dsp.quantity',
+                DB::raw("TRIM(lops.discount)+0 as discount"),
+                DB::raw("TRIM(lops.amount_discount)+0 as amount_discount"),
+                DB::raw("TRIM(dsp.price_overall)+0 as price_overall"),
+                DB::raw("TRIM(dsp.price_overall - lops.amount_discount)+0 as price_overall_after_discount"),
+                'service_categories.category_name',
+                'payment_methods.payment_name',
+                DB::raw("TRIM(price_services.selling_price)+0 as selling_price"))
+            ->where('lops.list_of_payment_id', '=', $request->list_of_payment_id)
+            ->orderBy('lops.id', 'desc')
             ->get();
 
         $data['paid_services'] = $paid_services;
 
-        $paid_item = DB::table('list_of_payment_medicine_groups as lop')
-        //->join('list_of_payment_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
-            ->join('price_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
-            ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->select(
-                'lop.id as id',
-                //'lop.check_up_result_id',
-                'lop.medicine_group_id',
-                'lop.detail_medicine_group_check_up_result_id',
-                'medicine_groups.group_name',
-                DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
-                DB::raw("COUNT(lop.medicine_group_id) as quantity"),
-                //'lop.quantity as quantity',
-
-                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
-                'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at"),
-                DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as paid_date"),
-            )
-            ->where('lop.list_of_payment_id', '=', $request->list_of_payment_id)
-            ->groupby('lop.medicine_group_id')
-            ->orderBy('lop.id', 'desc')
+        $check_paid_item = DB::table('detail_medicine_group_check_up_results')
+            ->select('quantity')
+            ->where('check_up_result_id', '=', $data->check_up_result_id)
             ->get();
+
+        $valid = false;
+
+        foreach ($check_paid_item as $key) {
+
+            if ($key->quantity == 0) {
+                $valid = false;
+            } else {
+                $valid = true;
+            }
+
+        }
+
+        if ($valid == true) {
+
+            $paid_item = DB::table('list_of_payment_medicine_groups as lop')
+                ->join('detail_medicine_group_check_up_results as dmg', 'dmg.id', '=', 'lop.detail_medicine_group_check_up_result_id')
+                ->join('price_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
+                ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('payment_methods', 'lop.payment_method_id', '=', 'payment_methods.id')
+                ->select(
+                    'lop.id as id',
+                    //'lop.check_up_result_id',
+                    'lop.medicine_group_id',
+                    'lop.detail_medicine_group_check_up_result_id',
+                    'medicine_groups.group_name',
+                    DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                    'dmg.quantity as quantity',
+                    DB::raw("TRIM(lop.discount)+0 as discount"),
+                    DB::raw("TRIM(lop.amount_discount)+0 as amount_discount"),
+                    'payment_methods.payment_name',
+                    DB::raw("TRIM(pmg.selling_price * dmg.quantity)+0 as price_overall"),
+                    DB::raw("TRIM((pmg.selling_price * dmg.quantity) - lop.amount_discount)+0 as price_overall_after_discount"),
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at"),
+                    DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as paid_date"),
+                )
+                ->where('lop.list_of_payment_id', '=', $request->list_of_payment_id)
+                ->orderBy('lop.id', 'desc')
+                ->get();
+
+        } else {
+            $paid_item = DB::table('list_of_payment_medicine_groups as lop')
+            //->join('list_of_payment_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
+                ->join('price_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
+                ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('payment_methods', 'lop.payment_method_id', '=', 'payment_methods.id')
+                ->select(
+                    'lop.id as id',
+                    //'lop.check_up_result_id',
+                    'lop.medicine_group_id',
+                    'lop.detail_medicine_group_check_up_result_id',
+                    'medicine_groups.group_name',
+                    DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
+                    DB::raw("COUNT(lop.medicine_group_id) as quantity"),
+                    //'lop.quantity as quantity',
+                    DB::raw("TRIM(lop.discount)+0 as discount"),
+                    DB::raw("TRIM(lop.amount_discount)+0 as amount_discount"),
+                    DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
+                    DB::raw("TRIM(SUM(pmg.selling_price) - lop.amount_discount)+0 as price_overall_after_discount"),
+                    'users.fullname as created_by',
+                    'payment_methods.payment_name',
+                    DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at"),
+                    DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as paid_date"),
+                )
+                ->where('lop.list_of_payment_id', '=', $request->list_of_payment_id)
+                ->groupby('lop.medicine_group_id')
+                ->orderBy('lop.id', 'desc')
+                ->get();
+        }
 
         $data['paid_item'] = $paid_item;
 
@@ -557,7 +658,7 @@ class PembayaranController extends Controller
         $services = $request->service_payment;
         $result_services = json_decode($services, true);
         //$services;
-        //json_decode($services, true);
+        //json_encode($services)
 
         if (count($result_services) != 0) {
 
@@ -604,7 +705,7 @@ class PembayaranController extends Controller
 
         $items = $request->item_payment;
         $result_item = json_decode($items, true);
-        //json_decode($items, true);
+        //json_encode($items, true);
         //$items;
 
         if (count($result_item) != 0) {
@@ -931,7 +1032,7 @@ class PembayaranController extends Controller
                     ->where('detail_service_patient_id', $key_service['detail_service_patient_id'])
                     ->get();
 
-                    return $check_service;
+                return $check_service;
             }
         }
 
