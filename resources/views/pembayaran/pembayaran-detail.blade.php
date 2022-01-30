@@ -76,7 +76,7 @@
                 <th>Jumlah</th>
                 <th>Harga Satuan</th>
                 <th>Harga Keseluruhan</th>
-                <th>Pembayaran</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody id="list-selected-jasa"></tbody>
@@ -96,7 +96,7 @@
                 <th>Jumlah</th>
                 <th>Harga Satuan</th>
                 <th>Harga Keseluruhan</th>
-                <th>Pembayaran</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody id="list-selected-barang"></tbody>
@@ -132,7 +132,9 @@
               <th>Kategori Jasa</th>
               <th>Jumlah</th>
               <th>Harga Satuan</th>
+              <th>Diskon</th>
               <th>Harga Keseluruhan</th>
+              <th>Pembayaran</th>
             </tr>
           </thead>
           <tbody id="list-tagihan-jasa">
@@ -153,7 +155,9 @@
               <th>Kelompok Obat</th>
               <th>Jumlah</th>
               <th>Harga Satuan</th>
+              <th>Diskon</th>
               <th>Harga Keseluruhan</th>
+              <th>Pembayaran</th>
             </tr>
           </thead>
           <tbody id="list-tagihan-barang">

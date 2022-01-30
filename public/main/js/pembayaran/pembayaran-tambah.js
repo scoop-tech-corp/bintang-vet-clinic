@@ -183,7 +183,7 @@ $(document).ready(function () {
         + `<td>${lj.quantity}</td>`
         + `<td>${typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td class="d-flex align-item-c">
-            <input type="number" min="0" max="100" maxlength="3" class="form-control diskon-list-jasa" index=${idx} value=${lj.discount}>&nbsp;%
+            <input type="number" min="0" max="100" maxlength="3" class="form-control diskon-list-jasa" index=${idx} value=${lj.discount} style="width:50px">&nbsp;%
           </td>`
         + `<td>
               <span id="totalJasa-${idx}">${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
@@ -253,7 +253,7 @@ $(document).ready(function () {
         + `<td>${lb.quantity}</td>`
         + `<td>${typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td class="d-flex align-item-c">
-            <input type="number" min="0" max="100" maxlength="3" class="form-control diskon-list-barang" index=${idx} value=${lb.discount}>&nbsp;%
+            <input type="number" min="0" max="100" maxlength="3" class="form-control diskon-list-barang" index=${idx} value=${lb.discount} style="width:50px">&nbsp;%
           </td>`
         + `<td>
               <span id="totalBarang-${idx}">${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
