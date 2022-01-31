@@ -173,6 +173,13 @@
                         <td>{{ number_format($item->each_price) }}</td>
                         <td>{{ number_format($item->price_overall) }}</td>
                     </tr>
+                    @if ($item->amount_discount != 0)
+                        <tr>
+                            <td colspan="3">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Diskon:({{ number_format($item->amount_discount) }})
+                            </td>
+                        </tr>
+                    @endif
                 @endforeach
             @endif
 
@@ -184,6 +191,13 @@
                         <td>{{ number_format($service->selling_price) }}</td>
                         <td>{{ number_format($service->price_overall) }}</td>
                     </tr>
+                    @if ($service->amount_discount != 0)
+                        <tr>
+                            <td colspan="3">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Diskon:({{ number_format($service->amount_discount) }})
+                            </td>
+                        </tr>
+                    @endif
                 @endforeach
             @endif
         </tbody>
