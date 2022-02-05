@@ -92,7 +92,7 @@ $(document).ready(function() {
           + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
           + `<td>${lj.discount} %</td>`
           + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${lj.payment_name}</td>`
+          + `<td>${lj.payment_method}</td>`
           + `</tr>`;
           ++no;
       });
@@ -137,7 +137,7 @@ $(document).ready(function() {
           + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
           + `<td>${lb.discount} %</td>`
           + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${lb.payment_name}</td>`
+          + `<td>${lb.payment_method}</td>`
           + `</tr>`;
           ++no;
       });

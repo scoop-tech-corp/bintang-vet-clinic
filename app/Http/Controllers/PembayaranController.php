@@ -440,11 +440,9 @@ class PembayaranController extends Controller
 
         $services = DB::table('detail_service_patients')
             ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('list_of_payment_services', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
             ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
             ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
             ->join('users', 'detail_service_patients.user_id', '=', 'users.id')
-            ->join('payment_methods', 'list_of_payment_services.payment_method_id', '=', 'payment_methods.id')
             ->select(
                 'detail_service_patients.id as detail_service_patient_id',
                 'price_services.id as price_service_id',
@@ -455,8 +453,6 @@ class PembayaranController extends Controller
                 'detail_service_patients.status_paid_off',
                 'service_categories.category_name',
                 DB::raw("TRIM(price_services.selling_price)+0 as selling_price"),
-                DB::raw("TRIM(list_of_payment_services.discount)+0 as discount"),
-                'payment_methods.payment_name as payment_name',
                 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at")
             )
@@ -487,10 +483,8 @@ class PembayaranController extends Controller
 
             $item = DB::table('detail_medicine_group_check_up_results as dmg')
                 ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
-                ->join('list_of_payment_medicine_groups as lopm', 'dmg.id', '=', 'lopm.detail_medicine_group_check_up_result_id')
                 ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
                 ->join('users', 'dmg.user_id', '=', 'users.id')
-                ->join('payment_methods as pm', 'lopm.payment_method_id', '=', 'pm.id')
                 ->select(
                     'dmg.id as id',
                     'dmg.check_up_result_id',
@@ -499,9 +493,7 @@ class PembayaranController extends Controller
                     DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
                     'dmg.quantity as quantity',
                     DB::raw("TRIM(pmg.selling_price * dmg.quantity)+0 as price_overall"),
-                    DB::raw("TRIM(lopm.discount)+0 as discount"),
                     'dmg.status_paid_off',
-                    'pm.payment_name as payment_name',
                     'users.fullname as created_by',
                     DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
                 ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
@@ -513,10 +505,8 @@ class PembayaranController extends Controller
 
             $item = DB::table('detail_medicine_group_check_up_results as dmg')
                 ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
-                ->join('list_of_payment_medicine_groups as lopm', 'dmg.id', '=', 'lopm.detail_medicine_group_check_up_result_id')
                 ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
                 ->join('users', 'dmg.user_id', '=', 'users.id')
-                ->join('payment_methods as pm', 'lopm.payment_method_id', '=', 'pm.id')
                 ->select(
                     'dmg.id as id',
                     'dmg.check_up_result_id',
@@ -525,9 +515,7 @@ class PembayaranController extends Controller
                     DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
                     DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
                     DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
-                    DB::raw("TRIM(SUM(lopm.discount))+0 as discount"),
                     'dmg.status_paid_off',
-                    'pm.payment_name as payment_name',
                     'users.fullname as created_by',
                     DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
                 ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
@@ -545,6 +533,7 @@ class PembayaranController extends Controller
             ->join('service_categories', 'los.service_category_id', '=', 'service_categories.id')
             ->join('check_up_results', 'lops.check_up_result_id', '=', 'check_up_results.id')
             ->join('users', 'dsp.user_id', '=', 'users.id')
+            ->join('payment_methods', 'lops.payment_method_id', '=', 'payment_methods.id')
             ->select('lops.id as list_of_payment_service_id',
                 'dsp.id as detail_service_patient_id',
                 DB::raw("DATE_FORMAT(lops.created_at, '%d %b %Y') as paid_date"),
@@ -552,9 +541,10 @@ class PembayaranController extends Controller
                 'users.fullname as created_by', 'los.service_name',
                 'dsp.quantity',
                 DB::raw("TRIM(lops.discount)+0 as discount"),
-                DB::raw("TRIM(dsp.price_overall)+0 as price_overall"),
                 DB::raw("TRIM(dsp.price_overall - lops.amount_discount)+0 as price_overall_after_discount"),
                 'service_categories.category_name',
+                DB::raw("TRIM(lops.discount)+0 as discount"),
+                'payment_methods.payment_name as payment_method',
                 DB::raw("TRIM(price_services.selling_price)+0 as selling_price"))
             ->where('lops.list_of_payment_id', '=', $request->list_of_payment_id)
             ->orderBy('lops.id', 'desc')
@@ -586,6 +576,7 @@ class PembayaranController extends Controller
                 ->join('price_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
                 ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
                 ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('payment_methods as pm', 'lop.payment_method_id', '=', 'pm.id')
                 ->select(
                     'lop.id as id',
                     //'lop.check_up_result_id',
@@ -595,8 +586,8 @@ class PembayaranController extends Controller
                     DB::raw("TRIM(pmg.selling_price)+0 as each_price"),
                     'dmg.quantity as quantity',
                     DB::raw("TRIM(lop.discount)+0 as discount"),
-                    DB::raw("TRIM(pmg.selling_price * dmg.quantity)+0 as price_overall"),
                     DB::raw("TRIM((pmg.selling_price * dmg.quantity) - lop.amount_discount)+0 as price_overall_after_discount"),
+                    'pm.payment_name as payment_method',
                     'users.fullname as created_by',
                     DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at"),
                     DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as paid_date"),
@@ -611,6 +602,7 @@ class PembayaranController extends Controller
                 ->join('price_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
                 ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
                 ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('payment_methods as pm', 'lop.payment_method_id', '=', 'pm.id')
                 ->select(
                     'lop.id as id',
                     //'lop.check_up_result_id',
@@ -622,8 +614,8 @@ class PembayaranController extends Controller
                     //'lop.quantity as quantity',
                     DB::raw("TRIM(lop.discount)+0 as discount"),
                     DB::raw("TRIM(lop.amount_discount)+0 as amount_discount"),
-                    DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
                     DB::raw("TRIM(SUM(pmg.selling_price) - lop.amount_discount)+0 as price_overall_after_discount"),
+                    'pm.payment_name as payment_method',
                     'users.fullname as created_by',
                     DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at"),
                     DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as paid_date"),
