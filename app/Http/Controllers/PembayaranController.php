@@ -867,7 +867,6 @@ class PembayaranController extends Controller
 
     public function update(Request $request)
     {
-        //validasi
         $check_list_of_payment = DB::table('list_of_payments')
             ->where('check_up_result_id', '=', $request->check_up_result_id)
             ->count();
@@ -1308,7 +1307,6 @@ class PembayaranController extends Controller
 
     public function print_pdf(Request $request)
     {
-
         $res_service = "";
         $res_medicine_group_id = "";
         $res_check_up_result_id = "";
@@ -1468,12 +1466,24 @@ class PembayaranController extends Controller
         $price_service = 0;
         $price_item = 0;
 
+        $res_discount_service = 0;
+
+        if ($discount_service) {
+          $res_discount_service = $discount_service->discount_service;
+        }
+
         if ($price_overall_service) {
-            $price_service = $price_overall_service->price_overall - $discount_service->discount_service;
+            $price_service = $price_overall_service->price_overall - $res_discount_service;
+        }
+
+        $res_discount_item = 0;
+
+        if ($discount_item) {
+          $res_discount_item = $discount_item->discount_item;
         }
 
         if ($price_overall_item) {
-            $price_item = $price_overall_item->price_overall - $discount_item->discount_item;
+            $price_item = $price_overall_item->price_overall - $res_discount_item;
         }
 
         $price_overall = $price_service + $price_item;
