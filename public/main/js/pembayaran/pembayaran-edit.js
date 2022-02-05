@@ -60,8 +60,8 @@ $(document).ready(function() {
       $('#keluhanTxt').text(data.registration.complaint); $('#namaPendaftarTxt').text(data.registration.registrant);
       $('#rawatInapTxt').text(data.status_outpatient_inpatient ? 'Ya' : 'Tidak'); $('#statusPemeriksaanTxt').text(data.status_finish ? 'Selesai' : 'Belum');
 
-      data.services.forEach(sr => { sr.isRevert = false; sr.new_price_overall = sr.price_overall; });
-      data.item.forEach(it => { it.isRevert = false; it.new_price_overall = it.price_overall; });
+      data.services.forEach(sr => { sr.isRevert = false; sr.new_price_overall = sr.price_overall; sr.discount = 0; });
+      data.item.forEach(it => { it.isRevert = false; it.new_price_overall = it.price_overall; it.discount = 0; });
 
       selectedListJasa = data.services; selectedListBarang = data.item;
       processAppendListSelectedJasa(); processAppendListSelectedBarang();
@@ -159,7 +159,7 @@ $(document).ready(function() {
         selectedListJasa[idx].checked = true;
         listTagihanJasa.push(getDetailJasa);
         calculationPay.push({ id: getDetailJasa.detail_service_patient_id, type: 'jasa', price: getDetailJasa.new_price_overall, 
-        discount: getDetailJasa.discount, amount_discount: getDetailJasa.amount_discount, isRevert: false });
+        discount: getDetailJasa.discount ? getDetailJasa.discount : 0, amount_discount: getDetailJasa.amount_discount, isRevert: false });
       } else {
         const getIdxTagihanJasa = listTagihanJasa.findIndex(i => i.detail_service_patient_id == getDetailJasa.detail_service_patient_id);
         const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'jasa' && i.id == getDetailJasa.detail_service_patient_id));
@@ -278,7 +278,7 @@ $(document).ready(function() {
         listTagihanBarang.push(getDetailBarang);
 
         calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, quantity: getDetailBarang.quantity,
-           type: 'barang', price: getDetailBarang.new_price_overall, discount: getDetailBarang.discount, amount_discount: getDetailBarang.amount_discount, isRevert: false });
+           type: 'barang', price: getDetailBarang.new_price_overall, discount: getDetailBarang.discount ? getDetailBarang.discount : 0, amount_discount: getDetailBarang.amount_discount, isRevert: false });
       } else {
         const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
         const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
@@ -342,7 +342,7 @@ $(document).ready(function() {
             + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
             + `<td>${lb.discount}&nbsp;%</td>`
             + `<td>${typeof(lb.new_price_overall) == 'number' ? lb.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>${lb.payment_method}</td>`
+            + `<td>${lb.payment_method ? lb.payment_method : ''}</td>`
             + `</tr>`;
             ++no;
         }
