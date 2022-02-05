@@ -3,8 +3,10 @@ $(document).ready(function() {
   const url = window.location.pathname;
   const stuff = url.split('/');
   const id = stuff[stuff.length-1];
+  let optMetodePembayaran = '';
   let getCheckUpResultId = null;
   let isValidCalculationPay = false;
+  let isValidMetodePembayaran = false;
 
   let selectedListJasa = [];
   let selectedListBarang = [];
@@ -17,8 +19,16 @@ $(document).ready(function() {
 	// }
 
   $('#totalBayarTxt').text('-');
+  $('#metodePembayaran').select2({placeholder: 'Pilih Metode Pembayaran'});
+
+  loadMetodePembayaran();
+
   $('.btn-back-to-list .text, #btnKembali').click(function() {
     window.location.href = $('.baseUrl').val() + '/pembayaran';
+  });
+
+  $('#metodePembayaran').on('select2:select', function (e) {
+    validationForm();
   });
 
   $('#submitConfirm').click(function() {
@@ -33,7 +43,6 @@ $(document).ready(function() {
     $('#modal-confirmation .box-body').text('Anda yakin ingin merubah Pembayaran ini? Data yang akan anda tambahkan tidak dapat diubah kembali.');
     $('#modal-confirmation').modal('show');
   });
-
 
   $.ajax({
     url     : $('.baseUrl').val() + '/api/pembayaran/detail',
@@ -51,14 +60,14 @@ $(document).ready(function() {
       $('#keluhanTxt').text(data.registration.complaint); $('#namaPendaftarTxt').text(data.registration.registrant);
       $('#rawatInapTxt').text(data.status_outpatient_inpatient ? 'Ya' : 'Tidak'); $('#statusPemeriksaanTxt').text(data.status_finish ? 'Selesai' : 'Belum');
 
-      data.services.forEach(sr => { sr.isRevert = false; });
-      data.item.forEach(it => { it.isRevert = false; });
+      data.services.forEach(sr => { sr.isRevert = false; sr.new_price_overall = sr.price_overall; });
+      data.item.forEach(it => { it.isRevert = false; it.new_price_overall = it.price_overall; });
 
       selectedListJasa = data.services; selectedListBarang = data.item;
       processAppendListSelectedJasa(); processAppendListSelectedBarang();
 
-      data.paid_services.forEach(sr => { sr.isRevert = false; });
-      data.paid_item.forEach(sr => { sr.isRevert = false; });
+      data.paid_services.forEach(sr => { sr.isRevert = false; sr.new_price_overall = sr.price_overall_after_discount });
+      data.paid_item.forEach(sr => { sr.isRevert = false; sr.new_price_overall = sr.price_overall_after_discount });
 
       listTagihanJasa = data.paid_services;
       listTagihanBarang = data.paid_item;
@@ -75,6 +84,36 @@ $(document).ready(function() {
     }
   });
 
+  $('#list-selected-jasa').on('input', '.diskon-list-jasa', function() {
+    const idx = $(this).attr('index');
+    const getPriceOverall = selectedListJasa[idx].price_overall;
+    const getValue        = parseFloat($(this).val());
+    let newPriceOverall   = selectedListJasa[idx].price_overall;
+
+    selectedListJasa[idx].discount = getValue;
+    selectedListJasa[idx].amount_discount = (getValue / 100) * getPriceOverall;
+    newPriceOverall = getPriceOverall - selectedListJasa[idx].amount_discount;
+
+    selectedListJasa[idx].new_price_overall = newPriceOverall;
+
+    $(`#totalJasa-${idx}`).text(newPriceOverall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+  });
+
+  $('#list-selected-barang').on('input', '.diskon-list-barang', function() {
+    const idx = $(this).attr('index');
+    const getPriceOverall = selectedListBarang[idx].price_overall;
+    const getValue        = parseFloat($(this).val());
+    let newPriceOverall   = selectedListBarang[idx].price_overall;
+
+    selectedListBarang[idx].discount = getValue;
+    selectedListBarang[idx].amount_discount = (getValue / 100) * getPriceOverall;
+    newPriceOverall = getPriceOverall - selectedListBarang[idx].amount_discount;
+
+    selectedListBarang[idx].new_price_overall = newPriceOverall;
+
+    $(`#totalBarang-${idx}`).text(newPriceOverall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+  });
+
   function processAppendListSelectedJasa() {
     let rowSelectedListJasa = '';
     let no = 1;
@@ -89,7 +128,14 @@ $(document).ready(function() {
         + `<td>${lj.service_name}</td>`
         + `<td>${lj.quantity}</td>`
         + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td class="d-flex align-item-c">
+            <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px" 
+            class="form-control diskon-list-jasa ${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
+            <span class="${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">%</span>
+          </td>`
+        + `<td>
+            <span id="totalJasa-${idx}">${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
+          </td>`
         + `<td>${ lj.status_paid_off && lj.isRevert ? '<span style="text-decoration: line-through;">Lunas</span>'
               : lj.status_paid_off && !lj.isRevert ? 'Lunas'
               : `<input type="checkbox" index=${idx} class="isBayarJasa" ${lj.checked ? 'checked' : ''}/>`}</td>`
@@ -112,7 +158,8 @@ $(document).ready(function() {
       if (this.checked) {
         selectedListJasa[idx].checked = true;
         listTagihanJasa.push(getDetailJasa);
-        calculationPay.push({ id: getDetailJasa.detail_service_patient_id, type: 'jasa', price: getDetailJasa.price_overall, isRevert: false });
+        calculationPay.push({ id: getDetailJasa.detail_service_patient_id, type: 'jasa', price: getDetailJasa.new_price_overall, 
+        discount: getDetailJasa.discount, amount_discount: getDetailJasa.amount_discount, isRevert: false });
       } else {
         const getIdxTagihanJasa = listTagihanJasa.findIndex(i => i.detail_service_patient_id == getDetailJasa.detail_service_patient_id);
         const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'jasa' && i.id == getDetailJasa.detail_service_patient_id));
@@ -175,12 +222,14 @@ $(document).ready(function() {
             + `<td>${lj.service_name}</td>`
             + `<td>${lj.quantity}</td>`
             + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${lj.discount}&nbsp;%</td>`
+            + `<td>${typeof(lj.new_price_overall) == 'number' ? lj.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${lj.payment_method ? lj.payment_method : ''}</td>`
             + `</tr>`;
             ++no;
         }
       });
-    } else { rowListTagihanJasa += `<tr class="text-center"><td colspan="9">Tidak ada data.</td></tr>` }
+    } else { rowListTagihanJasa += `<tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>` }
     $('#list-tagihan-jasa').append(rowListTagihanJasa);
   }
 
@@ -197,7 +246,14 @@ $(document).ready(function() {
         + `<td>${lb.group_name}</td>`
         + `<td>${lb.quantity}</td>`
         + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td class="d-flex align-item-c">
+            <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px" 
+            class="form-control diskon-list-barang ${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
+            <span class="${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">%</span>
+          </td>`
+        + `<td>
+            <span id="totalBarang-${idx}">${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
+          </td>`
         + `<td>${ lb.status_paid_off && lb.isRevert ? '<span style="text-decoration: line-through;">Lunas</span>'
               : lb.status_paid_off && !lb.isRevert ? 'Lunas'
               : `<input type="checkbox" index=${idx} class="isBayarBarang" ${lb.checked ? 'checked' : ''}/>`}</td>`
@@ -220,8 +276,9 @@ $(document).ready(function() {
       if (this.checked) {
         selectedListBarang[idx].checked = true;
         listTagihanBarang.push(getDetailBarang);
+
         calculationPay.push({ id: getDetailBarang.id, medicineGroupId: getDetailBarang.medicine_group_id, quantity: getDetailBarang.quantity,
-           type: 'barang', price: getDetailBarang.price_overall, isRevert: false });
+           type: 'barang', price: getDetailBarang.new_price_overall, discount: getDetailBarang.discount, amount_discount: getDetailBarang.amount_discount, isRevert: false });
       } else {
         const getIdxTagihanBarang = listTagihanBarang.findIndex(i => i.id == getDetailBarang.id);
         const getIdxCalculation = calculationPay.findIndex(i => (i.type == 'barang' && i.id == getDetailBarang.id));
@@ -283,7 +340,9 @@ $(document).ready(function() {
             + `<td>${lb.group_name}</td>`
             + `<td>${lb.quantity}</td>`
             + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-            + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${lb.discount}&nbsp;%</td>`
+            + `<td>${typeof(lb.new_price_overall) == 'number' ? lb.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${lb.payment_method}</td>`
             + `</tr>`;
             ++no;
         }
@@ -311,16 +370,17 @@ $(document).ready(function() {
       if (dt.type == 'jasa') {
         if (dt.isRevert === true) {
           finalSelectedJasa.push({ detail_service_patient_id: dt.id, status: 'del' });
-        } else if (dt.isRevert === false) { finalSelectedJasa.push({ detail_service_patient_id: dt.id, status: null }); }
+        } else if (dt.isRevert === false) { finalSelectedJasa.push({ detail_service_patient_id: dt.id, discount: dt.discount, amount_discount: dt.amount_discount, status: null }); }
       } else {
         if (dt.isRevert === true) {
           finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity, status: 'del'});
-        } else if (dt.isRevert === false) { finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity, status: null }); }
+        } else if (dt.isRevert === false) { finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity, discount: dt.discount, amount_discount: dt.amount_discount, status: null }); }
       }
     });
 
     const datas = {
       check_up_result_id: getCheckUpResultId,
+      payment_method_id: $('#metodePembayaran').val(),
       service_payment: finalSelectedJasa.length ? finalSelectedJasa : [{detail_service_patient_id: null, status: null}],
       item_payment: finalSelectedBarang.length ? finalSelectedBarang : [{medicine_group_id: null, quantity: null, status: null}]
     };
@@ -358,13 +418,46 @@ $(document).ready(function() {
     });
   }
 
+  function loadMetodePembayaran() {
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/metode-pembayaran',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(resp) {
+        const getData = resp.data;
+        optMetodePembayaran += `<option value=""></option>`;
+
+				if (getData.length) {
+					for (let i = 0 ; i < getData.length ; i++) {
+						optMetodePembayaran += `<option value=${getData[i].id}>${getData[i].payment_name}</option>`;
+					}
+				}
+				$('#metodePembayaran').append(optMetodePembayaran);
+
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+  }
+
   function validationForm() {
+
+    if (!$('#metodePembayaran').val()) {
+      $('#metodePembayaranErr1').text('Metode pembayaran harus di isi'); isValidMetodePembayaran = false;
+    } else {
+      $('#metodePembayaranErr1').text(''); isValidMetodePembayaran = true;
+    }
 
     isValidCalculationPay = (!calculationPay.length) ? false : true;
 
     $('#beErr').empty(); isBeErr = false;
 
-    $('#btnSubmitPembayaran').attr('disabled', (!isValidCalculationPay || isBeErr) ? true : false);
+    $('#btnSubmitPembayaran').attr('disabled', (!isValidCalculationPay || !isValidMetodePembayaran || isBeErr) ? true : false);
   }
 
   function processPrint(check_up_result_id, service_payment, item_payment) {
