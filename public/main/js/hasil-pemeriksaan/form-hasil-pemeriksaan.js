@@ -607,8 +607,8 @@ $(document).ready(function() {
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {
-        listJasa = data;
+			success: function(resp) {
+        listJasa = resp.data;
 				if (listJasa.length) {
 					for (let i = 0 ; i < listJasa.length ; i++) {
 						optJasa += `<option value=${listJasa[i].id}>${listJasa[i].category_name} - ${listJasa[i].service_name} - ${listJasa[i].branch_name}</option>`;
