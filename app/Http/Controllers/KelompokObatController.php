@@ -12,10 +12,13 @@ use Validator;
 
 class KelompokObatController extends Controller
 {
+    private $page;
+
     public function index(Request $request)
     {
-
         $items_per_page = 50;
+
+        $page = $request->page;
 
         if ($request->keyword) {
 
@@ -38,7 +41,7 @@ class KelompokObatController extends Controller
             } else {
                 $medicine_groups = [];
                 return response()->json(['total_paging' => 0,
-                    'data' => $data], 200);
+                    'data' => $medicine_groups], 200);
             }
 
             if ($request->branch_id && $request->user()->role == 'admin') {
@@ -55,11 +58,17 @@ class KelompokObatController extends Controller
 
             $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
 
-            $offset = ($request->page - 1) * $items_per_page;
-
             $count_data = $medicine_groups->count();
 
-            $medicine_groups = $medicine_groups->offset($offset)->limit($items_per_page)->get();
+            $offset = ($page - 1) * $items_per_page;
+
+            $count_result = $medicine_groups->offset($offset)->limit($items_per_page)->count();
+
+            if ($count_result == 0) {
+                $medicine_groups = $medicine_groups->offset(0)->limit($items_per_page)->get();
+            } else {
+                $medicine_groups = $medicine_groups->offset($offset)->limit($items_per_page)->get();
+            }
 
             $total_paging = $count_data / $items_per_page;
 
@@ -94,7 +103,7 @@ class KelompokObatController extends Controller
 
             $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
 
-            $offset = ($request->page - 1) * $items_per_page;
+            $offset = ($page - 1) * $items_per_page;
 
             $count_data = $medicine_groups->count();
 
@@ -105,7 +114,6 @@ class KelompokObatController extends Controller
             return response()->json(['total_paging' => ceil($total_paging),
                 'data' => $medicine_groups], 200);
         }
-
     }
 
     private function Search(Request $request)
@@ -380,7 +388,9 @@ class KelompokObatController extends Controller
             'file' => 'required|mimes:xls,xlsx',
         ]);
 
-        $rows = Excel::toArray(new MultipleSheetImportKelompokObat, $request->file('file'));
+        $id = $request->user()->id;
+
+        $rows = Excel::toArray(new MultipleSheetImportKelompokObat($id), $request->file('file'));
         $result = $rows[0];
 
         foreach ($result as $key_result) {
@@ -401,7 +411,7 @@ class KelompokObatController extends Controller
 
         $file = $request->file('file');
 
-        Excel::import(new MultipleSheetImportKelompokObat, $file);
+        Excel::import(new MultipleSheetImportKelompokObat($id), $file);
 
         return response()->json([
             'message' => 'Berhasil mengupload Kelompok Obat',

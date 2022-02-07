@@ -36,6 +36,7 @@ $(document).ready(function() {
 
     $('.section-left-box-title').append(`
       <button class="btn btn-info openFormAdd m-r-10px">Tambah</button>
+      <button class="btn btn-info openFormUpload m-r-10px">Upload Sekaligus</button>
       <button type="button" class="btn btn-success btn-download-excel" title="Download Excel">
         <i class="fa fa-file-excel-o" aria-hidden="true"></i>&nbsp;&nbsp;Download Excel
       </button>
@@ -56,7 +57,7 @@ $(document).ready(function() {
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
   });
-  
+
   $('.onOrdering').click(function() {
 		const column = $(this).attr('data');
 		const orderBy = $(this).attr('orderby');
@@ -82,6 +83,81 @@ $(document).ready(function() {
     $('.modal-title').text('Tambah Pembagian Harga Kelompok Obat');
 
     refreshForm(); formConfigure();
+  });
+
+  $('.openFormUpload').click(function() {
+    $('#modal-upload-harga-kelompok-obat .modal-title').text('Upload Harga Kelompok Obat Sekaligus');
+    $('#modal-upload-harga-kelompok-obat').modal('show');
+    $('.validate-error').html('');
+  });
+
+  $('.btn-download-template').click(function() {
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/pembagian-harga-kelompok-obat/download-template',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      xhrFields: { responseType: 'blob' },
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data, status, xhr) {
+        let disposition = xhr.getResponseHeader('content-disposition');
+        let matches = /"([^"]*)"/.exec(disposition);
+        let filename = (matches != null && matches[1] ? matches[1] : 'file.xlsx');
+        let blob = new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        let downloadUrl = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+
+        a.href = downloadUrl;
+        a.download = filename
+        document.body.appendChild(a);
+        a.click();
+
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+
+  });
+
+  $("#fileupload").fileupload({
+    url: $('.baseUrl').val() + '/api/pembagian-harga-kelompok-obat/upload-template',
+    headers : { 'Authorization': `Bearer ${token}` },
+    dropZone: '#dropZone',
+    dataType: 'json',
+    autoUpload: false,
+  }).on('fileuploadadd', function (e, data) {
+    let fileTypeAllowed = /.\.(xlsx|xls)$/i;
+    let fileName = data.originalFiles[0]['name'];
+    let fileSize = data.originalFiles[0]['size'];
+
+    if (!fileTypeAllowed.test(fileName)) {
+      $('.validate-error').html('File harus berformat .xlsx atau .xls');
+    } else {
+      $('.validate-error').html('');
+      data.submit();
+    }
+  }).on('fileuploaddone', function(e, data) {
+    $('#modal-confirmation').hide();
+
+    $("#msg-box .modal-body").text('Berhasil Upload Harga Kelompok Obat');
+    $('#msg-box').modal('show');
+    setTimeout(() => {
+      $('#modal-upload-harga-kelompok-obat').modal('toggle');
+      loadHargaKelompokObat();
+    }, 1000);
+  }).on('fileuploadfail', function(e, data) {
+    const getResponsError = data._response.jqXHR.responseJSON.errors.hasOwnProperty('file') ? data._response.jqXHR.responseJSON.errors.file
+      : data._response.jqXHR.responseJSON.errors;
+
+    let errText = '';
+    $.each(getResponsError, function(idx, v) {
+      errText += v + ((idx !== getResponsError.length - 1) ? '<br/>' : '');
+    });
+    $('.validate-error').append(errText)
+  }).on('fileuploadprogressall', function(e,data) {
   });
 
   $('.btn-download-excel').click(function() {
@@ -319,13 +395,13 @@ $(document).ready(function() {
           loadKelompokObat(getObj.branch_id, getObj.medicine_group_id); formConfigure();
 
 					getId = getObj.id;
-          $('#hargaJual').val(getObj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')); 
+          $('#hargaJual').val(getObj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#hargaModal').val(getObj.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
-          $('#feeDokter').val(getObj.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')); 
+          $('#feeDokter').val(getObj.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#feePetshop').val(getObj.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
 				});
-			
+
 				$('.openFormDelete').click(function() {
 					getId = $(this).val();
 					modalState = 'delete';
@@ -351,7 +427,7 @@ $(document).ready(function() {
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {	
+			success: function(data) {
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
@@ -408,7 +484,7 @@ $(document).ready(function() {
   function validationForm() {
     if (!$('#selectedCabang').val()) {
 			$('#cabangErr1').text('Cabang barang harus di isi'); isValidSelectedCabang = false;
-		} else { 
+		} else {
 			$('#cabangErr1').text(''); isValidSelectedCabang = true;
 		}
 
@@ -441,7 +517,7 @@ $(document).ready(function() {
 		} else {
 			$('#feePetshopErr1').text(''); isValidFeePetshop = true;
     }
-    
+
     $('#beErr').empty(); isBeErr = false;
     validationBtnSubmitHargaKelompokObat();
   }
@@ -452,7 +528,7 @@ $(document).ready(function() {
 
     $('#hargaJual').val(null); $('#hargaModal').val(null);
     $('#feeDokter').val(null); $('#feePetshop').val(null);
-    
+
     $('#customErr1').empty(); customErr1 = false;
     $('#beErr').empty(); isBeErr = false;
 
@@ -482,7 +558,7 @@ $(document).ready(function() {
 
   function validationHargaJual() {
     let hargaJual  = $('#hargaJual').val();
-    let hargaModal = $('#hargaModal').val(); 
+    let hargaModal = $('#hargaModal').val();
     let feeDokter  = $('#feeDokter').val();
     let feePetshop = $('#feePetshop').val();
 
@@ -494,13 +570,13 @@ $(document).ready(function() {
     const totalHargaJual = parseInt(hargaModal) + parseInt(feeDokter) + parseInt(feePetshop);
 
     if (parseInt(hargaJual) !== totalHargaJual) {
-      $('#customErr1').text('Total harga modal, fee dokter, dan fee petshop tidak sama dengan harga jual'); 
+      $('#customErr1').text('Total harga modal, fee dokter, dan fee petshop tidak sama dengan harga jual');
       customErr1 = false;
-		} else { 
+		} else {
 			$('#customErr1').text(''); customErr1 = true;
 		}
   }
-  
+
   function validationBtnSubmitHargaKelompokObat() {
     if (!isValidSelectedCabang || !isValidSelectedKelompokObat || !isValidHargaJual
       || !isValidHargaModal || !isValidFeeDokter || !isValidFeePetshop

@@ -18,7 +18,7 @@ class DaftarMetodePembayaranController extends Controller
             ], 403);
         }
 
-        $items_per_page = 50;
+        // $items_per_page = 50;
 
         $payment_method = DB::table('payment_methods')
             ->join('users', 'payment_methods.user_id', '=', 'users.id')
@@ -39,16 +39,17 @@ class DaftarMetodePembayaranController extends Controller
 
         $payment_method = $payment_method->orderBy('id', 'desc');
 
-        $offset = ($request->page - 1) * $items_per_page;
+        //$offset = ($request->page - 1) * $items_per_page;
 
-        $count_data = $payment_method->count();
+        //$count_data = $payment_method->count();
 
-        $payment_method = $payment_method->offset($offset)->limit($items_per_page)->get();
+        // $payment_method = $payment_method->offset($offset)->limit($items_per_page)->get();
+        $payment_method = $payment_method->get();
+        //$total_paging = $count_data / $items_per_page;
 
-        $total_paging = $count_data / $items_per_page;
-
-        return response()->json(['total_paging' => ceil($total_paging),
-            'data' => $payment_method], 200);
+        // return response()->json(['total_paging' => ceil($total_paging),
+        //     'data' => $payment_method], 200);
+        return response()->json($payment_method, 200);
     }
 
     public function create(Request $request)

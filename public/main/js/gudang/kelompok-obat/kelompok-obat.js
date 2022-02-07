@@ -28,11 +28,11 @@ $(document).ready(function() {
 
     $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
     $('#filterCabang').append(`<option value=''>Cabang</option>`);
-    
+
     loadCabang(); // load cabang
   }
 
-  loadKelompokObat(); // load kelompok obat 
+  loadKelompokObat(); // load kelompok obat
 
   $('.input-search-section .fa').click(function() {
     onSearch($('.input-search-section input').val());
@@ -41,7 +41,7 @@ $(document).ready(function() {
   $('.input-search-section input').keypress(function(e) {
     if (e.which == 13) { onSearch($(this).val()); }
   });
-  
+
   $('.onOrdering').click(function() {
     const column = $(this).attr('data');
     const orderBy = $(this).attr('orderby');
@@ -64,7 +64,7 @@ $(document).ready(function() {
 
   $('#namaKelompok').keyup(function () { validationForm(); });
   $('#selectedCabang').change(function () { validationForm(); });
-  
+
   $('.openFormAdd').click(function() {
     modalState = 'add';
     $('.modal-title').text('Tambah Kelompok Obat');
@@ -120,7 +120,7 @@ $(document).ready(function() {
     let fileTypeAllowed = /.\.(xlsx|xls)$/i;
     let fileName = data.originalFiles[0]['name'];
     let fileSize = data.originalFiles[0]['size'];
-    
+
     if (!fileTypeAllowed.test(fileName)) {
       $('.validate-error').html('File harus berformat .xlsx atau .xls');
     } else {
@@ -130,14 +130,14 @@ $(document).ready(function() {
   }).on('fileuploaddone', function(e, data) {
     $('#modal-confirmation').hide();
 
-    $("#msg-box .modal-body").text('Berhasil Upload Barang');
+    $("#msg-box .modal-body").text('Berhasil Upload Kelompok Obat');
     $('#msg-box').modal('show');
     setTimeout(() => {
       $('#modal-upload-kelompok-obat').modal('toggle');
       loadKelompokObat();
     }, 1000);
   }).on('fileuploadfail', function(e, data) {
-    const getResponsError = data._response.jqXHR.responseJSON.errors.hasOwnProperty('file') ? data._response.jqXHR.responseJSON.errors.file 
+    const getResponsError = data._response.jqXHR.responseJSON.errors.hasOwnProperty('file') ? data._response.jqXHR.responseJSON.errors.file
       : data._response.jqXHR.responseJSON.errors;
 
     let errText = '';
@@ -332,7 +332,7 @@ $(document).ready(function() {
           $('#namaKelompok').val(getObj.group_name);
           $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
         });
-      
+
         $('.openFormDelete').click(function() {
           getId = $(this).val();
           modalState = 'delete';
@@ -346,8 +346,8 @@ $(document).ready(function() {
 					const getClassName = this.className;
 					const getNumber = parseFloat($(this).text());
 
-					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
-						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
 
 					if (getClassName.includes('arrow-left')) {
 						getCurrentPage = getCurrentPage - 1;
@@ -387,7 +387,7 @@ $(document).ready(function() {
   function validationForm() {
     if (!$('#namaKelompok').val()) {
       $('#namaKelompokErr1').text('Nama kelompok harus di isi'); isValidNamaKelompok = false;
-    } else { 
+    } else {
       $('#namaKelompokErr1').text(''); isValidNamaKelompok = true;
     }
 
@@ -415,7 +415,7 @@ $(document).ready(function() {
       beforeSend: function() { $('#loading-screen').show(); },
       success: function(data) {
         optCabang2 += `<option value=''>Cabang</option>`;
-  
+
         if (data.length) {
           for (let i = 0 ; i < data.length ; i++) {
             optCabang1 += `<option value=${data[i].id}>${data[i].branch_name}</option>`;

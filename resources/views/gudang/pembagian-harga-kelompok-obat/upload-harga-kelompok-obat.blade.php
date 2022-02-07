@@ -1,4 +1,4 @@
-<div class="modal fade" id="modal-upload-harga-barang">
+<div class="modal fade" id="modal-upload-harga-kelompok-obat">
 	<div class="modal-dialog">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -14,7 +14,7 @@
               <h3 class="box-title">Download Template</h3>
             </div>
             <div class="box-body">
-              <div>Gunakan Template untuk menambah harga barang secara sekaligus</div>
+              <div>Gunakan Template untuk menambah harga kelompok obat secara sekaligus</div>
               <button class="btn btn-info btn-download-template">Download Template</button>
             </div>
           </div>

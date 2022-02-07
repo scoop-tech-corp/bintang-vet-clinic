@@ -129,7 +129,7 @@ $(document).ready(function() {
         + `<td>${lj.quantity}</td>`
         + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td class="d-flex align-item-c">
-            <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px" 
+            <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px"
             class="form-control diskon-list-jasa ${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
             <span class="${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">%</span>
           </td>`
@@ -158,7 +158,7 @@ $(document).ready(function() {
       if (this.checked) {
         selectedListJasa[idx].checked = true;
         listTagihanJasa.push(getDetailJasa);
-        calculationPay.push({ id: getDetailJasa.detail_service_patient_id, type: 'jasa', price: getDetailJasa.new_price_overall, 
+        calculationPay.push({ id: getDetailJasa.detail_service_patient_id, type: 'jasa', price: getDetailJasa.new_price_overall,
         discount: getDetailJasa.discount ? getDetailJasa.discount : 0, amount_discount: getDetailJasa.amount_discount, isRevert: false });
       } else {
         const getIdxTagihanJasa = listTagihanJasa.findIndex(i => i.detail_service_patient_id == getDetailJasa.detail_service_patient_id);
@@ -247,7 +247,7 @@ $(document).ready(function() {
         + `<td>${lb.quantity}</td>`
         + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
         + `<td class="d-flex align-item-c">
-            <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px" 
+            <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px"
             class="form-control diskon-list-barang ${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
             <span class="${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">%</span>
           </td>`
@@ -424,8 +424,8 @@ $(document).ready(function() {
       headers : { 'Authorization': `Bearer ${token}` },
       type    : 'GET',
       beforeSend: function() { $('#loading-screen').show(); },
-      success: function(resp) {
-        const getData = resp.data;
+      success: function(data) {
+        const getData = data;
         optMetodePembayaran += `<option value=""></option>`;
 
 				if (getData.length) {

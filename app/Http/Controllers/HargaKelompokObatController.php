@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MultipleSheetUploadHargaKelompokObat;
 use App\Exports\RekapHargaKelompokObat;
+use App\Imports\MultipleSheetImportHargaKelompokObat;
 use App\Models\Branch;
 use App\Models\PriceMedicineGroup;
 use DB;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Validator;
 
 class HargaKelompokObatController extends Controller
@@ -254,5 +257,59 @@ class HargaKelompokObatController extends Controller
 
         return (new RekapHargaKelompokObat($request->orderby, $request->column, $request->keyword, $branchId, $request->user()->role))
             ->download($filename);
+    }
+
+    public function download_template(Request $request)
+    {
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
+
+        return (new MultipleSheetUploadHargaKelompokObat())->download('Template Harga Kelompok Obat.xlsx');
+    }
+
+    public function upload_template(Request $request)
+    {
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
+
+        $this->validate($request, [
+            'file' => 'required|mimes:xls,xlsx',
+        ]);
+
+        $id = $request->user()->id;
+
+        $rows = Excel::toArray(new MultipleSheetImportHargaKelompokObat($id), $request->file('file'));
+        $result = $rows[0];
+
+        foreach ($result as $key_result) {
+
+            $check_branch = DB::table('price_medicine_groups')
+                ->where('medicine_group_id', '=', $key_result['kode_kelompok_obat'])
+                ->count();
+
+            if ($check_branch > 0) {
+
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Data ' . $key_result['nama_kelompok'] . ' sudah ada!'],
+                ], 422);
+            }
+        }
+
+        $file = $request->file('file');
+
+        Excel::import(new MultipleSheetImportHargaKelompokObat($id), $file);
+
+        return response()->json([
+            'message' => 'Berhasil mengupload Harga Kelompok Obat',
+        ], 200);
     }
 }

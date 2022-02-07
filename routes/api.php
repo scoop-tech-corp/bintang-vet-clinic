@@ -168,6 +168,9 @@ Route::group(['middleware' => ['api']], function () {
         Route::put('pembagian-harga-kelompok-obat', 'HargaKelompokObatController@update');
         Route::delete('pembagian-harga-kelompok-obat', 'HargaKelompokObatController@delete');
 
+        Route::get('pembagian-harga-kelompok-obat/download-template', 'HargaKelompokObatController@download_template');
+        Route::post('pembagian-harga-kelompok-obat/upload-template', 'HargaKelompokObatController@upload_template');
+
         Route::get('pembagian-harga-kelompok-obat/generate-excel', 'HargaKelompokObatController@generate_excel');
         Route::get('pembagian-harga-kelompok-obat/cabang-obat', 'HargaKelompokObatController@branch_medicine');
 
