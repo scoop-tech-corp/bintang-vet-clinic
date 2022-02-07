@@ -117,7 +117,7 @@ $(document).ready(function () {
     const fd = new FormData();
     fd.append('check_up_result_id', $('#selectedPasien').val());
     fd.append('payment_method_id', $('#metodePembayaran').val());
-    
+
     calculationPay.forEach(dt => {
       if (dt.type == 'jasa') {
         finalSelectedJasa.push({ detail_service_patient_id: dt.id, discount: dt.discount, amount_discount: dt.amount_discount });
@@ -355,8 +355,8 @@ $(document).ready(function () {
       headers : { 'Authorization': `Bearer ${token}` },
       type    : 'GET',
       beforeSend: function() { $('#loading-screen').show(); },
-      success: function(resp) {
-        const getData = resp.data;
+      success: function(data) {
+        const getData = data;
         optMetodePembayaran += `<option value=""></option>`;
 
 				if (getData.length) {

@@ -14,5 +14,5 @@ class ListofPaymentService extends Model
 
     protected $fillable = ['detail_service_patient_id', 'check_up_result_id', 'list_of_payment_id',
         'user_id', 'payment_method_id',
-        'discount', 'amount_discount'];
+        'discount', 'amount_discount','quantity'];
 }

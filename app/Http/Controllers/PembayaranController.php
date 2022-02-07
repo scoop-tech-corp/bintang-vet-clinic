@@ -570,7 +570,7 @@ class PembayaranController extends Controller
         }
 
         if ($valid == true) {
-
+            //data baru
             $paid_item = DB::table('list_of_payment_medicine_groups as lop')
                 ->join('detail_medicine_group_check_up_results as dmg', 'dmg.id', '=', 'lop.detail_medicine_group_check_up_result_id')
                 ->join('price_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
@@ -597,6 +597,7 @@ class PembayaranController extends Controller
                 ->get();
 
         } else {
+            //data lama
             $paid_item = DB::table('list_of_payment_medicine_groups as lop')
             //->join('list_of_payment_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
                 ->join('price_medicine_groups as pmg', 'lop.medicine_group_id', '=', 'pmg.id')
@@ -613,8 +614,8 @@ class PembayaranController extends Controller
                     DB::raw("COUNT(lop.medicine_group_id) as quantity"),
                     //'lop.quantity as quantity',
                     DB::raw("TRIM(lop.discount)+0 as discount"),
-                    DB::raw("TRIM(lop.amount_discount)+0 as amount_discount"),
-                    DB::raw("TRIM(SUM(pmg.selling_price) - lop.amount_discount)+0 as price_overall_after_discount"),
+                    DB::raw("TRIM(lop.amount_discount * lop.quantity)+0 as amount_discount"),
+                    DB::raw("TRIM(SUM(pmg.selling_price) - (lop.amount_discount * lop.quantity))+0 as price_overall_after_discount"),
                     'pm.payment_name as payment_method',
                     'users.fullname as created_by',
                     DB::raw("DATE_FORMAT(lop.created_at, '%d %b %Y') as created_at"),
@@ -749,6 +750,11 @@ class PembayaranController extends Controller
                     $amount_discount = $key_service['amount_discount'];
                 }
 
+                $check_quantity = DB::table('detail_service_patients')
+                    ->select('quantity')
+                    ->where('id', '=', $key_service['detail_service_patient_id'])
+                    ->first();
+
                 $item = ListofPaymentService::create([
                     'detail_service_patient_id' => $key_service['detail_service_patient_id'],
                     'check_up_result_id' => $request->check_up_result_id,
@@ -757,6 +763,7 @@ class PembayaranController extends Controller
                     'payment_method_id' => $request->payment_method_id,
                     'discount' => $discount,
                     'amount_discount' => $amount_discount,
+                    'quantity' => $check_quantity->quantity,
                 ]);
 
                 $check_service = DetailServicePatient::find($key_service['detail_service_patient_id']);
@@ -774,7 +781,7 @@ class PembayaranController extends Controller
             foreach ($result_item as $value_item) {
 
                 $detail_medicine_group = DB::table('detail_medicine_group_check_up_results as dmg')
-                    ->select('id')
+                    ->select('id', 'quantity')
                     ->where('dmg.check_up_result_id', '=', $request->check_up_result_id)
                     ->where('dmg.medicine_group_id', '=', $value_item['medicine_group_id'])
                     ->get();
@@ -792,6 +799,11 @@ class PembayaranController extends Controller
                         $amount_discount = $value_item['amount_discount'];
                     }
 
+                    if ($detail_medicine_group->count() > 1 && $amount_discount != 0 && $mdc_group->quantity == 0) {
+
+                        $amount_discount = $amount_discount / $value_item['quantity'];
+                    }
+
                     $payment_medicine_group = list_of_payment_medicine_groups::create([
                         'detail_medicine_group_check_up_result_id' => $mdc_group->id,
                         'list_of_payment_id' => $list_of_payment->id,
@@ -800,6 +812,7 @@ class PembayaranController extends Controller
                         'payment_method_id' => $request->payment_method_id,
                         'discount' => $discount,
                         'amount_discount' => $amount_discount,
+                        'quantity' => $value_item['quantity'],
                     ]);
 
                     $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])
@@ -1019,6 +1032,11 @@ class PembayaranController extends Controller
                     $amount_discount = $key_service['amount_discount'];
                 }
 
+                $check_quantity = DB::table('detail_service_patients')
+                    ->select('quantity')
+                    ->where('id', '=', $key_service['detail_service_patient_id'])
+                    ->first();
+
                 $item = ListofPaymentService::create([
                     'detail_service_patient_id' => $key_service['detail_service_patient_id'],
                     'check_up_result_id' => $request->check_up_result_id,
@@ -1027,6 +1045,7 @@ class PembayaranController extends Controller
                     'payment_method_id' => $request->payment_method_id,
                     'discount' => $discount,
                     'amount_discount' => $amount_discount,
+                    'quantity' => $check_quantity->quantity,
                 ]);
 
                 $check_service = DetailServicePatient::find($key_service['detail_service_patient_id']);
@@ -1067,7 +1086,7 @@ class PembayaranController extends Controller
                         ->first();
 
                     $detail_medicine_group = DB::table('detail_medicine_group_check_up_results as dmg')
-                        ->select('id')
+                        ->select('id', 'quantity')
                         ->where('dmg.check_up_result_id', '=', $request->check_up_result_id)
                         ->where('dmg.medicine_group_id', '=', $value_item['medicine_group_id'])
                         ->get();
@@ -1085,6 +1104,11 @@ class PembayaranController extends Controller
                             $amount_discount = $value_item['amount_discount'];
                         }
 
+                        if ($detail_medicine_group->count() > 1 && $amount_discount != 0 && $res->quantity == 0) {
+
+                            $amount_discount = $amount_discount / $value_item['quantity'];
+                        }
+
                         $payment_medicine_group = list_of_payment_medicine_groups::create([
                             'detail_medicine_group_check_up_result_id' => $res->id,
                             'list_of_payment_id' => $list_of_payment->id,
@@ -1093,6 +1117,7 @@ class PembayaranController extends Controller
                             'payment_method_id' => $request->payment_method_id,
                             'discount' => $discount,
                             'amount_discount' => $amount_discount,
+                            'quantity' => $value_item['quantity'],
                         ]);
 
                         $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])
@@ -1255,20 +1280,10 @@ class PembayaranController extends Controller
                 ->get();
 
             if ($check_payment_item) {
-                // info($val->detail_medicine_group_check_up_result_id);
-                // $values = Detail_medicine_group_check_up_result::find($val->detail_medicine_group_check_up_result_id);
-                // info($values);
-                // $values->status_paid_off = 0;
-                // $values->user_update_id = $request->user()->id;
-                // $values->updated_at = \Carbon\Carbon::now();
-                // $values->save;
 
                 $values = DB::table('detail_medicine_group_check_up_results')
                     ->where('id', $val->detail_medicine_group_check_up_result_id)
                     ->update(['status_paid_off' => 0, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
-
-                // $values = Detail_medicine_group_check_up_result::where('id', '=', $val->detail_medicine_group_check_up_result_id)
-                //     ->update(['status_paid_off' => 0, 'user_update_id' => $request->user()->id, 'updated_at' => \Carbon\Carbon::now()]);
 
                 $check_payment_item = DB::table('list_of_payment_items')
                     ->where('list_of_payment_medicine_group_id', $val->id)
@@ -1366,7 +1381,6 @@ class PembayaranController extends Controller
         }
 
         if ($valid == true) {
-
             $data_item = DB::table('list_of_payment_medicine_groups as lopm')
                 ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
                 ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
@@ -1387,7 +1401,6 @@ class PembayaranController extends Controller
                 ->get();
 
         } else {
-
             $data_item = DB::table('list_of_payment_medicine_groups as lopm')
                 ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
                 ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
@@ -1469,7 +1482,7 @@ class PembayaranController extends Controller
         $res_discount_service = 0;
 
         if ($discount_service) {
-          $res_discount_service = $discount_service->discount_service;
+            $res_discount_service = $discount_service->discount_service;
         }
 
         if ($price_overall_service) {
@@ -1479,7 +1492,7 @@ class PembayaranController extends Controller
         $res_discount_item = 0;
 
         if ($discount_item) {
-          $res_discount_item = $discount_item->discount_item;
+            $res_discount_item = $discount_item->discount_item;
         }
 
         if ($price_overall_item) {

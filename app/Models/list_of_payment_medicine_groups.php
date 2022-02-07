@@ -17,5 +17,5 @@ class list_of_payment_medicine_groups extends Model
         'medicine_group_id',
         'user_id',
         'payment_method_id',
-        'discount', 'amount_discount'];
+        'discount', 'amount_discount','quantity'];
 }
