@@ -42,6 +42,8 @@
             <th class="onOrdering" data='capital_price' orderby="none">Harga Modal Keseluruhan <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='doctor_fee' orderby="none">Fee Dokter Keseluruhan <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='petshop_fee' orderby="none">Fee Petshop Keseluruhan <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='amount_discount' orderby="none">Nominal Diskon <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='fee_doctor_after_discount' orderby="none">Fee Dokter Setelah Diskon <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='created_by' orderby="none">Dibuat Oleh <span class="fa fa-sort"></span></th>
             <th>Aksi</th>
           </tr>

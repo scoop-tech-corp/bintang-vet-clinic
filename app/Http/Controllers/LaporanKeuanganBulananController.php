@@ -37,13 +37,12 @@ class LaporanKeuanganBulananController extends Controller
                 'pa.pet_category',
                 'pa.pet_name',
                 'reg.complaint',
-
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(pmg.selling_price * lopm.quantity) END)+0 as price_overall"),
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(pmg.capital_price * lopm.quantity) END)+0 as capital_price"),
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(pmg.doctor_fee * lopm.quantity) END)+0 as doctor_fee"),
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(pmg.petshop_fee * lopm.quantity) END)+0 as petshop_fee"),
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"),
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price"),
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"),
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee"),
                 DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount"),
-                DB::raw("TRIM(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(pmg.doctor_fee * lopm.quantity) END - SUM(lopm.amount_discount))+0 as fee_doctor_after_discount"),
+                DB::raw("TRIM(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END - SUM(lopm.amount_discount))+0 as fee_doctor_after_discount"),
                 'users.fullname as created_by',
                 'lop.created_at as created_at',
                 'branches.id as branchId');
@@ -74,7 +73,7 @@ class LaporanKeuanganBulananController extends Controller
                 DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
                 DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
                 DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount"),
-                DB::raw("TRIM(SUM(price_services.doctor_fee) - SUM(list_of_payment_services.amount_discount))+0 as fee_doctor_after_discount"),
+                DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity) - SUM(list_of_payment_services.amount_discount))+0 as fee_doctor_after_discount"),
                 'users.fullname as created_by', 'list_of_payments.updated_at as created_at',
                 'branches.id as branchId');
 

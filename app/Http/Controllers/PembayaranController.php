@@ -799,9 +799,12 @@ class PembayaranController extends Controller
                         $amount_discount = $value_item['amount_discount'];
                     }
 
+                    $quantity = $value_item['quantity'];
+
                     if ($detail_medicine_group->count() > 1 && $amount_discount != 0 && $mdc_group->quantity == 0) {
 
                         $amount_discount = $amount_discount / $value_item['quantity'];
+                        $quantity = 1;
                     }
 
                     $payment_medicine_group = list_of_payment_medicine_groups::create([
@@ -812,7 +815,7 @@ class PembayaranController extends Controller
                         'payment_method_id' => $request->payment_method_id,
                         'discount' => $discount,
                         'amount_discount' => $amount_discount,
-                        'quantity' => $value_item['quantity'],
+                        'quantity' => $quantity,
                     ]);
 
                     $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])
@@ -1104,9 +1107,12 @@ class PembayaranController extends Controller
                             $amount_discount = $value_item['amount_discount'];
                         }
 
+                        $quantity = $value_item['quantity'];
+
                         if ($detail_medicine_group->count() > 1 && $amount_discount != 0 && $res->quantity == 0) {
 
                             $amount_discount = $amount_discount / $value_item['quantity'];
+                            $quantity = 1;
                         }
 
                         $payment_medicine_group = list_of_payment_medicine_groups::create([
@@ -1117,7 +1123,7 @@ class PembayaranController extends Controller
                             'payment_method_id' => $request->payment_method_id,
                             'discount' => $discount,
                             'amount_discount' => $amount_discount,
-                            'quantity' => $value_item['quantity'],
+                            'quantity' => $quantity,
                         ]);
 
                         $check_medicine_group_check_up = Detail_medicine_group_check_up_result::where('medicine_group_id', '=', $value_item['medicine_group_id'])
