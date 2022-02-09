@@ -147,6 +147,8 @@ $(document).ready(function() {
 							+ `<td>${typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
 							+ `<td>${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
 							+ `<td>${typeof(v.petshop_fee)== 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>${typeof(v.amount_discount)== 'number' ? v.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+							+ `<td>${typeof(v.fee_doctor_after_discount)== 'number' ? v.fee_doctor_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
 							+ `<td>${v.created_by}</td>`
 							+ `<td>
 									<button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
