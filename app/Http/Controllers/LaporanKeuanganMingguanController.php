@@ -283,12 +283,58 @@ class LaporanKeuanganMingguanController extends Controller
 
         $petshop_fee = $petshop_fee_item->petshop_fee + $petshop_fee_service->petshop_fee;
 
+        $amount_discount_item = DB::table('list_of_payments as lop')
+            ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+            ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+            ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select(
+                DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount"));
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->date_from && $request->date_to) {
+            $amount_discount_item = $amount_discount_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+        }
+        $amount_discount_item = $amount_discount_item->first();
+
+        $amount_discount_service = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select(
+                DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount"));
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->date_from && $request->date_to) {
+            $amount_discount_service = $amount_discount_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+        }
+        $amount_discount_service = $amount_discount_service->first();
+
+        $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
+
         return response()->json([
             'data' => $data,
             'price_overall' => $price_overall,
             'capital_price' => $capital_price,
             'doctor_fee' => $doctor_fee,
             'petshop_fee' => $petshop_fee,
+            'amount_discount' => $amount_discount,
         ], 200);
     }
 
