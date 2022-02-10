@@ -9,7 +9,7 @@
             <th style="text-align: center; border: 1px solid black;" width="8"><b>PETSHOP</b></th>
             <th style="text-align: center; border: 1px solid black;" width="10"><b>MODAL</b></th>
             <th style="text-align: center; border: 1px solid black;" width="11"><b>DOKTER</b></th>
-            <th style="text-align: center; border: 1px solid black;" width="11"><b>PERSENTASE DISKON</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="18"><b>PERSENTASE DISKON</b></th>
             <th style="text-align: center; border: 1px solid black;" width="16"><b>NOMINAL DISKON</b></th>
             <th style="text-align: center; border: 1px solid black;" width="26"><b>FEE DOKTER SETELAH DISKON</b></th>
             <th style="text-align: center; border: 1px solid black;" width="13"><b>TOTAL DOKTER</b></th>
@@ -18,7 +18,6 @@
     <tbody>
 
         @foreach ($data as $datas)
-
             @php
                 $total_income = 0;
                 $total_petshop = 0;
@@ -26,6 +25,7 @@
                 $total_doctor = 0;
                 $total_overall_doctor = 0;
                 $total_amount_discount = 0;
+                $total_doctor_after_discount = 0;
 
                 $temp_date = '';
                 $temp_owner = '';
@@ -58,7 +58,6 @@
                     {{-- ======================================================= --}}
 
                     @if ($temp_owner != '')
-
                         @if ($temp_owner == $res_data->owner_name)
                             <td style="text-align: center; border: 1px solid black;"></td>
                         @else
@@ -79,7 +78,6 @@
                     {{-- ======================================================= --}}
 
                     @if ($temp_pet != '')
-
                         @if ($temp_pet == $res_data->pet_name)
                             <td style="text-align: left; border: 1px solid black;"></td>
                         @else
@@ -159,6 +157,7 @@
                     $total_capital += $res_data->capital_price;
                     $total_doctor += $res_data->doctor_fee;
                     $total_amount_discount += $res_data->amount_discount;
+                    $total_doctor_after_discount += $res_data->after_discount;
                 @endphp
             @endforeach
             <tr>
@@ -215,7 +214,13 @@
                 </td>
 
                 <td style="text-align: center; border: 1px thick black;"> {{-- fee dokter setelah diskon --}}
-
+                    <b>
+                        @php
+                            $float = (float) $total_doctor_after_discount;
+                        @endphp
+                        {{ $float }}
+                        {{-- {{ number_format($total_petshop, 2, ',', '.') }} --}}
+                    </b>
                 </td>
 
                 <td style="text-align: right; border: 1px thick black;">

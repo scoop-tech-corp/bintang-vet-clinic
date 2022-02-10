@@ -143,10 +143,12 @@ $(document).ready(function() {
 				const capitalPrice = (resp.capital_price > -1) ? resp.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 				const docterFee    = (resp.doctor_fee > -1) ? resp.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 				const petshopFee   = (resp.petshop_fee > -1) ? resp.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+				const amountDiscount   = (resp.amount_discount > -1) ? resp.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 
         $('#total-keseluruhan-txt').text(`Rp. ${priceOverall}`);
         $('#harga-modal-txt').text(`Rp. ${capitalPrice}`);
         $('#fee-dokter-txt').text(`Rp. ${docterFee}`);
+        $('#nominal-diskon-txt').text(`Rp. ${amountDiscount}`);
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
 
         $('.openDetail').click(function() {

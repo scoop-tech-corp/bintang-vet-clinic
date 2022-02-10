@@ -63,6 +63,10 @@
       <span id="fee-dokter-txt">Rp. -</span>
     </div>
     <div class="m-b-10px m-t-10px">
+      <label class="label-support-laporan">Nominal Diskon</label>
+      <span id="nominal-diskon-txt">Rp. -</span>
+    </div>
+    <div class="m-b-10px m-t-10px">
       <label class="label-support-laporan">Fee Petshop</label>
       <span id="fee-petshop-txt">Rp. -</span>
     </div>
