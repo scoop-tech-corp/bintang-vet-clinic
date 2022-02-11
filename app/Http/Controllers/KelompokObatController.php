@@ -12,29 +12,26 @@ use Validator;
 
 class KelompokObatController extends Controller
 {
-    private $page;
-
     public function index(Request $request)
     {
         $items_per_page = 50;
 
         $page = $request->page;
 
+        $medicine_groups = DB::table('medicine_groups')
+            ->join('users', 'medicine_groups.user_id', '=', 'users.id')
+            ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+            ->select(
+                'medicine_groups.id',
+                'branches.id as branch_id',
+                'branches.branch_name',
+                'group_name',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
+            ->where('medicine_groups.isDeleted', '=', 0);
+
         if ($request->keyword) {
-
             $res = $this->Search($request);
-
-            $medicine_groups = DB::table('medicine_groups')
-                ->join('users', 'medicine_groups.user_id', '=', 'users.id')
-                ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-                ->select(
-                    'medicine_groups.id',
-                    'branches.id as branch_id',
-                    'branches.branch_name',
-                    'group_name',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
-                ->where('medicine_groups.isDeleted', '=', 0);
 
             if ($res) {
                 $medicine_groups = $medicine_groups->where($res, 'like', '%' . $request->keyword . '%');
@@ -44,76 +41,37 @@ class KelompokObatController extends Controller
                     'data' => $medicine_groups], 200);
             }
 
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
-            }
-
-            $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
-
-            $count_data = $medicine_groups->count();
-
-            $offset = ($page - 1) * $items_per_page;
-
-            $count_result = $medicine_groups->offset($offset)->limit($items_per_page)->count();
-
-            if ($count_result == 0) {
-                $medicine_groups = $medicine_groups->offset(0)->limit($items_per_page)->get();
-            } else {
-                $medicine_groups = $medicine_groups->offset($offset)->limit($items_per_page)->get();
-            }
-
-            $total_paging = $count_data / $items_per_page;
-
-            return response()->json(['total_paging' => ceil($total_paging),
-                'data' => $medicine_groups], 200);
-
-        } else {
-
-            $medicine_groups = DB::table('medicine_groups')
-                ->join('users', 'medicine_groups.user_id', '=', 'users.id')
-                ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-                ->select(
-                    'medicine_groups.id',
-                    'branches.id as branch_id',
-                    'branches.branch_name',
-                    'group_name',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
-                ->where('medicine_groups.isDeleted', '=', 0);
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
-            }
-
-            $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
-
-            $offset = ($page - 1) * $items_per_page;
-
-            $count_data = $medicine_groups->count();
-
-            $medicine_groups = $medicine_groups->offset($offset)->limit($items_per_page)->get();
-
-            $total_paging = $count_data / $items_per_page;
-
-            return response()->json(['total_paging' => ceil($total_paging),
-                'data' => $medicine_groups], 200);
         }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
+        }
+
+        $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $medicine_groups->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $medicine_groups = $medicine_groups->offset(0)->limit($items_per_page)->get();
+        } else {
+            $medicine_groups = $medicine_groups->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $medicine_groups], 200);
     }
 
     private function Search(Request $request)

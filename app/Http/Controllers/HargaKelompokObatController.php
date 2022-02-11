@@ -16,6 +16,11 @@ class HargaKelompokObatController extends Controller
 {
     public function index(Request $request)
     {
+
+      $items_per_page = 50;
+
+        $page = $request->page;
+
         $price_medicine_groups = DB::table('price_medicine_groups')
             ->join('users', 'price_medicine_groups.user_id', '=', 'users.id')
             ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
@@ -56,9 +61,21 @@ class HargaKelompokObatController extends Controller
 
         $price_medicine_groups = $price_medicine_groups->orderBy('price_medicine_groups.id', 'desc');
 
-        $price_medicine_groups = $price_medicine_groups->get();
+        $offset = ($page - 1) * $items_per_page;
 
-        return response()->json($price_medicine_groups, 200);
+        $count_data = $price_medicine_groups->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $price_medicine_groups = $price_medicine_groups->offset(0)->limit($items_per_page)->get();
+        } else {
+            $price_medicine_groups = $price_medicine_groups->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $price_medicine_groups], 200);
     }
 
     public function create(Request $request)

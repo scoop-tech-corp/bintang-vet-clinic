@@ -21,107 +21,77 @@ class PenerimaanPasienController extends Controller
             ], 403);
         }
 
+        $items_per_page = 50;
+
+        $page = $request->page;
+
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id as id',
+                'registrations.id_number',
+                'registrations.patient_id',
+                'patients.id_member as id_number_patient',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.pet_gender',
+                'patients.pet_year_age',
+                'patients.pet_month_age',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
+                'complaint',
+                'registrant',
+                'user_doctor.id as user_doctor_id',
+                'user_doctor.username as username_doctor',
+                'users.fullname as created_by',
+                'registrations.acceptance_status',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"),
+                'users.branch_id as user_branch_id')
+            ->where('registrations.acceptance_status', '=', '0');
+
         if ($request->keyword) {
-
             $res = $this->Search($request);
-
-            $data = DB::table('registrations')
-                ->join('users', 'registrations.user_id', '=', 'users.id')
-                ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-                ->join('owners', 'patients.owner_id', '=', 'owners.id')
-                ->join('branches', 'patients.branch_id', '=', 'branches.id')
-                ->select(
-                    'registrations.id as id',
-                    'registrations.id_number',
-                    'registrations.patient_id',
-                    'patients.id_member as id_number_patient',
-                    'patients.pet_category',
-                    'patients.pet_name',
-                    'patients.pet_gender',
-                    'patients.pet_year_age',
-                    'patients.pet_month_age',
-                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
-                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
-                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
-                    'complaint',
-                    'registrant',
-                    'user_doctor.id as user_doctor_id',
-                    'user_doctor.username as username_doctor',
-                    'users.fullname as created_by',
-                    'registrations.acceptance_status',
-                    DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"),
-                    'users.branch_id as user_branch_id')
-                ->where('registrations.acceptance_status', '=', '0');
 
             if ($res) {
                 $data = $data->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(['total_paging' => 0,
+                    'data' => $data], 200);
             }
-
-            if ($request->user()->role == 'dokter') {
-                $data = $data->where('user_doctor.id', '=', $request->user()->id);
-            }
-
-            if ($request->orderby) {
-
-                $data = $data->orderBy($request->column, $request->orderby);
-            }
-
-            $data = $data->orderBy('registrations.id', 'desc');
-
-            $data = $data->get();
-
-            return response()->json($data, 200);
-
-        } else {
-
-            $data = DB::table('registrations')
-                ->join('users', 'registrations.user_id', '=', 'users.id')
-                ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-                ->join('owners', 'patients.owner_id', '=', 'owners.id')
-                ->join('branches', 'patients.branch_id', '=', 'branches.id')
-                ->select(
-                    'registrations.id as id',
-                    'registrations.id_number',
-                    'registrations.patient_id',
-                    'patients.id_member as id_number_patient',
-                    'patients.pet_category',
-                    'patients.pet_name',
-                    'patients.pet_gender',
-                    'patients.pet_year_age',
-                    'patients.pet_month_age',
-                    DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
-                    DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
-                    DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
-                    'complaint',
-                    'registrant',
-                    'user_doctor.id as user_doctor_id',
-                    'user_doctor.username as username_doctor',
-                    'users.fullname as created_by',
-                    'registrations.acceptance_status',
-                    DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"),
-                    'users.branch_id as user_branch_id')
-                ->where('registrations.acceptance_status', '=', '0');
-
-            if ($request->user()->role == 'dokter') {
-                $data = $data->where('user_doctor.id', '=', $request->user()->id);
-            }
-
-            if ($request->orderby) {
-
-                $data = $data->orderBy($request->column, $request->orderby);
-            }
-
-            $data = $data->orderBy('registrations.id', 'desc');
-
-            $data = $data->get();
-
-            return response()->json($data, 200);
         }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.id', '=', $request->user()->id);
+        }
+
+        if ($request->orderby) {
+
+            $data = $data->orderBy($request->column, $request->orderby);
+        }
+
+        $data = $data->orderBy('registrations.id', 'desc');
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $data->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $data = $data->offset(0)->limit($items_per_page)->get();
+        } else {
+            $data = $data->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $data], 200);
 
     }
 

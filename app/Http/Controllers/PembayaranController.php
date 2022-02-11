@@ -56,25 +56,27 @@ class PembayaranController extends Controller
 
         $items_per_page = 50;
 
+        $page = $request->page;
+
+        $data = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('users', 'list_of_payments.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->select('list_of_payments.id as list_of_payment_id',
+                'check_up_results.id as check_up_result_id',
+                'registrations.id_number as registration_number',
+                'patients.id_member as patient_number',
+                'patients.pet_category',
+                'patients.pet_name',
+                'registrations.complaint',
+                'check_up_results.status_outpatient_inpatient',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y') as created_at"));
+
         if ($request->keyword) {
             $res = $this->Search($request);
-
-            $data = DB::table('list_of_payments')
-                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-                ->join('users', 'list_of_payments.user_id', '=', 'users.id')
-                ->join('branches', 'users.branch_id', '=', 'branches.id')
-                ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-                ->select('list_of_payments.id as list_of_payment_id',
-                    'check_up_results.id as check_up_result_id',
-                    'registrations.id_number as registration_number',
-                    'patients.id_member as patient_number',
-                    'patients.pet_category',
-                    'patients.pet_name',
-                    'registrations.complaint',
-                    'check_up_results.status_outpatient_inpatient',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y') as created_at"));
 
             if ($res) {
                 $data = $data->where($res, 'like', '%' . $request->keyword . '%');
@@ -84,77 +86,37 @@ class PembayaranController extends Controller
                     ['total_paging' => 0,
                         'data' => $data], 200);
             }
-
-            if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
-                $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $data = $data->where('users.branch_id', '=', $request->branch_id);
-            }
-
-            if ($request->orderby) {
-                $data = $data->orderBy($request->column, $request->orderby);
-            }
-
-            $data = $data->orderBy('list_of_payments.id', 'desc');
-
-            $offset = ($request->page - 1) * $items_per_page;
-
-            $count_data = $data->count();
-
-            $data = $data->offset($offset)->limit($items_per_page)->get();
-
-            $total_paging = $count_data / $items_per_page;
-
-            return response()->json(
-                ['total_paging' => ceil($total_paging),
-                    'data' => $data], 200);
-        } else {
-
-            $data = DB::table('list_of_payments')
-                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-                ->join('users', 'list_of_payments.user_id', '=', 'users.id')
-                ->join('branches', 'users.branch_id', '=', 'branches.id')
-                ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-                ->select('list_of_payments.id as list_of_payment_id',
-                    'check_up_results.id as check_up_result_id',
-                    'registrations.id_number as registration_number',
-                    'patients.id_member as patient_number',
-                    'patients.pet_category',
-                    'patients.pet_name',
-                    'registrations.complaint',
-                    'check_up_results.status_outpatient_inpatient',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y') as created_at"));
-
-            if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
-                $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $data = $data->where('users.branch_id', '=', $request->branch_id);
-            }
-
-            if ($request->orderby) {
-                $data = $data->orderBy($request->column, $request->orderby);
-            }
-
-            $data = $data->orderBy('list_of_payments.id', 'desc');
-
-            $offset = ($request->page - 1) * $items_per_page;
-
-            $count_data = $data->count();
-
-            $data = $data->offset($offset)->limit($items_per_page)->get();
-
-            $total_paging = $count_data / $items_per_page;
-
-            return response()->json(
-                ['total_paging' => ceil($total_paging),
-                    'data' => $data], 200);
         }
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->orderby) {
+            $data = $data->orderBy($request->column, $request->orderby);
+        }
+
+        $data = $data->orderBy('list_of_payments.id', 'desc');
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $data->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $data = $data->offset(0)->limit($items_per_page)->get();
+        } else {
+            $data = $data->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $data], 200);
 
     }
 
