@@ -111,8 +111,21 @@ class LaporanKeuanganBulananController extends Controller
             $data = $data->orderBy('list_of_payment_id', 'desc');
         }
 
-        $data = $data->groupBy('check_up_result_id')
-            ->get();
+        $temp_data = $data->groupBy('check_up_result_id')->get();
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $temp_data->count();
+
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $data = $data->groupBy('check_up_result_id')->offset(0)->limit($items_per_page)->get();
+        } else {
+            $data = $data->groupBy('check_up_result_id')->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
 
         $price_overall_item = DB::table('list_of_payments as lop')
             ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
@@ -308,9 +321,9 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-          $amount_discount_item = $amount_discount_item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
-              ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
-      }
+            $amount_discount_item = $amount_discount_item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
+        }
         $amount_discount_item = $amount_discount_item->first();
 
         $amount_discount_service = DB::table('list_of_payments')
@@ -330,9 +343,9 @@ class LaporanKeuanganBulananController extends Controller
         }
 
         if ($request->month && $request->year) {
-          $amount_discount_service = $amount_discount_service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
-              ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
-      }
+            $amount_discount_service = $amount_discount_service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
+        }
         $amount_discount_service = $amount_discount_service->first();
 
         $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
