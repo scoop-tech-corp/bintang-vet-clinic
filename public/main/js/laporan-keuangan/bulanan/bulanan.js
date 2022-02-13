@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
   let optCabang = '';
+  let getCurrentPage = 1;
   let paramUrlSetup = {
 		orderby:'',
 		column: '',
@@ -112,7 +113,7 @@ $(document).ready(function() {
 			url     : $('.baseUrl').val() + '/api/laporan-keuangan/bulanan',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, month: paramUrlSetup.month, year: paramUrlSetup.year, branch_id: paramUrlSetup.branchId },
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, month: paramUrlSetup.month, year: paramUrlSetup.year, branch_id: paramUrlSetup.branchId, page: getCurrentPage },
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(resp) {
 
@@ -145,7 +146,10 @@ $(document).ready(function() {
 							+ `</tr>`;
 					});
 				} else { listLaporanKeuanganBulanan += `<tr class="text-center"><td colspan="14">Tidak ada data.</td></tr>`; }
+
 				$('#list-laporan-keuangan-bulanan').append(listLaporanKeuanganBulanan);
+
+        generatePagination(getCurrentPage, resp.total_paging);
 
 				const priceOverall = (resp.price_overall > -1) ? resp.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 				const capitalPrice = (resp.capital_price > -1) ? resp.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
@@ -162,6 +166,24 @@ $(document).ready(function() {
         $('.openDetail').click(function() {
 					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-bulanan/detail/${$(this).val()}?month=${paramUrlSetup.month}&year=${paramUrlSetup.year}`;
         });
+
+        $('.pagination > li > a').click(function() {
+					const getClassName = this.className;
+					const getNumber = parseFloat($(this).text());
+
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
+
+					if (getClassName.includes('arrow-left')) {
+						getCurrentPage = getCurrentPage - 1;
+					} else if (getClassName.includes('arrow-right')) {
+						getCurrentPage = getCurrentPage + 1;
+					} else {
+						getCurrentPage = getNumber;
+					}
+
+					loadLaporanKeuanganBulanan();
+				});
 
 			}, complete: function() { $('#loading-screen').hide(); },
 			error: function(err) {
