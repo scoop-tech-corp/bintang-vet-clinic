@@ -49,6 +49,8 @@
         </thead>
         <tbody id="list-laporan-keuangan-bulanan"></tbody>
       </table>
+
+      <ul class="pagination pagination-sm m-t-10px pull-left"></ul>
     </div>
     <div class="m-b-10px m-t-10px">
       <label class="label-support-laporan">Total Keseluruhan</label>

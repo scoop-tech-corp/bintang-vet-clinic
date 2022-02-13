@@ -183,13 +183,16 @@ function generatePagination(currentPage, totalPage) {
   }
   
   $('.pagination li').remove();
-  stringPaginationNumber += `<li><a class="arrow-left ${(currentPage === 1) ? 'disabled': ''}">«</a></li>`;
 
-  for (let i = min; i <= max; i++) {
-    stringPaginationNumber += `<li><a class="number-pagination ${(i === currentPage) ? 'active': ''}">${i}</a></li>`;
+  if(totalPage > 0) {
+    stringPaginationNumber += `<li><a class="arrow-left ${(currentPage === 1) ? 'disabled': ''}">«</a></li>`;
+
+    for (let i = min; i <= max; i++) {
+      stringPaginationNumber += `<li><a class="number-pagination ${(i === currentPage) ? 'active': ''}">${i}</a></li>`;
+    }
+
+    stringPaginationNumber += `<li><a class="arrow-right ${(currentPage === totalPage) ? 'disabled': ''}">»</a></li>`;
   }
-
-  stringPaginationNumber += `<li><a class="arrow-right ${(currentPage === totalPage) ? 'disabled': ''}">»</a></li>`;
 
   $('.pagination').append(stringPaginationNumber);
 }
