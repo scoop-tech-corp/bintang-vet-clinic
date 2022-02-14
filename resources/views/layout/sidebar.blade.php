@@ -52,6 +52,7 @@
 					<li><a href="{{ url('/kategori-jasa') }}"><i class="fa fa-circle-o"></i> Kategori Jasa</a></li>
 					<li><a href="{{ url('/daftar-jasa') }}"><i class="fa fa-circle-o"></i> Daftar Jasa</a></li>
 					<li><a href="{{ url('/pembagian-harga-jasa') }}"><i class="fa fa-circle-o"></i> Pembagian Harga Jasa</a></li>
+					<li><a href="{{ url('/metode-pembayaran') }}"><i class="fa fa-circle-o"></i> Metode Pembayaran</a></li>
 				</ul>
 			</li>
 			<li class="treeview menuGudang">

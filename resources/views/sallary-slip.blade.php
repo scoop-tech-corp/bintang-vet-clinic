@@ -147,8 +147,8 @@
                 <label>Alamat: {{ $data_user[0]->address }}</label>
             </td>
             <td>
-              <label>&nbsp;</label>
-          </td>
+                <label>&nbsp;</label>
+            </td>
 
         </tr>
 
@@ -160,8 +160,8 @@
                 <label>Telepon: {{ $data_user[0]->phone_number }}</label>
             </td>
             <td>
-              <label></label>
-          </td>
+                <label></label>
+            </td>
 
         </tr>
 
@@ -173,8 +173,8 @@
                 <label>Masa Kerja: {{ $month_period }}</label>
             </td>
             <td style="border-bottom: 1px solid black; border-collapse: collapse;">
-              <label>&nbsp;</label>
-          </td>
+                <label>&nbsp;</label>
+            </td>
         </tr>
 
     </table>
@@ -192,125 +192,176 @@
             </th>
         </tr>
 
-        <tr>
-            <td style="text-align: center">
-                <label>1</label>
-            </td>
-            <td>
-                <label>Gaji Pokok</label>
-            </td>
-            <td>
-                <label>Rp {{ number_format($data_user[0]->basic_sallary) }}</label>
-            </td>
-        </tr>
+        @php
+            $num = 1;
+        @endphp
 
-        <tr>
-            <td>
-                &nbsp;
-            </td>
-            <td>
+        @if ($data_user[0]->basic_sallary > 0)
+            <tr>
+                <td style="text-align: center">
+                    <label>{{ $num }}</label>
+                </td>
+                <td>
+                    <label>Gaji Pokok</label>
+                </td>
+                <td>
+                    <label>Rp {{ number_format($data_user[0]->basic_sallary) }}</label>
+                </td>
+            </tr>
+            @php
+                $num++;
+            @endphp
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
 
-            </td>
-            <td>
+                </td>
+                <td>
 
-            </td>
-        </tr>
+                </td>
+            </tr>
+        @endif
 
-        <tr>
-            <td style="text-align: center">
-                <label>2</label>
-            </td>
-            <td>
-                <label>Akomodasi</label>
-            </td>
-            <td>
-                <label>Rp {{ number_format($data_user[0]->accomodation) }}</label>
-            </td>
-        </tr>
+        @if ($data_user[0]->accomodation > 0)
+            <tr>
+                <td style="text-align: center">
+                    <label>{{ $num }}</label>
+                </td>
+                <td>
+                    <label>Akomodasi</label>
+                </td>
+                <td>
+                    <label>Rp {{ number_format($data_user[0]->accomodation) }}</label>
+                </td>
+            </tr>
+            @php
+                $num++;
+            @endphp
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
 
-        <tr>
-            <td>
-                &nbsp;
-            </td>
-            <td>
+                </td>
+                <td>
 
-            </td>
-            <td>
+                </td>
+            </tr>
+        @endif
 
-            </td>
-        </tr>
+        @if ($data_user[0]->total_turnover > 0)
+            <tr>
+                <td style="text-align: center">
+                    <label>{{ $num }}</label>
+                </td>
+                <td>
+                    <label>Bonus Omzet</label>
+                </td>
+                <td>
+                    <label>Rp {{ number_format($data_user[0]->total_turnover) }}</label>
+                </td>
+            </tr>
+            @php
+                $num++;
+            @endphp
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
 
-        <tr>
-            <td style="text-align: center">
-                <label>3</label>
-            </td>
-            <td>
-                <label>Bonus Omzet</label>
-            </td>
-            <td>
-                <label>Rp {{ number_format($data_user[0]->total_turnover) }}</label>
-            </td>
-        </tr>
+                </td>
+                <td>
 
-        <tr>
-            <td>
-                &nbsp;
-            </td>
-            <td>
+                </td>
+            </tr>
+        @endif
 
-            </td>
-            <td>
+        @if ($data_user[0]->total_inpatient > 0)
+            <tr>
+                <td style="text-align: center">
+                    <label>{{ $num }}</label>
+                </td>
+                <td>
+                    <label>Bonus Rawat Inap</label>
+                </td>
+                <td>
+                    <label>Rp {{ number_format($data_user[0]->total_inpatient) }}</label>
+                </td>
+            </tr>
+            @php
+                $num++;
+            @endphp
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
 
-            </td>
-        </tr>
+                </td>
+                <td>
 
-        <tr>
-            <td style="text-align: center">
-                <label>4</label>
-            </td>
-            <td>
-                <label>Bonus Rawat Inap</label>
-            </td>
-            <td>
-                <label>Rp {{ number_format($data_user[0]->total_inpatient) }}</label>
-            </td>
-        </tr>
+                </td>
+            </tr>
+        @endif
 
-        <tr>
-            <td>
-                &nbsp;
-            </td>
-            <td>
+        @if ($data_user[0]->total_surgery > 0)
+            <tr>
+                <td style="text-align: center">
+                    <label>{{ $num }}</label>
+                </td>
+                <td>
+                    <label>Bonus Operasi</label>
+                </td>
+                <td>
+                    <label>Rp {{ number_format($data_user[0]->total_surgery) }}</label>
+                </td>
+            </tr>
+            @php
+                $num++;
+            @endphp
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
 
-            </td>
-            <td>
+                </td>
+                <td>
 
-            </td>
-        </tr>
+                </td>
+            </tr>
+        @endif
 
-        <tr>
-            <td style="text-align: center">
-                <label>5</label>
-            </td>
-            <td>
-                <label>Bonus Operasi</label>
-            </td>
-            <td>
-                <label>Rp {{ number_format($data_user[0]->total_surgery) }}</label>
-            </td>
-        </tr>
+        @if ($data_user[0]->total_grooming > 0)
+            <tr>
+                <td style="text-align: center">
+                    <label>{{ $num }}</label>
+                </td>
+                <td>
+                    <label>Bonus Grooming</label>
+                </td>
+                <td>
+                    <label>Rp {{ number_format($data_user[0]->total_grooming) }}</label>
+                </td>
+            </tr>
 
-        <tr>
-            <td>
-                &nbsp;
-            </td>
-            <td>
+            <tr>
+                <td>
+                    &nbsp;
+                </td>
+                <td>
 
-            </td>
-            <td>
+                </td>
+                <td>
 
-            </td>
-        </tr>
+                </td>
+            </tr>
+        @endif
+
 
         <tr>
             <td style="border-top: 1px solid black; border-collapse: collapse;">

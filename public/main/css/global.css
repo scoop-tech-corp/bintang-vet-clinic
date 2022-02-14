@@ -146,15 +146,34 @@ body {
   background: #222d32 !important ;
 }
 
-
 input:disabled {
   cursor: not-allowed !important;
   background: #eee;
   opacity: 1;
 }
 
+.pagination > li > a {
+  cursor: pointer;
+}
+
+.pagination > li > a.active {
+  z-index: 2;
+  color: #23527c;
+  background-color: #eee;
+  border-color: #ddd;
+}
+
+.pagination > li > a.disabled { 
+  cursor: not-allowed;
+  background-color: lightgray;
+}
+
 .width-350px {
   width: 350px;
+}
+
+.align-item-c {
+  align-items: center;
 }
 
 .d-flex {

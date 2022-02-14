@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
   let optCabang = '';
+  let getCurrentPage = 1;
   let paramUrlSetup = {
 		orderby:'',
 		column: '',
@@ -123,7 +124,7 @@ $(document).ready(function() {
 			url     : $('.baseUrl').val() + '/api/laporan-keuangan/mingguan',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, date_from: paramUrlSetup.date_from, date_to: paramUrlSetup.date_to, branch_id: paramUrlSetup.branchId },
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, date_from: paramUrlSetup.date_from, date_to: paramUrlSetup.date_to, branch_id: paramUrlSetup.branchId, page: getCurrentPage },
 			beforeSend: function() { $('#loading-screen').show(); },
 			success: function(resp) {
 
@@ -147,6 +148,8 @@ $(document).ready(function() {
 							+ `<td>${typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
 							+ `<td>${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
 							+ `<td>${typeof(v.petshop_fee)== 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>${typeof(v.amount_discount)== 'number' ? v.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+							+ `<td>${typeof(v.fee_doctor_after_discount)== 'number' ? v.fee_doctor_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
 							+ `<td>${v.created_by}</td>`
 							+ `<td>
 									<button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
@@ -154,21 +157,44 @@ $(document).ready(function() {
 							+ `</tr>`;
 					});
 				} else { listLaporanKeuanganMingguan += `<tr class="text-center"><td colspan="14">Tidak ada data.</td></tr>`; }
+
 				$('#list-laporan-keuangan-mingguan').append(listLaporanKeuanganMingguan);
+
+        generatePagination(getCurrentPage, resp.total_paging);
 
 				const priceOverall = (resp.price_overall > -1) ? resp.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 				const capitalPrice = (resp.capital_price > -1) ? resp.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 				const docterFee    = (resp.doctor_fee > -1) ? resp.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 				const petshopFee   = (resp.petshop_fee > -1) ? resp.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+        const amountDiscount   = (resp.amount_discount > -1) ? resp.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 
         $('#total-keseluruhan-txt').text(`Rp. ${priceOverall}`);
         $('#harga-modal-txt').text(`Rp. ${capitalPrice}`);
         $('#fee-dokter-txt').text(`Rp. ${docterFee}`);
+        $('#nominal-diskon-txt').text(`Rp. ${amountDiscount}`);
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
 
         $('.openDetail').click(function() {
 					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-mingguan/detail/${$(this).val()}?dateFrom=${paramUrlSetup.date_from}&dateTo=${paramUrlSetup.date_to}`;
         });
+
+        $('.pagination > li > a').click(function() {
+					const getClassName = this.className;
+					const getNumber = parseFloat($(this).text());
+
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
+
+					if (getClassName.includes('arrow-left')) {
+						getCurrentPage = getCurrentPage - 1;
+					} else if (getClassName.includes('arrow-right')) {
+						getCurrentPage = getCurrentPage + 1;
+					} else {
+						getCurrentPage = getNumber;
+					}
+
+					loadLaporanKeuanganMingguan();
+				});
 
 			}, complete: function() { $('#loading-screen').hide(); },
 			error: function(err) {

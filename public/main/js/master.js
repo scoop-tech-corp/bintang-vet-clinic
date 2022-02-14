@@ -72,7 +72,7 @@ $(document).ready(function() {
       if (pathName === '/kategori-barang' || pathName === '/satuan-barang'  || pathName === '/daftar-barang'
         || pathName === '/pembagian-harga-barang' || pathName === '/kelompok-obat' || pathName === '/pembagian-harga-kelompok-obat') {
         $('.menuGudang').addClass('active');
-      } else if(pathName === '/kategori-jasa' || pathName === '/daftar-jasa' || pathName === '/pembagian-harga-jasa') {
+      } else if(pathName === '/kategori-jasa' || pathName === '/daftar-jasa' || pathName === '/pembagian-harga-jasa' || pathName === '/metode-pembayaran' ) {
         $('.menuLayanan').addClass('active');
       } else if (pathName === '/rawat-jalan' || pathName === '/rawat-inap') {
         $('.menuPendaftaran').addClass('active');
@@ -165,6 +165,34 @@ $(document).ready(function() {
   setInterval(showTime, 500);
 });
 
-// <script type='text/javascript'>
+function generatePagination(currentPage, totalPage) {
 
-// 		</script>
+  let showPage = 5; // Links per page 
+  let rangeMiddle = 3;
+  let min = null;
+  let max = null;
+  let stringPaginationNumber = '';
+
+  if ((currentPage <= rangeMiddle) || (totalPage <= showPage)) {
+    min = 1;
+    max = (totalPage <= showPage) ? totalPage : showPage;
+  } else {
+    let etPage = currentPage + (rangeMiddle - 1);
+    max = (etPage <= totalPage) ? etPage : totalPage;
+    min = max - (showPage - 1);
+  }
+  
+  $('.pagination li').remove();
+
+  if(totalPage > 0) {
+    stringPaginationNumber += `<li><a class="arrow-left ${(currentPage === 1) ? 'disabled': ''}">«</a></li>`;
+
+    for (let i = min; i <= max; i++) {
+      stringPaginationNumber += `<li><a class="number-pagination ${(i === currentPage) ? 'active': ''}">${i}</a></li>`;
+    }
+
+    stringPaginationNumber += `<li><a class="arrow-right ${(currentPage === totalPage) ? 'disabled': ''}">»</a></li>`;
+  }
+
+  $('.pagination').append(stringPaginationNumber);
+}

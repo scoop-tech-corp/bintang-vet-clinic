@@ -17,93 +17,71 @@ class DaftarBarangController extends Controller
 {
     public function index(Request $request)
     {
+
+        $items_per_page = 50;
+
+        $page = $request->page;
+
+        $item = DB::table('list_of_items')
+            ->join('users', 'list_of_items.user_id', '=', 'users.id')
+            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+            ->select('list_of_items.id',
+                'list_of_items.item_name',
+                'list_of_items.total_item',
+                'unit_item.id as unit_item_id',
+                'unit_item.unit_name',
+                'category_item.id as category_item_id',
+                'category_item.category_name',
+                'branches.id as branch_id',
+                'branches.branch_name',
+                'users.id as user_id',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
+            ->where('list_of_items.isDeleted', '=', 0);
+
         if ($request->keyword) {
-
             $res = $this->Search($request);
-
-            $item = DB::table('list_of_items')
-                ->join('users', 'list_of_items.user_id', '=', 'users.id')
-                ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-                ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-                ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-                ->select('list_of_items.id',
-                    'list_of_items.item_name',
-                    'list_of_items.total_item',
-                    'unit_item.id as unit_item_id',
-                    'unit_item.unit_name',
-                    'category_item.id as category_item_id',
-                    'category_item.category_name',
-                    'branches.id as branch_id',
-                    'branches.branch_name',
-                    'users.id as user_id',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
-                ->where('list_of_items.isDeleted', '=', 0);
 
             if ($res) {
                 $item = $item->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(['total_paging' => 0,
+                    'data' => $data], 200);
             }
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $item = $item->orderBy($request->column, $request->orderby);
-            }
-
-            $item = $item->orderBy('list_of_items.id', 'desc');
-
-            $item = $item->get();
-
-            return response()->json($item, 200);
-
-        } else {
-
-            $item = DB::table('list_of_items')
-                ->join('users', 'list_of_items.user_id', '=', 'users.id')
-                ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-                ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-                ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-                ->select('list_of_items.id',
-                    'list_of_items.item_name',
-                    'list_of_items.total_item',
-                    'unit_item.id as unit_item_id',
-                    'unit_item.unit_name',
-                    'category_item.id as category_item_id',
-                    'category_item.category_name',
-                    'branches.id as branch_id',
-                    'branches.branch_name',
-                    'users.id as user_id',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
-                ->where('list_of_items.isDeleted', '=', 0);
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $item = $item->orderBy($request->column, $request->orderby);
-            }
-
-            $item = $item->orderBy('list_of_items.id', 'desc');
-
-            $item = $item->get();
-
-            return response()->json($item, 200);
         }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $item = $item->orderBy($request->column, $request->orderby);
+        }
+
+        $item = $item->orderBy('list_of_items.id', 'desc');
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $data->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $data = $data->offset(0)->limit($items_per_page)->get();
+        } else {
+            $data = $data->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $item], 200);
 
     }
 
@@ -291,7 +269,6 @@ class DaftarBarangController extends Controller
             'jumlah_barang' => 'required|numeric|min:0',
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
-            'cabang' => 'required|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -303,27 +280,44 @@ class DaftarBarangController extends Controller
             ], 422);
         }
 
-        $check_branch = DB::table('list_of_items')
-            ->where('branch_id', '=', $request->cabang)
-            ->where('item_name', '=', $request->nama_barang)
-            ->count();
+        $branchId = $request->cabang;
+        $result_branch = json_decode($branchId, true);
 
-        if ($check_branch > 0) {
-
+        if (count($result_branch) == 0) {
             return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Data sudah ada!'],
+                'message' => 'The given data was invalid.',
+                'errors' => ['Data Cabang Harus dipilih minimal 1!'],
             ], 422);
         }
 
-        $item = ListofItems::create([
-            'item_name' => $request->nama_barang,
-            'total_item' => $request->jumlah_barang,
-            'unit_item_id' => $request->satuan_barang,
-            'category_item_id' => $request->kategori_barang,
-            'branch_id' => $request->cabang,
-            'user_id' => $request->user()->id,
-        ]);
+        foreach ($result_branch as $key_branch) {
+
+            $check_branch = DB::table('list_of_items')
+                ->where('branch_id', '=', $key_branch)
+                ->where('item_name', '=', $request->nama_barang)
+                ->count();
+
+            if ($check_branch > 0) {
+
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Data sudah ada!'],
+                ], 422);
+            }
+
+        }
+
+        foreach ($result_branch as $key_branch) {
+
+            $item = ListofItems::create([
+                'item_name' => $request->nama_barang,
+                'total_item' => $request->jumlah_barang,
+                'unit_item_id' => $request->satuan_barang,
+                'category_item_id' => $request->kategori_barang,
+                'branch_id' => $key_branch,
+                'user_id' => $request->user()->id,
+            ]);
+        }
 
         return response()->json(
             [
@@ -346,7 +340,7 @@ class DaftarBarangController extends Controller
             'jumlah_barang' => 'required|numeric|min:0',
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
-            'cabang' => 'required|string|max:50',
+            'cabang_id' => 'required|string|max:50',
         ]);
 
         if ($validator->fails()) {
@@ -368,7 +362,7 @@ class DaftarBarangController extends Controller
         }
 
         $find_duplicate = db::table('list_of_items')
-            ->where('branch_id', '=', $request->cabang)
+            ->where('branch_id', '=', $request->cabang_id)
             ->where('item_name', '=', $request->nama_barang)
             ->where('id', '!=', $request->id)
             ->count();
@@ -421,7 +415,7 @@ class DaftarBarangController extends Controller
         $item->total_item = $request->jumlah_barang;
         $item->unit_item_id = $request->satuan_barang;
         $item->category_item_id = $request->kategori_barang;
-        $item->branch_id = $request->cabang;
+        $item->branch_id = $request->cabang_id;
         $item->user_update_id = $request->user()->id;
         $item->updated_at = \Carbon\Carbon::now();
         $item->save();

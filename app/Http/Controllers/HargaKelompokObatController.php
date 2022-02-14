@@ -2,17 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\MultipleSheetUploadHargaKelompokObat;
 use App\Exports\RekapHargaKelompokObat;
+use App\Imports\MultipleSheetImportHargaKelompokObat;
 use App\Models\Branch;
 use App\Models\PriceMedicineGroup;
 use DB;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Validator;
 
 class HargaKelompokObatController extends Controller
 {
     public function index(Request $request)
-    {//masih error
+    {
+
+      $items_per_page = 50;
+
+        $page = $request->page;
+
         $price_medicine_groups = DB::table('price_medicine_groups')
             ->join('users', 'price_medicine_groups.user_id', '=', 'users.id')
             ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
@@ -53,9 +61,21 @@ class HargaKelompokObatController extends Controller
 
         $price_medicine_groups = $price_medicine_groups->orderBy('price_medicine_groups.id', 'desc');
 
-        $price_medicine_groups = $price_medicine_groups->get();
+        $offset = ($page - 1) * $items_per_page;
 
-        return response()->json($price_medicine_groups, 200);
+        $count_data = $price_medicine_groups->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $price_medicine_groups = $price_medicine_groups->offset(0)->limit($items_per_page)->get();
+        } else {
+            $price_medicine_groups = $price_medicine_groups->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $price_medicine_groups], 200);
     }
 
     public function create(Request $request)
@@ -254,5 +274,59 @@ class HargaKelompokObatController extends Controller
 
         return (new RekapHargaKelompokObat($request->orderby, $request->column, $request->keyword, $branchId, $request->user()->role))
             ->download($filename);
+    }
+
+    public function download_template(Request $request)
+    {
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
+
+        return (new MultipleSheetUploadHargaKelompokObat())->download('Template Harga Kelompok Obat.xlsx');
+    }
+
+    public function upload_template(Request $request)
+    {
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
+
+        $this->validate($request, [
+            'file' => 'required|mimes:xls,xlsx',
+        ]);
+
+        $id = $request->user()->id;
+
+        $rows = Excel::toArray(new MultipleSheetImportHargaKelompokObat($id), $request->file('file'));
+        $result = $rows[0];
+
+        foreach ($result as $key_result) {
+
+            $check_branch = DB::table('price_medicine_groups')
+                ->where('medicine_group_id', '=', $key_result['kode_kelompok_obat'])
+                ->count();
+
+            if ($check_branch > 0) {
+
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Data ' . $key_result['nama_kelompok'] . ' sudah ada!'],
+                ], 422);
+            }
+        }
+
+        $file = $request->file('file');
+
+        Excel::import(new MultipleSheetImportHargaKelompokObat($id), $file);
+
+        return response()->json([
+            'message' => 'Berhasil mengupload Harga Kelompok Obat',
+        ], 200);
     }
 }

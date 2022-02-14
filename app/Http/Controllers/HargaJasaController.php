@@ -12,6 +12,10 @@ class HargaJasaController extends Controller
     public function index(Request $request)
     {
 
+        $items_per_page = 50;
+
+        $page = $request->page;
+
         $price_services = DB::table('price_services')
             ->join('users', 'price_services.user_id', '=', 'users.id')
             ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
@@ -37,82 +41,47 @@ class HargaJasaController extends Controller
 
             $res = $this->Search($request);
 
-            $price_services = DB::table('price_services')
-                ->join('users', 'price_services.user_id', '=', 'users.id')
-                ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
-                ->join('branches', 'list_of_services.branch_id', '=', 'branches.id')
-                ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
-                ->select('price_services.id', 'list_of_services.id as list_of_service_id', 'list_of_services.service_name',
-                    'service_categories.id as service_categories_id', 'service_categories.category_name',
-                    'branches.id as branch_id', 'branches.branch_name', DB::raw("TRIM(price_services.selling_price)+0 as selling_price"),
-                    DB::raw("TRIM(price_services.capital_price)+0 as capital_price"), DB::raw("TRIM(price_services.doctor_fee)+0 as doctor_fee"),
-                    DB::raw("TRIM(price_services.petshop_fee)+0 as petshop_fee"),
-                    'users.fullname as created_by', DB::raw("DATE_FORMAT(price_services.created_at, '%d %b %Y') as created_at"))
-                ->where('price_services.isDeleted', '=', 0);
-
             if ($res) {
                 $price_services = $price_services->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(
+                    ['total_paging' => 0,
+                        'data' => $price_services], 200);
             }
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $price_services = $price_services->where('branches.id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $price_services = $price_services->where('branches.id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $price_services = $price_services->orderBy($request->column, $request->orderby);
-            }
-
-            $price_services = $price_services->orderBy('price_services.id', 'desc');
-
-            $price_services = $price_services->get();
-
-            return response()->json($price_services, 200);
-            // $price_services = $price_services
-            //     ->where('list_of_services.service_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('service_categories.category_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('branches.branch_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('price_services.created_at', 'like', '%' . $request->keyword . '%');
-        } else {
-
-            $price_services = DB::table('price_services')
-                ->join('users', 'price_services.user_id', '=', 'users.id')
-                ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
-                ->join('branches', 'list_of_services.branch_id', '=', 'branches.id')
-                ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
-                ->select('price_services.id', 'list_of_services.id as list_of_service_id', 'list_of_services.service_name',
-                    'service_categories.id as service_categories_id', 'service_categories.category_name',
-                    'branches.id as branch_id', 'branches.branch_name', DB::raw("TRIM(price_services.selling_price)+0 as selling_price"),
-                    DB::raw("TRIM(price_services.capital_price)+0 as capital_price"), DB::raw("TRIM(price_services.doctor_fee)+0 as doctor_fee"),
-                    DB::raw("TRIM(price_services.petshop_fee)+0 as petshop_fee"),
-                    'users.fullname as created_by', DB::raw("DATE_FORMAT(price_services.created_at, '%d %b %Y') as created_at"))
-                ->where('price_services.isDeleted', '=', 0);
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $price_services = $price_services->where('branches.id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $price_services = $price_services->where('branches.id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $price_services = $price_services->orderBy($request->column, $request->orderby);
-            }
-
-            $price_services = $price_services->orderBy('price_services.id', 'desc');
-
-            $price_services = $price_services->get();
-
-            return response()->json($price_services, 200);
         }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $price_services = $price_services->where('branches.id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $price_services = $price_services->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $price_services = $price_services->orderBy($request->column, $request->orderby);
+        }
+
+        $price_services = $price_services->orderBy('price_services.id', 'desc');
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $price_services->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $price_services = $price_services->offset(0)->limit($items_per_page)->get();
+        } else {
+            $price_services = $price_services->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(
+            ['total_paging' => ceil($total_paging),
+                'data' => $price_services], 200);
+
     }
 
     private function Search($request)

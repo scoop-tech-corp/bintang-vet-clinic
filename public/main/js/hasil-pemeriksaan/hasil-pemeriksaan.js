@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
   let optCabang = '';
+	let getCurrentPage = 1;
 
   let paramUrlSetup = {
 		orderby:'',
@@ -101,14 +102,15 @@ $(document).ready(function() {
 			url     : $('.baseUrl').val() + '/api/hasil-pemeriksaan',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId, page: getCurrentPage },
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {
+			success: function(resp) {
+				const getData = resp.data;
 				let listHasilPemeriksaan = '';
 				$('#list-hasil-pemeriksaan tr').remove();
 
-        if (data.length) {
-          $.each(data, function(idx, v) {
+        if (getData.length) {
+          $.each(getData, function(idx, v) {
             listHasilPemeriksaan += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.registration_number}</td>`
@@ -133,6 +135,8 @@ $(document).ready(function() {
         }
 				$('#list-hasil-pemeriksaan').append(listHasilPemeriksaan);
 
+				generatePagination(getCurrentPage, resp.total_paging);
+
 				function generateBedge(status) {
 					let bedge = '';
 					switch (status) {
@@ -147,14 +151,14 @@ $(document).ready(function() {
         }
 
         $('.openDetail').click(function() {
-          const getObj = data.find(x => x.id == $(this).val());
+          const getObj = getData.find(x => x.id == $(this).val());
 					if (getObj.status_finish != 0 || role.toLowerCase() == 'admin') {
             window.location.href = $('.baseUrl').val() + `/hasil-pemeriksaan/detail/${$(this).val()}`;
           }
         });
 
 				$('.openFormEdit').click(function() {
-          const getObj = data.find(x => x.id == $(this).val());
+          const getObj = getData.find(x => x.id == $(this).val());
 					if (getObj.status_finish != 1 || role.toLowerCase() == 'admin') {
             window.location.href = $('.baseUrl').val() + `/hasil-pemeriksaan/edit/${$(this).val()}`;
           }
@@ -162,7 +166,7 @@ $(document).ready(function() {
 
 				$('.openFormDelete').click(function() {
 					getId = $(this).val();
-					const getObj = data.find(x => x.id == getId);
+					const getObj = getData.find(x => x.id == getId);
 					if (getObj.status_finish != 1 || role.toLowerCase() == 'admin') {
 						modalState = 'delete';
 
@@ -170,6 +174,24 @@ $(document).ready(function() {
 						$('#modal-confirmation .box-body').text('Anda yakin ingin menghapus data ini?');
 						$('#modal-confirmation').modal('show');
 					}
+				});
+
+				$('.pagination > li > a').click(function() {
+					const getClassName = this.className;
+					const getNumber = parseFloat($(this).text());
+
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+
+					if (getClassName.includes('arrow-left')) {
+						getCurrentPage = getCurrentPage - 1;
+					} else if (getClassName.includes('arrow-right')) {
+						getCurrentPage = getCurrentPage + 1;
+					} else {
+						getCurrentPage = getNumber;
+					}
+
+					loadHasilPemeriksaan()
 				});
 
 			}, complete: function() { $('#loading-screen').hide(); },

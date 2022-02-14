@@ -16,101 +16,53 @@ class HargaBarangController extends Controller
 {
     public function index(Request $request)
     {
+        $items_per_page = 50;
+
+        $page = $request->page;
+
+        $price_items = DB::table('price_items')
+            ->join('users', 'price_items.user_id', '=', 'users.id')
+            ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
+            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+            ->select('price_items.id',
+                'list_of_items.id as item_name_id',
+                'list_of_items.item_name',
+                'category_item.id as item_categories_id',
+                'category_item.category_name',
+                'list_of_items.unit_item_id as unit_item_id',
+                'unit_item.unit_name',
+                'list_of_items.total_item',
+                'branches.id as branch_id',
+                'branches.branch_name',
+                DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
+                DB::raw("TRIM(price_items.capital_price)+0 as capital_price"),
+                DB::raw("TRIM(price_items.doctor_fee)+0 as doctor_fee"),
+                DB::raw("TRIM(price_items.petshop_fee)+0 as petshop_fee"),
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(price_items.created_at, '%d %b %Y') as created_at"))
+            ->where('price_items.isDeleted', '=', 0);
+
         if ($request->keyword) {
 
             $res = $this->Search($request);
-
-            $price_items = DB::table('price_items')
-                ->join('users', 'price_items.user_id', '=', 'users.id')
-                ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
-                ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-                ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-                ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-                ->select('price_items.id',
-                    'list_of_items.id as item_name_id',
-                    'list_of_items.item_name',
-                    'category_item.id as item_categories_id',
-                    'category_item.category_name',
-                    'list_of_items.unit_item_id as unit_item_id',
-                    'unit_item.unit_name',
-                    'list_of_items.total_item',
-                    'branches.id as branch_id',
-                    'branches.branch_name',
-                    DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
-                    DB::raw("TRIM(price_items.capital_price)+0 as capital_price"),
-                    DB::raw("TRIM(price_items.doctor_fee)+0 as doctor_fee"),
-                    DB::raw("TRIM(price_items.petshop_fee)+0 as petshop_fee"),
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(price_items.created_at, '%d %b %Y') as created_at"))
-                ->where('price_items.isDeleted', '=', 0);
 
             if ($res) {
                 $price_items = $price_items->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json($data, 200);
+                return response()->json(['total_paging' => 0,
+                    'data' => $data], 200);
             }
+        }
 
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $price_items = $price_items->where('branches.id', '=', $request->branch_id);
-            }
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $price_items = $price_items->where('branches.id', '=', $request->branch_id);
+        }
 
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $price_items = $price_items->where('branches.id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $price_items = $price_items->orderBy($request->column, $request->orderby);
-            }
-
-            $price_items = $price_items->orderBy('price_items.id', 'desc');
-
-            $price_items = $price_items->get();
-
-            return response()->json($price_items, 200);
-        } else {
-
-            $price_items = DB::table('price_items')
-                ->join('users', 'price_items.user_id', '=', 'users.id')
-                ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
-                ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-                ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-                ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-                ->select('price_items.id',
-                    'list_of_items.id as item_name_id',
-                    'list_of_items.item_name',
-                    'category_item.id as item_categories_id',
-                    'category_item.category_name',
-                    'list_of_items.unit_item_id as unit_item_id',
-                    'unit_item.unit_name',
-                    'list_of_items.total_item',
-                    'branches.id as branch_id',
-                    'branches.branch_name',
-                    DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
-                    DB::raw("TRIM(price_items.capital_price)+0 as capital_price"),
-                    DB::raw("TRIM(price_items.doctor_fee)+0 as doctor_fee"),
-                    DB::raw("TRIM(price_items.petshop_fee)+0 as petshop_fee"),
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(price_items.created_at, '%d %b %Y') as created_at"))
-                ->where('price_items.isDeleted', '=', 0);
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $price_items = $price_items->where('branches.id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $price_items = $price_items->where('branches.id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $price_items = $price_items->orderBy($request->column, $request->orderby);
-            }
-
-            $price_items = $price_items->orderBy('price_items.id', 'desc');
-
-            $price_items = $price_items->get();
-
-            return response()->json($price_items, 200);
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $price_items = $price_items->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->orderby) {
@@ -119,9 +71,22 @@ class HargaBarangController extends Controller
 
         $price_items = $price_items->orderBy('price_items.id', 'desc');
 
-        $price_items = $price_items->get();
+        $offset = ($page - 1) * $items_per_page;
 
-        return response()->json($price_items, 200);
+        $count_data = $price_items->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $price_items = $price_items->offset(0)->limit($items_per_page)->get();
+        } else {
+            $price_items = $price_items->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $price_items], 200);
+
     }
 
     private function Search($request)
