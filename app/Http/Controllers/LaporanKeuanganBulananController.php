@@ -37,11 +37,12 @@ class LaporanKeuanganBulananController extends Controller
                 'pa.pet_category',
                 'pa.pet_name',
                 'reg.complaint',
-
-                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
-                DB::raw("TRIM(SUM(pmg.capital_price))+0 as capital_price"),
-                DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(pmg.petshop_fee))+0 as petshop_fee"),
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"),
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price"),
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"),
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee"),
+                DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount"),
+                DB::raw("TRIM(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END - SUM(lopm.amount_discount))+0 as fee_doctor_after_discount"),
                 'users.fullname as created_by',
                 'lop.created_at as created_at',
                 'branches.id as branchId');
@@ -71,6 +72,8 @@ class LaporanKeuanganBulananController extends Controller
                 DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
                 DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
                 DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
+                DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount"),
+                DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity) - SUM(list_of_payment_services.amount_discount))+0 as fee_doctor_after_discount"),
                 'users.fullname as created_by', 'list_of_payments.updated_at as created_at',
                 'branches.id as branchId');
 
@@ -90,6 +93,8 @@ class LaporanKeuanganBulananController extends Controller
                 DB::raw("TRIM(SUM(capital_price))+0 as capital_price"),
                 DB::raw("TRIM(SUM(doctor_fee))+0 as doctor_fee"),
                 DB::raw("TRIM(SUM(petshop_fee))+0 as petshop_fee"),
+                DB::raw("TRIM(SUM(amount_discount))+0 as amount_discount"),
+                DB::raw("TRIM(SUM(fee_doctor_after_discount))+0 as fee_doctor_after_discount"),
                 'created_by',
                 DB::raw("DATE_FORMAT(created_at, '%d %b %Y') as created_at"));
 
@@ -106,8 +111,21 @@ class LaporanKeuanganBulananController extends Controller
             $data = $data->orderBy('list_of_payment_id', 'desc');
         }
 
-        $data = $data->groupBy('check_up_result_id')
-            ->get();
+        $temp_data = $data->groupBy('check_up_result_id')->get();
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $temp_data->count();
+
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $data = $data->groupBy('check_up_result_id')->offset(0)->limit($items_per_page)->get();
+        } else {
+            $data = $data->groupBy('check_up_result_id')->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
 
         $price_overall_item = DB::table('list_of_payments as lop')
             ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
@@ -285,12 +303,60 @@ class LaporanKeuanganBulananController extends Controller
 
         $petshop_fee = $petshop_fee_item->petshop_fee + $petshop_fee_service->petshop_fee;
 
+        $amount_discount_item = DB::table('list_of_payments as lop')
+            ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+            ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+            ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+            ->join('users', 'lop.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select(
+                DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount"));
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->month && $request->year) {
+            $amount_discount_item = $amount_discount_item->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year);
+        }
+        $amount_discount_item = $amount_discount_item->first();
+
+        $amount_discount_service = DB::table('list_of_payments')
+            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            ->select(
+                DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount"));
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->month && $request->year) {
+            $amount_discount_service = $amount_discount_service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $request->month)
+                ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $request->year);
+        }
+        $amount_discount_service = $amount_discount_service->first();
+
+        $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
+
         return response()->json([
             'data' => $data,
             'price_overall' => $price_overall,
             'capital_price' => $capital_price,
             'doctor_fee' => $doctor_fee,
             'petshop_fee' => $petshop_fee,
+            'amount_discount' => $amount_discount,
         ], 200);
     }
 
@@ -363,6 +429,9 @@ class LaporanKeuanganBulananController extends Controller
                 DB::raw("TRIM(price_services.capital_price * detail_service_patients.quantity)+0 as capital_price"),
                 DB::raw("TRIM(price_services.doctor_fee * detail_service_patients.quantity)+0 as doctor_fee"),
                 DB::raw("TRIM(price_services.petshop_fee * detail_service_patients.quantity)+0 as petshop_fee"),
+                DB::raw("TRIM(list_of_payment_services.discount)+0 as discount"),
+                DB::raw("TRIM(list_of_payment_services.amount_discount)+0 as amount_discount"),
+                DB::raw("TRIM((price_services.doctor_fee * detail_service_patients.quantity) - list_of_payment_services.amount_discount)+0 as fee_doctor_after_discount"),
                 'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at"))
             ->where('list_of_payment_services.check_up_result_id', '=', $data->check_up_result_id);
 
@@ -381,13 +450,24 @@ class LaporanKeuanganBulananController extends Controller
             ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
             ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
             ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+            ->join('users', 'lopm.user_id', '=', 'users.id')
             ->select('lopm.id as id',
                 'pmg.id as price_medicine_group_id',
                 DB::raw("TRIM(pmg.selling_price)+0 as selling_price"),
                 'lopm.medicine_group_id as medicine_group_id',
+                'lopm.quantity as quantity',
+                DB::raw("TRIM(pmg.selling_price)+0 as selling_price"),
+                DB::raw("TRIM(pmg.capital_price)+0 as capital_price"),
+                DB::raw("TRIM(pmg.doctor_fee)+0 as doctor_fee"),
+                DB::raw("TRIM(pmg.petshop_fee)+0 as petshop_fee"),
+                DB::raw("TRIM(lopm.discount)+0 as discount"),
+                DB::raw("TRIM(lopm.amount_discount)+0 as amount_discount"),
+                DB::raw("TRIM(pmg.doctor_fee - lopm.amount_discount)+0 as fee_doctor_after_discount"),
                 'medicine_groups.group_name',
                 'branches.id as branch_id',
-                'branches.branch_name')
+                'branches.branch_name',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(lopm.created_at, '%d %b %Y') as created_at"))
             ->where('lopm.list_of_payment_id', '=', $data->id);
 
         if ($request->month && $request->year) {

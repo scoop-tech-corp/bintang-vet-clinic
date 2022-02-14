@@ -42,12 +42,16 @@
             <th class="onOrdering" data='capital_price' orderby="none">Harga Modal Keseluruhan <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='doctor_fee' orderby="none">Fee Dokter Keseluruhan <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='petshop_fee' orderby="none">Fee Petshop Keseluruhan <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='amount_discount' orderby="none">Nominal Diskon <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='fee_doctor_after_discount' orderby="none">Fee Dokter Setelah Diskon <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='created_by' orderby="none">Dibuat Oleh <span class="fa fa-sort"></span></th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody id="list-laporan-keuangan-harian"></tbody>
       </table>
+
+      <ul class="pagination pagination-sm m-t-10px pull-left"></ul>
     </div>
     <div class="m-b-10px m-t-10px">
       <label class="label-support-laporan">Total Keseluruhan</label>
@@ -60,6 +64,10 @@
     <div class="m-b-10px m-t-10px">
       <label class="label-support-laporan">Fee Dokter</label>
       <span id="fee-dokter-txt">Rp. -</span>
+    </div>
+    <div class="m-b-10px m-t-10px">
+      <label class="label-support-laporan">Nominal Diskon</label>
+      <span id="nominal-diskon-txt">Rp. -</span>
     </div>
     <div class="m-b-10px m-t-10px">
       <label class="label-support-laporan">Fee Petshop</label>

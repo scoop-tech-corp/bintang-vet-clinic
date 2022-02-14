@@ -3,6 +3,7 @@ $(document).ready(function() {
   let getId = null;
   let isValidAlasan = false;
   let isBeErr = false;
+  let getCurrentPage = 1;
   let paramUrlSetup = {
 		orderby:'',
 		column: '',
@@ -129,13 +130,15 @@ $(document).ready(function() {
 			url     : $('.baseUrl').val() + '/api/penerimaan-pasien',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword},
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, page: getCurrentPage },
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {
+			success: function(resp) {
+        const getData = resp.data;
 				let listPenerimaanPasien = '';
 				$('#list-penerimaan-pasien tr').remove();
-        if (data.length) {
-          $.each(data, function(idx, v) {
+
+        if (getData.length) {
+          $.each(getData, function(idx, v) {
             listPenerimaanPasien += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.id_number}</td>`
@@ -157,6 +160,8 @@ $(document).ready(function() {
           listPenerimaanPasien = '<tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>';
         }
 				$('#list-penerimaan-pasien').append(listPenerimaanPasien);
+
+        generatePagination(getCurrentPage, resp.total_paging);
 
 				$('.openDetail').click(function() {
           const getObj = data.find(x => x.id == $(this).val());
@@ -189,6 +194,24 @@ $(document).ready(function() {
 
           $('#btnSubmitTolakPasien').attr('disabled', true);
         });
+
+        $('.pagination > li > a').click(function() {
+					const getClassName = this.className;
+					const getNumber = parseFloat($(this).text());
+
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
+
+					if (getClassName.includes('arrow-left')) {
+						getCurrentPage = getCurrentPage - 1;
+					} else if (getClassName.includes('arrow-right')) {
+						getCurrentPage = getCurrentPage + 1;
+					} else {
+						getCurrentPage = getNumber;
+					}
+
+					loadPenerimaanPasien();
+				});
 
 			}, complete: function() { $('#loading-screen').hide(); },
 			error: function(err) {

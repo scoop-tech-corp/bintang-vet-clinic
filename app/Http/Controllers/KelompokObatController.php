@@ -14,82 +14,64 @@ class KelompokObatController extends Controller
 {
     public function index(Request $request)
     {
+        $items_per_page = 50;
+
+        $page = $request->page;
+
+        $medicine_groups = DB::table('medicine_groups')
+            ->join('users', 'medicine_groups.user_id', '=', 'users.id')
+            ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+            ->select(
+                'medicine_groups.id',
+                'branches.id as branch_id',
+                'branches.branch_name',
+                'group_name',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
+            ->where('medicine_groups.isDeleted', '=', 0);
 
         if ($request->keyword) {
-
             $res = $this->Search($request);
-
-            $medicine_groups = DB::table('medicine_groups')
-                ->join('users', 'medicine_groups.user_id', '=', 'users.id')
-                ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-                ->select(
-                    'medicine_groups.id',
-                    'branches.id as branch_id',
-                    'branches.branch_name',
-                    'group_name',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
-                ->where('medicine_groups.isDeleted', '=', 0);
 
             if ($res) {
                 $medicine_groups = $medicine_groups->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $medicine_groups = [];
-                return response()->json($medicine_groups, 200);
+                return response()->json(['total_paging' => 0,
+                    'data' => $medicine_groups], 200);
             }
 
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
-            }
-
-            $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
-
-            $medicine_groups = $medicine_groups->get();
-
-            return response()->json($medicine_groups, 200);
-            // $medicine_groups = $medicine_groups->where('group_name', 'like', '%' . $request->keyword . '%')
-            //     ->orwhere('created_by', 'like', '%' . $request->keyword . '%');
-        } else {
-
-            $medicine_groups = DB::table('medicine_groups')
-                ->join('users', 'medicine_groups.user_id', '=', 'users.id')
-                ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-                ->select(
-                    'medicine_groups.id',
-                    'branches.id as branch_id',
-                    'branches.branch_name',
-                    'group_name',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(medicine_groups.created_at, '%d %b %Y') as created_at"))
-                ->where('medicine_groups.isDeleted', '=', 0);
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
-            }
-
-            $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
-
-            $medicine_groups = $medicine_groups->get();
-
-            return response()->json($medicine_groups, 200);
         }
 
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $medicine_groups = $medicine_groups->where('branches.id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $medicine_groups = $medicine_groups->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $medicine_groups = $medicine_groups->orderBy($request->column, $request->orderby);
+        }
+
+        $medicine_groups = $medicine_groups->orderBy('medicine_groups.id', 'desc');
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $medicine_groups->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $medicine_groups = $medicine_groups->offset(0)->limit($items_per_page)->get();
+        } else {
+            $medicine_groups = $medicine_groups->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $medicine_groups], 200);
     }
 
     private function Search(Request $request)
@@ -197,8 +179,7 @@ class KelompokObatController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'NamaGrup' => 'required|string|max:50',
-            'Cabang' => 'required|integer',
+            'nama_grup' => 'required|string|max:50',
         ]);
 
         if ($validate->fails()) {
@@ -210,26 +191,41 @@ class KelompokObatController extends Controller
             ], 422);
         }
 
-        $find_duplicate = db::table('medicine_groups')
-            ->select('group_name')
-            ->where('group_name', '=', $request->NamaGrup)
-            ->where('branch_id', '=', $request->Cabang)
-            ->count();
+        $branchId = $request->cabang;
+        $result_branch = json_decode($branchId, true);
 
-        if ($find_duplicate != 0) {
-
+        if (count($result_branch) == 0) {
             return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Data sudah ada!'],
+                'message' => 'The given data was invalid.',
+                'errors' => ['Data Cabang Harus dipilih minimal 1!'],
             ], 422);
-
         }
 
-        MedicineGroup::create([
-            'group_name' => $request->NamaGrup,
-            'branch_id' => $request->Cabang,
-            'user_id' => $request->user()->id,
-        ]);
+        foreach ($result_branch as $key_branch) {
+
+            $find_duplicate = db::table('medicine_groups')
+                ->select('group_name')
+                ->where('group_name', '=', $request->nama_grup)
+                ->where('branch_id', '=', $key_branch)
+                ->count();
+
+            if ($find_duplicate != 0) {
+
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Data sudah ada!'],
+                ], 422);
+
+            }
+        }
+
+        foreach ($result_branch as $key_branch) {
+            MedicineGroup::create([
+                'group_name' => $request->nama_grup,
+                'branch_id' => $key_branch,
+                'user_id' => $request->user()->id,
+            ]);
+        }
 
         return response()->json([
             'message' => 'Berhasil menambah Kelompok Barang',
@@ -246,8 +242,8 @@ class KelompokObatController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'NamaGrup' => 'required|string|max:50',
-            'Cabang' => 'required|integer',
+            'nama_grup' => 'required|string|max:50',
+            'cabang_id' => 'required|integer',
         ]);
 
         if ($validate->fails()) {
@@ -270,8 +266,8 @@ class KelompokObatController extends Controller
 
         $find_duplicate = db::table('medicine_groups')
             ->select('group_name')
-            ->where('group_name', '=', $request->NamaGrup)
-            ->where('branch_id', '=', $request->Cabang)
+            ->where('group_name', '=', $request->nama_grup)
+            ->where('branch_id', '=', $request->cabang_id)
             ->where('id', '!=', $request->id)
             ->count();
 
@@ -284,8 +280,8 @@ class KelompokObatController extends Controller
 
         }
 
-        $medicine_groups->group_name = $request->NamaGrup;
-        $medicine_groups->branch_id = $request->Cabang;
+        $medicine_groups->group_name = $request->nama_grup;
+        $medicine_groups->branch_id = $request->cabang_id;
         $medicine_groups->user_update_id = $request->user()->id;
         $medicine_groups->updated_at = \Carbon\Carbon::now();
         $medicine_groups->save();
@@ -350,7 +346,9 @@ class KelompokObatController extends Controller
             'file' => 'required|mimes:xls,xlsx',
         ]);
 
-        $rows = Excel::toArray(new MultipleSheetImportKelompokObat, $request->file('file'));
+        $id = $request->user()->id;
+
+        $rows = Excel::toArray(new MultipleSheetImportKelompokObat($id), $request->file('file'));
         $result = $rows[0];
 
         foreach ($result as $key_result) {
@@ -371,7 +369,7 @@ class KelompokObatController extends Controller
 
         $file = $request->file('file');
 
-        Excel::import(new MultipleSheetImportKelompokObat, $file);
+        Excel::import(new MultipleSheetImportKelompokObat($id), $file);
 
         return response()->json([
             'message' => 'Berhasil mengupload Kelompok Obat',

@@ -141,6 +141,12 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::delete('pembayaran', 'PembayaranController@delete');
 
+        //Metode Pembayaran
+        Route::get('metode-pembayaran', 'DaftarMetodePembayaranController@index');
+        Route::post('metode-pembayaran', 'DaftarMetodePembayaranController@create');
+        Route::put('metode-pembayaran', 'DaftarMetodePembayaranController@update');
+        Route::delete('metode-pembayaran', 'DaftarMetodePembayaranController@delete');
+
         //Route::delete('pembayaran/all', 'PembayaranController@delete_all');
 
         //riwayat pasien
@@ -161,6 +167,9 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('pembagian-harga-kelompok-obat', 'HargaKelompokObatController@create');
         Route::put('pembagian-harga-kelompok-obat', 'HargaKelompokObatController@update');
         Route::delete('pembagian-harga-kelompok-obat', 'HargaKelompokObatController@delete');
+
+        Route::get('pembagian-harga-kelompok-obat/download-template', 'HargaKelompokObatController@download_template');
+        Route::post('pembagian-harga-kelompok-obat/upload-template', 'HargaKelompokObatController@upload_template');
 
         Route::get('pembagian-harga-kelompok-obat/generate-excel', 'HargaKelompokObatController@generate_excel');
         Route::get('pembagian-harga-kelompok-obat/cabang-obat', 'HargaKelompokObatController@branch_medicine');

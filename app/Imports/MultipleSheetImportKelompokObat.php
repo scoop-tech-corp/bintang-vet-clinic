@@ -2,19 +2,21 @@
 
 namespace App\Imports;
 
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use App\Imports\KelompokObatImport;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class MultipleSheetImportKelompokObat implements WithMultipleSheets
 {
-    /**
-    * @param Collection $collection
-    */
+    protected $id;
+
+    public function __construct($id)
+    {
+        $this->id = $id;
+    }
     public function sheets(): array
     {
         return [
-            0 => new KelompokObatImport(),
+            0 => new KelompokObatImport($this->id),
         ];
     }
 }

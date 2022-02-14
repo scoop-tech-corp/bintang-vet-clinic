@@ -102,6 +102,9 @@
                       <th>Harga Modal</th>
                       <th>Fee Dokter</th>
                       <th>Fee Petshop</th>
+                      <th>Diskon</th>
+                      <th>Nominal Diskon</th>
+                      <th>Fee Dokter Setelah Diskon</th>
                     </tr>
                   </thead>
                   <tbody id="detail-list-jasa">

@@ -14,7 +14,7 @@
               <h3 class="box-title">Download Template</h3>
             </div>
             <div class="box-body">
-              <div>Gunakan Template untuk menambah barang secara sekaligus</div>
+              <div>Gunakan Template untuk menambah harga barang secara sekaligus</div>
               <button class="btn btn-info btn-download-template">Download Template</button>
             </div>
           </div>

@@ -1,6 +1,8 @@
 $(document).ready(function() {
 
 	let optCabang = '';
+	let getCurrentPage = 1;
+
   let paramUrlSetup = {
 		orderby:'',
 		column: '',
@@ -100,14 +102,16 @@ $(document).ready(function() {
 			url     : $('.baseUrl').val() + '/api/pembayaran',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId, page: getCurrentPage },
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {
+			success: function(resp) {
+				const getData = resp.data;
+
 				let listPembayaran = '';
 				$('#list-pembayaran tr').remove();
 
-        if (data.length) {
-          $.each(data, function(idx, v) {
+        if (getData.length) {
+          $.each(getData, function(idx, v) {
             listPembayaran += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.registration_number}</td>`
@@ -132,6 +136,8 @@ $(document).ready(function() {
 
 				$('#list-pembayaran').append(listPembayaran);
 
+				generatePagination(getCurrentPage, resp.total_paging);
+
         $('.openDetail').click(function() {
 					window.location.href = $('.baseUrl').val() + `/pembayaran/detail/${$(this).val()}`;
         });
@@ -148,6 +154,24 @@ $(document).ready(function() {
 						$('#modal-confirmation .box-body').text('Anda yakin ingin menghapus data ini?');
 						$('#modal-confirmation').modal('show');
           }
+				});
+
+				$('.pagination > li > a').click(function() {
+					const getClassName = this.className;
+					const getNumber = parseFloat($(this).text());
+
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+
+					if (getClassName.includes('arrow-left')) {
+						getCurrentPage = getCurrentPage - 1;
+					} else if (getClassName.includes('arrow-right')) {
+						getCurrentPage = getCurrentPage + 1;
+					} else {
+						getCurrentPage = getNumber;
+					}
+
+					loadPembayaran()
 				});
 
 			}, complete: function() { $('#loading-screen').hide(); },
