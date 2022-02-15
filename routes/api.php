@@ -51,6 +51,8 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::get('pasien/daftar-pemilik', 'PasienController@ListOwner');
 
+        Route::get('pasien/dropdown', 'PasienController@dropdown');
+
         //kategori barang
         Route::get('kategori-barang', 'KategoriBarangController@index');
         Route::post('kategori-barang', 'KategoriBarangController@create');
