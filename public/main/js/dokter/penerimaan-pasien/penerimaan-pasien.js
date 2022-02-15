@@ -164,7 +164,7 @@ $(document).ready(function() {
         generatePagination(getCurrentPage, resp.total_paging);
 
 				$('.openDetail').click(function() {
-          const getObj = data.find(x => x.id == $(this).val());
+          const getObj = resp.data.find(x => x.id == $(this).val());
           refreshForm();
 
           $('.modal-title').text('Detail Penerimaan Pasien');
@@ -180,7 +180,7 @@ $(document).ready(function() {
 
 				$('.openTerima').click(function() {
 					getId = $(this).val();
-					const getObj = data.find(x => x.id == getId);
+					const getObj = resp.data.find(x => x.id == getId);
 
           $('#modal-confirmation .modal-title').text('Peringatan');
           $('#modal-confirmation .box-body').text('Anda yakin ingin menerima Pasien ini?');
