@@ -94,6 +94,8 @@ Route::group(['middleware' => ['api']], function () {
         Route::get('pembagian-harga-jasa/kategori-jasa', 'HargaJasaController@service_category');
         Route::get('pembagian-harga-jasa/nama-jasa', 'HargaJasaController@service_name');
 
+        Route::get('pembagian-harga-jasa/dropdown', 'HargaJasaController@dropdown');
+
         //pembagian harga barang
         Route::get('pembagian-harga-barang', 'HargaBarangController@index');
         Route::post('pembagian-harga-barang', 'HargaBarangController@create');
@@ -105,6 +107,8 @@ Route::group(['middleware' => ['api']], function () {
         Route::get('pembagian-harga-barang/generate-excel', 'HargaBarangController@generate_excel');
         Route::get('pembagian-harga-barang/download-template', 'HargaBarangController@download_template');
         Route::post('pembagian-harga-barang/upload', 'HargaBarangController@upload_template');
+
+        Route::get('pembagian-harga-barang/dropdown', 'HargaBarangController@dropdown');
 
         //registrasi pasien
         Route::get('registrasi-pasien', 'RegistrasiController@index');
@@ -173,6 +177,8 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::get('pembagian-harga-kelompok-obat/generate-excel', 'HargaKelompokObatController@generate_excel');
         Route::get('pembagian-harga-kelompok-obat/cabang-obat', 'HargaKelompokObatController@branch_medicine');
+
+        Route::get('pembagian-harga-kelompok-obat/dropdown', 'HargaKelompokObatController@dropdown');
 
         //laporan keuangan
 

@@ -17,7 +17,7 @@ class HargaKelompokObatController extends Controller
     public function index(Request $request)
     {
 
-      $items_per_page = 50;
+        $items_per_page = 50;
 
         $page = $request->page;
 
@@ -328,5 +328,43 @@ class HargaKelompokObatController extends Controller
         return response()->json([
             'message' => 'Berhasil mengupload Harga Kelompok Obat',
         ], 200);
+    }
+
+    public function dropdown(Request $request)
+    {
+        $price_medicine_groups = DB::table('price_medicine_groups')
+            ->join('users', 'price_medicine_groups.user_id', '=', 'users.id')
+            ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
+            ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
+            ->select('price_medicine_groups.id',
+                'medicine_groups.id as medicine_group_id',
+                'medicine_groups.group_name',
+                'branches.id as branch_id',
+                'branches.branch_name',
+                DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
+                DB::raw("TRIM(price_medicine_groups.capital_price)+0 as capital_price"),
+                DB::raw("TRIM(price_medicine_groups.doctor_fee)+0 as doctor_fee"),
+                DB::raw("TRIM(price_medicine_groups.petshop_fee)+0 as petshop_fee"),
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(price_medicine_groups.created_at, '%d %b %Y') as created_at"))
+            ->where('price_medicine_groups.isDeleted', '=', 0);
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $price_medicine_groups = $price_medicine_groups->where('branches.id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $price_medicine_groups = $price_medicine_groups->where('branches.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $price_medicine_groups = $price_medicine_groups->orderBy($request->column, $request->orderby);
+        }
+
+        $price_medicine_groups = $price_medicine_groups->orderBy('price_medicine_groups.id', 'desc');
+
+        $price_medicine_groups = $price_medicine_groups->get();
+
+        return response()->json($price_medicine_groups, 200);
     }
 }
