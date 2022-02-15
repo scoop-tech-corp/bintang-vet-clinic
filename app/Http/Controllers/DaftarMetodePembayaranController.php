@@ -11,13 +11,6 @@ class DaftarMetodePembayaranController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
-
         // $items_per_page = 50;
 
         $payment_method = DB::table('payment_methods')
