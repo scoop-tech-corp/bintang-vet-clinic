@@ -69,13 +69,13 @@ class DaftarBarangController extends Controller
 
         $offset = ($page - 1) * $items_per_page;
 
-        $count_data = $data->count();
+        $count_data = $item->count();
         $count_result = $count_data - $offset;
 
         if ($count_result < 0) {
-            $data = $data->offset(0)->limit($items_per_page)->get();
+            $item = $item->offset(0)->limit($items_per_page)->get();
         } else {
-            $data = $data->offset($offset)->limit($items_per_page)->get();
+            $item = $item->offset($offset)->limit($items_per_page)->get();
         }
 
         $total_paging = $count_data / $items_per_page;
