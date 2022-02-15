@@ -847,4 +847,51 @@ class PasienController extends Controller
 
         return response()->json($owner, 200);
     }
+
+    public function dropdown(Request $request)
+    {
+        $patient = DB::table('patients')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->join('users', 'patients.user_id', '=', 'users.id')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->select('patients.id',
+                'patients.branch_id',
+                'branches.branch_name',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'patients.pet_gender',
+                'patients.pet_year_age',
+                'patients.pet_month_age',
+                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
+                DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
+                'branches.branch_name',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"),
+                'owners.id as owner_id',
+                'owners.owner_name as owner_name_new',
+                'owners.owner_address as owner_address_new',
+                'owners.owner_phone_number as owner_phone_number_new')
+            ->where('patients.isDeleted', '=', 'false');
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $patient = $patient->where('patients.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $patient = $patient->where('patients.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->orderby) {
+
+            $patient = $patient->orderBy($request->column, $request->orderby);
+        }
+
+        $patient = $patient->orderBy('id', 'desc');
+
+        $patient = $patient->get();
+
+        return response()->json($patient, 200);
+    }
 }

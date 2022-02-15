@@ -254,7 +254,7 @@ $(document).ready(function() {
 				$('#list-pendaftaran-pasien').append(listPendaftaranPasien);
 
 				generatePagination(getCurrentPage, resp.total_paging);
-				
+
 				function generateBedge(status) {
 					let bedge = '';
 					switch (status) {
@@ -337,7 +337,7 @@ $(document).ready(function() {
 
   function loadPasien() {
     $.ajax({
-			url     : $('.baseUrl').val() + '/api/pasien',
+			url     : $('.baseUrl').val() + '/api/pasien/dropdown',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
 			beforeSend: function() { $('#loading-screen').show(); },
