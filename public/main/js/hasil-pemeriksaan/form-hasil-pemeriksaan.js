@@ -14,10 +14,10 @@ let isBeErr = false;
 let getFileImagesExisting = [];
 
 $(document).ready(function() {
-  
+
   let optPasien = '';
   let optJasa = '';
-  
+
   let listPasien = [];
   let listJasa = [];
   let selectedListJasa = [];
@@ -25,14 +25,14 @@ $(document).ready(function() {
 
   let getId = null;
   let getPatienRegistrationId = null;
-  let dropzone = null;  
+  let dropzone = null;
 
   const url = window.location.pathname;
   const stuff = url.split('/');
   const lastUrl = stuff[stuff.length-1];
 
   if (role.toLowerCase() == 'resepsionis') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
+		window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	} else {
     formConfigure();
     loadPasien();
@@ -146,10 +146,10 @@ $(document).ready(function() {
 
   function detectValidPhoto(isValid) {
     if(!isValid) {
-      $('#fotoKondErr1').text('Foto tidak boleh lebih dari 5'); 
+      $('#fotoKondErr1').text('Foto tidak boleh lebih dari 5');
       isValidFotoKondisiPasien = false;
     } else {
-      $('#fotoKondErr1').text(''); 
+      $('#fotoKondErr1').text('');
       isValidFotoKondisiPasien = true;
     }
   }
@@ -166,7 +166,7 @@ $(document).ready(function() {
 
     let finalSelectedJasa = [];
     let finalSelectedBarang = [];
-    
+
     selectedListJasa.forEach(lj => {
       finalSelectedJasa.push({ price_service_id: lj.price_service_id, quantity: lj.quantity, price_overall: lj.price_overall });
     });
@@ -230,7 +230,7 @@ $(document).ready(function() {
   function processEdit() {
     let finalSelectedJasa = [];
     let finalSelectedBarang = [];
-    
+
     deletedUpdateListJasa.forEach(ulj => {
       finalSelectedJasa.push({ id: ulj.id, price_service_id: ulj.price_service_id, quantity: ulj.quantity, price_overall: ulj.price_overall, status: 'del' });
     });
@@ -365,8 +365,8 @@ $(document).ready(function() {
       const getObj = listJasa.find(x => x.id == parseInt(selectedId));
       selectedListJasa.push({
         id: null,
-        price_service_id: getObj.id, 
-        category_name: getObj.category_name, 
+        price_service_id: getObj.id,
+        category_name: getObj.category_name,
         service_name: getObj.service_name,
         selling_price: getObj.selling_price,
         quantity: null, price_overall: null
@@ -428,7 +428,7 @@ $(document).ready(function() {
       const getIds = [];
       deletedUpdateListJasa.push(selectedListJasa[$(this).val()]);
       selectedListJasa.splice($(this).val(), 1);
-      
+
       selectedListJasa.forEach(lj => { getIds.push(lj.price_service_id); });
       if (!selectedListJasa.length) { $('.table-list-jasa').hide(); }
       validationForm();
@@ -463,9 +463,9 @@ $(document).ready(function() {
         const getData = data;
 
         getId = getData.id; getPatienRegistrationId = getData.patient_registration_id;
-        $('#nomorRegistrasiTxt').text(getData.registration.registration_number); $('#nomorPasienTxt').text(getData.registration.patient_number); 
-        $('#jenisHewanTxt').text(getData.registration.pet_category); $('#namaHewanTxt').text(getData.registration.pet_name); 
-        $('#jenisKelaminTxt').text(getData.registration.pet_gender); 
+        $('#nomorRegistrasiTxt').text(getData.registration.registration_number); $('#nomorPasienTxt').text(getData.registration.patient_number);
+        $('#jenisHewanTxt').text(getData.registration.pet_category); $('#namaHewanTxt').text(getData.registration.pet_name);
+        $('#jenisKelaminTxt').text(getData.registration.pet_gender);
         $('#usiaHewanTahunTxt').text(`${getData.registration.pet_year_age} Tahun`); $('#usiaHewanBulanTxt').text(`${getData.registration.pet_month_age} Bulan`);
         $('#namaPemilikTxt').text(getData.registration.owner_name); $('#alamatPemilikTxt').text(getData.registration.owner_address);
         $('#nomorHpPemilikTxt').text(getData.registration.owner_phone_number);
@@ -479,7 +479,7 @@ $(document).ready(function() {
           getData.services.forEach(item => {
             selectedListJasa.push({
               id: item.detail_service_patient_id,
-              price_service_id: item.price_service_id, 
+              price_service_id: item.price_service_id,
               category_name: item.category_name, service_name: item.service_name,
               selling_price: item.selling_price, status_paid_off: item.status_paid_off,
               quantity: item.quantity, price_overall: item.price_overall,
@@ -557,7 +557,7 @@ $(document).ready(function() {
             $(`.box-image-upload img.img-preview-${i+1}, .box-image-upload a.img-preview-${i+1}`).show();
 
             $(`[noUploadImage="${i+1}"]`).show();
-            $(`#icon-plus-upload-${i+1}`).hide(); 
+            $(`#icon-plus-upload-${i+1}`).hide();
             $(`#upload-image-${i+1}`).hide();
           });
         } else {
@@ -603,12 +603,12 @@ $(document).ready(function() {
 
   function loadJasa() {
     $.ajax({
-			url     : $('.baseUrl').val() + '/api/pembagian-harga-jasa',
+			url     : $('.baseUrl').val() + '/api/pembagian-harga-jasa/dropdown',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(resp) {
-        listJasa = resp.data;
+			success: function(data) {
+        listJasa = data;
 				if (listJasa.length) {
 					for (let i = 0 ; i < listJasa.length ; i++) {
 						optJasa += `<option value=${listJasa[i].id}>${listJasa[i].category_name} - ${listJasa[i].service_name} - ${listJasa[i].branch_name}</option>`;
@@ -638,12 +638,12 @@ $(document).ready(function() {
 		$('#usiaHewanTahunTxt').text('- Tahun'); $('#usiaHewanBulanTxt').text('- Bulan');
 		$('#namaPemilikTxt').text('-'); $('#alamatPemilikTxt').text('-');
     $('#nomorHpPemilikTxt').text('-'); $('#nomorRegistrasiTxt').text('-');
-    $('#keluhanTxt').text('-'); $('#namaPendaftarTxt').text('-'); 
+    $('#keluhanTxt').text('-'); $('#namaPendaftarTxt').text('-');
   }
 
   function loadKelompokObat() {
 		$.ajax({
-			url     : $('.baseUrl').val() + '/api/pembagian-harga-kelompok-obat',
+			url     : $('.baseUrl').val() + '/api/pembagian-harga-kelompok-obat/dropdown',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
 			beforeSend: function() { $('#loading-screen').show(); },
@@ -661,7 +661,7 @@ $(document).ready(function() {
 
   function loadBarang() {
     $.ajax({
-			url     : $('.baseUrl').val() + '/api/pembagian-harga-barang',
+			url     : $('.baseUrl').val() + '/api/pembagian-harga-barang/dropdown',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
 			beforeSend: function() { $('#loading-screen').show(); },
@@ -683,14 +683,14 @@ function validationForm() {
   if (formState === 'add') {
     if (!$('#selectedPasien').val()) {
       $('#pasienErr1').text('Pasien harus di isi'); isValidSelectedPasien = false;
-    } else { 
+    } else {
       $('#pasienErr1').text(''); isValidSelectedPasien = true;
     }
-  } else { isValidSelectedPasien = true; } 
+  } else { isValidSelectedPasien = true; }
 
   if (!$('#anamnesa').val()) {
     $('#anamnesaErr1').text('Anamnesa harus di isi'); isValidAnamnesa = false;
-  } else { 
+  } else {
     $('#anamnesaErr1').text(''); isValidAnamnesa = true;
   }
 
@@ -721,7 +721,7 @@ function validationForm() {
   let isValidKelompokObat = true;
   for (let i = 0; i < arrayKelompokObat.length; i++) {
     if (!arrayKelompokObat[i].kelompokObatId || !arrayKelompokObat[i].selectedListBarang.length) {
-      $('#customErr1').text('Terdapat Kelompok Obat atau Daftar Barang yang belum diisi, harap dicek kembali!'); 
+      $('#customErr1').text('Terdapat Kelompok Obat atau Daftar Barang yang belum diisi, harap dicek kembali!');
       customErr1 = true; isValidKelompokObat = false;
       break;
     }
@@ -730,10 +730,10 @@ function validationForm() {
   if(isValidKelompokObat) {
     $('#customErr1').empty(); customErr1 = false;
   }
-  
+
   $('#beErr').empty(); isBeErr = false;
 
-  if (!isValidSelectedPasien || !isValidAnamnesa || !isValidSign || !isValidDiagnosa 
+  if (!isValidSelectedPasien || !isValidAnamnesa || !isValidSign || !isValidDiagnosa
     || !isValidRadioRawatInap || !isValidRadioStatusPemeriksa
     || !isValidFotoKondisiPasien || isBeErr || customErr1) {
     $('#btnSubmitHasilPemeriksaan').attr('disabled', true);
