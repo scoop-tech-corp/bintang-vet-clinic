@@ -62,7 +62,7 @@ $(document).ready(function() {
   $('.input-search-section input').keypress(function(e) {
     if (e.which == 13) { onSearch($(this).val()); }
   });
-  
+
   $('.onOrdering').click(function() {
     const column = $(this).attr('data');
     const orderBy = $(this).attr('orderby');
@@ -82,7 +82,7 @@ $(document).ready(function() {
 
     loadDaftarBarang();
   });
-  
+
   $('.openFormAdd').click(function() {
     modalState = 'add';
     $('.modal-title').text('Tambah Daftar Barang');
@@ -170,7 +170,7 @@ $(document).ready(function() {
     let fileTypeAllowed = /.\.(xlsx|xls)$/i;
     let fileName = data.originalFiles[0]['name'];
     let fileSize = data.originalFiles[0]['size'];
-    
+
     if (!fileTypeAllowed.test(fileName)) {
       $('.validate-error').html('File harus berformat .xlsx atau .xls');
     } else {
@@ -187,7 +187,7 @@ $(document).ready(function() {
       loadDaftarBarang();
     }, 1000);
   }).on('fileuploadfail', function(e, data) {
-    const getResponsError = data._response.jqXHR.responseJSON.errors.hasOwnProperty('file') ? data._response.jqXHR.responseJSON.errors.file 
+    const getResponsError = data._response.jqXHR.responseJSON.errors.hasOwnProperty('file') ? data._response.jqXHR.responseJSON.errors.file
       : data._response.jqXHR.responseJSON.errors;
 
     let errText = '';
@@ -283,7 +283,7 @@ $(document).ready(function() {
         }, complete: function() { $('#loading-screen').hide(); }
         , error: function(err) {
           if (err.status === 422) {
-            let errText = ''; $('#beErr').empty(); 
+            let errText = ''; $('#beErr').empty();
             $('#modal-confirmation').modal('toggle');
             $('#btnSubmitDaftarBarang').attr('disabled', true);
             $.each(err.responseJSON.errors, function(idx, v) {
@@ -375,7 +375,7 @@ $(document).ready(function() {
         generatePagination(getCurrentPage, resp.total_paging);
 
         $('.openFormEdit').click(function() {
-          const getObj = data.find(x => x.id == $(this).val());
+          const getObj = resp.data.find(x => x.id == $(this).val());
           modalState = 'edit';
           refreshForm();
           $('.modal-title').text('Edit Daftar Barang');
@@ -389,7 +389,7 @@ $(document).ready(function() {
           $('#selectedKategoriBarang').val(getObj.category_item_id); $('#selectedKategoriBarang').trigger('change');
           $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
         });
-      
+
         $('.openFormDelete').click(function() {
           getId = $(this).val();
           modalState = 'delete';
@@ -401,8 +401,8 @@ $(document).ready(function() {
 					const getClassName = this.className;
 					const getNumber = parseFloat($(this).text());
 
-					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
-						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
 
 					if (getClassName.includes('arrow-left')) {
 						getCurrentPage = getCurrentPage - 1;
@@ -432,7 +432,7 @@ $(document).ready(function() {
 
     $('#modal-daftar-barang').modal('show');
     $('#btnSubmitDaftarBarang').attr('disabled', true);
-    
+
     $('#namaBarang').keyup(function () { validationForm(); });
     $('#jumlahBarang').keyup(function () { validationForm(); });
     $('#jumlahBarang').change(function() { validationForm(); });
@@ -454,13 +454,13 @@ $(document).ready(function() {
   function validationForm() {
     if (!$('#namaBarang').val()) {
       $('#namaBarangErr1').text('Nama barang harus di isi'); isValidNamaBarang = false;
-    } else { 
+    } else {
       $('#namaBarangErr1').text(''); isValidNamaBarang = true;
     }
 
     if (!$('#jumlahBarang').val()) {
       $('#jumlahBarangErr1').text('Jumlah barang harus di isi'); isValidJumlahBarang = false;
-    } else { 
+    } else {
       $('#jumlahBarangErr1').text(''); isValidJumlahBarang = true;
     }
 
@@ -484,7 +484,7 @@ $(document).ready(function() {
 
     $('#beErr').empty(); isBeErr = false;
 
-    if (!isValidNamaBarang || !isValidJumlahBarang || !isValidSelectedSatuanBarang || !isValidSelectedKategori 
+    if (!isValidNamaBarang || !isValidJumlahBarang || !isValidSelectedSatuanBarang || !isValidSelectedKategori
       || !isValidSelectedCabang || isBeErr) {
       $('#btnSubmitDaftarBarang').attr('disabled', true);
     } else {
@@ -500,7 +500,7 @@ $(document).ready(function() {
       beforeSend: function() { $('#loading-screen').show(); },
       success: function(data) {
         optSatuanBarang += `<option value=''>Pilih Satuan Barang</option>`
-  
+
         if (data.length) {
           for (var i = 0 ; i < data.length ; i++){
             optSatuanBarang += `<option value=${data[i].id}>${data[i].unit_name}</option>`;
@@ -525,7 +525,7 @@ $(document).ready(function() {
       beforeSend: function() { $('#loading-screen').show(); },
       success: function(data) {
         optKategoriBarang += `<option value=''>Pilih Kategori Barang</option>`
-  
+
         if (data.length) {
           for (let i = 0 ; i < data.length ; i++) {
             optKategoriBarang += `<option value=${data[i].id}>${data[i].category_name}</option>`;

@@ -12,102 +12,49 @@ class DaftarJasaController extends Controller
     public function index(Request $request)
     {
 
-        $items_per_page = 50;
+        $list_of_services = DB::table('list_of_services')
+            ->join('users', 'list_of_services.user_id', '=', 'users.id')
+            ->join('branches', 'list_of_services.branch_id', '=', 'branches.id')
+            ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
+            ->select(
+                'list_of_services.id',
+                'list_of_services.service_name',
+                'list_of_services.service_category_id',
+                'service_categories.category_name',
+                'list_of_services.branch_id',
+                'branches.branch_name',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(list_of_services.created_at, '%d %b %Y') as created_at"))
+            ->where('list_of_services.isDeleted', '=', 0);
 
         if ($request->keyword) {
-
             $res = $this->Search($request);
-
-            $list_of_services = DB::table('list_of_services')
-                ->join('users', 'list_of_services.user_id', '=', 'users.id')
-                ->join('branches', 'list_of_services.branch_id', '=', 'branches.id')
-                ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
-                ->select(
-                    'list_of_services.id',
-                    'list_of_services.service_name',
-                    'list_of_services.service_category_id',
-                    'service_categories.category_name',
-                    'list_of_services.branch_id',
-                    'branches.branch_name',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(list_of_services.created_at, '%d %b %Y') as created_at"))
-                ->where('list_of_services.isDeleted', '=', 0);
 
             if ($res) {
                 $list_of_services = $list_of_services->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json(['total_paging' => 0,
-                'data' => $data], 200);
+                return response()->json($data, 200);
             }
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $list_of_services = $list_of_services->where('list_of_services.branch_id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $list_of_services = $list_of_services->where('list_of_services.branch_id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $list_of_services = $list_of_services->orderBy($request->column, $request->orderby);
-            }
-
-            $list_of_services = $list_of_services->orderBy('list_of_services.id', 'desc');
-
-            $offset = ($request->page - 1) * $items_per_page;
-
-            $count_data = $list_of_services->count();
-
-            $list_of_services = $list_of_services->offset($offset)->limit($items_per_page)->get();
-
-            $total_paging = $count_data / $items_per_page;
-
-            return response()->json(['total_paging' => ceil($total_paging),
-                'data' => $list_of_services], 200);
-
-        } else {
-
-            $list_of_services = DB::table('list_of_services')
-                ->join('users', 'list_of_services.user_id', '=', 'users.id')
-                ->join('branches', 'list_of_services.branch_id', '=', 'branches.id')
-                ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
-                ->select(
-                    'list_of_services.id',
-                    'list_of_services.service_name',
-                    'list_of_services.service_category_id',
-                    'service_categories.category_name',
-                    'list_of_services.branch_id',
-                    'branches.branch_name',
-                    'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(list_of_services.created_at, '%d %b %Y') as created_at"))
-                ->where('list_of_services.isDeleted', '=', 0);
-
-            if ($request->branch_id && $request->user()->role == 'admin') {
-                $list_of_services = $list_of_services->where('list_of_services.branch_id', '=', $request->branch_id);
-            }
-
-            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $list_of_services = $list_of_services->where('list_of_services.branch_id', '=', $request->user()->branch_id);
-            }
-
-            if ($request->orderby) {
-                $list_of_services = $list_of_services->orderBy($request->column, $request->orderby);
-            }
-
-            $list_of_services = $list_of_services->orderBy('list_of_services.id', 'desc');
-
-            $offset = ($request->page - 1) * $items_per_page;
-
-            $count_data = $list_of_services->count();
-
-            $list_of_services = $list_of_services->offset($offset)->limit($items_per_page)->get();
-
-            $total_paging = $count_data / $items_per_page;
-
-            return response()->json(['total_paging' => ceil($total_paging),
-                'data' => $list_of_services], 200);
         }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $list_of_services = $list_of_services->where('list_of_services.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $list_of_services = $list_of_services->where('list_of_services.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $list_of_services = $list_of_services->orderBy($request->column, $request->orderby);
+        }
+
+        $list_of_services = $list_of_services->orderBy('list_of_services.id', 'desc');
+
+        $list_of_services = $list_of_services->get();
+
+        return response()->json($list_of_services, 200);
 
     }
 
