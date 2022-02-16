@@ -47,7 +47,7 @@ $(document).ready(function() {
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
   });
-  
+
   $('.onOrdering').click(function() {
 		const column = $(this).attr('data');
 		const orderBy = $(this).attr('orderby');
@@ -77,7 +77,7 @@ $(document).ready(function() {
     refreshForm();
     formConfigure();
   });
-  
+
   $('#btnSubmitHargaJasa').click(function() {
     if (modalState == 'add') {
 
@@ -298,7 +298,7 @@ $(document).ready(function() {
         generatePagination(getCurrentPage, resp.total_paging);
 
 				$('.openFormEdit').click(function() {
-					const getObj = data.find(x => x.id == $(this).val());
+					const getObj = resp.data.find(x => x.id == $(this).val());
 					modalState = 'edit';
 
 					$('.modal-title').text('Edit Pembagian Harga Jasa');
@@ -315,7 +315,7 @@ $(document).ready(function() {
           $('#feePetshop').val(getObj.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
 				});
-			
+
 				$('.openFormDelete').click(function() {
 					getId = $(this).val();
 					modalState = 'delete';
@@ -329,8 +329,8 @@ $(document).ready(function() {
 					const getClassName = this.className;
 					const getNumber = parseFloat($(this).text());
 
-					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
-						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
 
 					if (getClassName.includes('arrow-left')) {
 						getCurrentPage = getCurrentPage - 1;
@@ -359,7 +359,7 @@ $(document).ready(function() {
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {	
+			success: function(data) {
 				if (data.length) {
 					for (let i = 0 ; i < data.length ; i++) {
 						optCabang += `<option value=${data[i].id}>${data[i].branch_name}</option>`;
@@ -446,11 +446,11 @@ $(document).ready(function() {
 			}
 		});
   }
-  
+
   function validationForm() {
 		if (!$('#selectedCabang').val()) {
 			$('#cabangErr1').text('Cabang jasa harus di isi'); isValidSelectedCabang = false;
-		} else { 
+		} else {
 			$('#cabangErr1').text(''); isValidSelectedCabang = true;
 		}
 
@@ -489,7 +489,7 @@ $(document).ready(function() {
 		} else {
 			$('#feePetshopErr1').text(''); isValidFeePetshop = true;
     }
-    
+
     $('#beErr').empty(); isBeErr = false;
     validationBtnSubmitHargaJasa();
 	}
@@ -501,7 +501,7 @@ $(document).ready(function() {
 
     $('#hargaJual').val(null); $('#hargaModal').val(null);
     $('#feeDokter').val(null); $('#feePetshop').val(null);
-    
+
     $('#customErr1').empty(); customErr1 = false;
     $('#beErr').empty(); isBeErr = false;
 
@@ -513,7 +513,7 @@ $(document).ready(function() {
     $('#feeDokterErr1').text(''); isValidFeeDokter = true;
     $('#feePetshopErr1').text(''); isValidFeePetshop = true;
   }
-  
+
   function formConfigure() {
     $('#selectedCabang').select2();
 		$('#selectedKategoriJasa').select2();
@@ -525,7 +525,7 @@ $(document).ready(function() {
 
   function validationHargaJual() {
     let hargaJual  = $('#hargaJual').val();
-    let hargaModal = $('#hargaModal').val(); 
+    let hargaModal = $('#hargaModal').val();
     let feeDokter  = $('#feeDokter').val();
     let feePetshop = $('#feePetshop').val();
 
@@ -537,16 +537,16 @@ $(document).ready(function() {
     const totalHargaJual = parseInt(hargaModal) + parseInt(feeDokter) + parseInt(feePetshop);
 
     if (parseInt(hargaJual) !== totalHargaJual) {
-      $('#customErr1').text('Total harga modal, fee dokter, dan fee petshop tidak sama dengan harga jual'); 
+      $('#customErr1').text('Total harga modal, fee dokter, dan fee petshop tidak sama dengan harga jual');
       customErr1 = false;
-		} else { 
+		} else {
 			$('#customErr1').text(''); customErr1 = true;
 		}
   }
-  
+
   function validationBtnSubmitHargaJasa() {
-    if (!isValidSelectedCabang || !isValidSelectedKategoriJasa || !isValidSelectedJenisPelayanan 
-      || !isValidHargaJual || !isValidHargaModal || !isValidFeeDokter || !isValidFeePetshop 
+    if (!isValidSelectedCabang || !isValidSelectedKategoriJasa || !isValidSelectedJenisPelayanan
+      || !isValidHargaJual || !isValidHargaModal || !isValidFeeDokter || !isValidFeePetshop
       || !customErr1 || isBeErr) {
 			$('#btnSubmitHargaJasa').attr('disabled', true);
 		} else {
