@@ -84,7 +84,7 @@ $(document).ready(function() {
     validationFieldNamaPemilik();
 	});
 
-  $('#branch').on('select2:select', function (e) { 
+  $('#branch').on('select2:select', function (e) {
     validationForm(); loadNamaPemilik($('#branch').val()); $('.isShowPemilik').show();
   });
   $('#ownerDropdown').on('select2:select', function (e) {
@@ -319,9 +319,9 @@ $(document).ready(function() {
 				generatePagination(getCurrentPage, resp.total_paging);
 
 				$('.openFormEdit').click(function() {
-					const getObj = data.find(x => x.id == $(this).val());
+					const getObj = resp.data.find(x => x.id == $(this).val());
 					modalState = 'edit';
-          
+
 					$('.modal-title').text('Edit Pasien');
           $('.isShowPemilik').show();
           refreshForm(); formConfigure();

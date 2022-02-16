@@ -320,7 +320,7 @@ $(document).ready(function() {
         generatePagination(getCurrentPage, resp.total_paging);
 
         $('.openFormEdit').click(function() {
-          const getObj = data.find(x => x.id == $(this).val());
+          const getObj = resp.data.find(x => x.id == $(this).val());
           modalState = 'edit';
 
           $('.modal-title').text('Edit Kelompok Obat');
