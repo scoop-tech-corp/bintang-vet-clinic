@@ -58,6 +58,7 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                 ->join('owners', 'p.owner_id', '=', 'owners.id')
                 ->join('users', 'lop.user_id', '=', 'users.id')
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('payment_methods as pm', 'lopm.payment_method_id', '=', 'pm.id')
 
                 ->select(
                     'lop.id as list_of_payment_id',
@@ -74,7 +75,8 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                     'p.pet_name as pet_name',
                     DB::raw('(CASE WHEN p.owner_name = "" THEN owners.owner_name ELSE p.owner_name END) AS owner_name'),
                     'branches.id as branchId',
-                    DB::raw("DATE_FORMAT(lopm.updated_at, '%d/%m/%Y') as created_at")
+                    DB::raw("DATE_FORMAT(lopm.updated_at, '%d/%m/%Y') as created_at"),
+                    'pm.payment_name as payment_name'
                 )
                 ->where(DB::raw("DATE(lopm.updated_at)"), '=', $result_data->date);
 
@@ -96,6 +98,7 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                 ->join('owners', 'patients.owner_id', '=', 'owners.id')
                 ->join('users', 'check_up_results.user_id', '=', 'users.id')
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('payment_methods as pm', 'list_of_payment_services.payment_method_id', '=', 'pm.id')
 
                 ->select(
                     'list_of_payments.id as list_of_payment_id',
@@ -112,7 +115,8 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                     'patients.pet_name as pet_name',
                     DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                     'branches.id as branchId',
-                    DB::raw("DATE_FORMAT(list_of_payment_services.updated_at, '%d/%m/%Y') as created_at")
+                    DB::raw("DATE_FORMAT(list_of_payment_services.updated_at, '%d/%m/%Y') as created_at"),
+                    'pm.payment_name as payment_name'
                 )
                 ->where(DB::raw("DATE(list_of_payment_services.updated_at)"), '=', $result_data->date)
                 ->orderBy('check_up_results.id', 'asc');
@@ -138,7 +142,8 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                     'pet_name',
                     'owner_name',
                     'branchId',
-                    'created_at');
+                    'created_at',
+                    'payment_name');
 
             if ($this->orderby) {
 

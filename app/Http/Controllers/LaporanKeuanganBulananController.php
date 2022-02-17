@@ -20,6 +20,9 @@ class LaporanKeuanganBulananController extends Controller
             ], 403);
         }
 
+        $page = $request->page;
+        $items_per_page = 50;
+
         $item = DB::table('list_of_payments as lop')
             ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
             ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
