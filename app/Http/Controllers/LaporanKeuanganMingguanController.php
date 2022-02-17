@@ -13,6 +13,9 @@ class LaporanKeuanganMingguanController extends Controller
 {
     public function index(Request $request)
     {
+        $page = $request->page;
+        $items_per_page = 50;
+
         if ($request->user()->role == 'resepsionis') {
             return response()->json([
                 'message' => 'The user role was invalid.',
