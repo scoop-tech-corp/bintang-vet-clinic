@@ -136,7 +136,7 @@ class LaporanKeuanganBulananController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"));
+              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
@@ -180,7 +180,7 @@ class LaporanKeuanganBulananController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(pmg.capital_price))+0 as capital_price"));
+              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
@@ -224,7 +224,7 @@ class LaporanKeuanganBulananController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as doctor_fee"));
+              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
@@ -268,7 +268,7 @@ class LaporanKeuanganBulananController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(pmg.petshop_fee))+0 as petshop_fee"));
+              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
