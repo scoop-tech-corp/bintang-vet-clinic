@@ -361,6 +361,12 @@ class PenggajianController extends Controller
         $count_inpatient = $count_inpatient
             ->first();
 
+        $total_inpatient = 0;
+
+        if (!is_null($count_inpatient->count_inpatient)) {
+            $total_inpatient = $count_inpatient->count_inpatient;
+        }
+
         $amount_surgery = DB::table('users as usr')
             ->join('branches as brn', 'usr.branch_id', 'brn.id')
             ->join('detail_medicine_group_check_up_results as dmg', 'dmg.user_id', 'usr.id')
@@ -410,11 +416,17 @@ class PenggajianController extends Controller
         $count_grooming = $count_grooming
             ->first();
 
+        $total_grooming = 0;
+
+        if (!is_null($count_grooming->count_grooming)) {
+            $total_grooming = $count_grooming->count_grooming;
+        }
+
         return response()->json([
             'amount_turnover' => $amount_turnover,
-            'count_inpatient' => $count_inpatient->count_inpatient,
+            'count_inpatient' => $total_inpatient,
             'amount_surgery' => $amount_surgery->amount_surgery,
-            'count_grooming' => $count_grooming->count_grooming,
+            'count_grooming' => $total_grooming,
         ], 200);
     }
 
