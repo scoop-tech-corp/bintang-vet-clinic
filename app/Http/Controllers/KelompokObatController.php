@@ -207,6 +207,7 @@ class KelompokObatController extends Controller
                 ->select('group_name')
                 ->where('group_name', '=', $request->nama_grup)
                 ->where('branch_id', '=', $key_branch)
+                ->where('isDeleted', '=', 0)
                 ->count();
 
             if ($find_duplicate != 0) {
