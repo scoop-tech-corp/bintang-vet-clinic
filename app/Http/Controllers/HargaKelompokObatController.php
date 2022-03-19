@@ -106,6 +106,7 @@ class HargaKelompokObatController extends Controller
 
         $check_list_medicine = DB::table('price_medicine_groups')
             ->where('medicine_group_id', '=', $request->MedicineGroupId)
+            ->where('isDeleted', '=', 0)
             ->count();
 
         if ($check_list_medicine > 0) {
