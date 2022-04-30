@@ -304,7 +304,7 @@ class PenggajianController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-                DB::raw("TRIM(SUM(pmg.doctor_fee))+0 as amount_turnover_item"))
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as amount_turnover_item"))
             ->where('branches.id', '=', $user->branch_id);
 
         if ($request->date) {
