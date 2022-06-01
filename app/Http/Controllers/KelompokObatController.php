@@ -313,9 +313,8 @@ class KelompokObatController extends Controller
         $medicine_groups->isDeleted = true;
         $medicine_groups->deleted_by = $request->user()->fullname;
         $medicine_groups->deleted_at = \Carbon\Carbon::now();
-        $medicine_groups->save();
-
-        //$medicine_groups->delete();
+        // $medicine_groups->save();
+        $medicine_groups->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Kategori Barang',

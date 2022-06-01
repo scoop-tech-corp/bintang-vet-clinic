@@ -8,6 +8,7 @@ use App\Imports\MultipleSheetImportDaftarBarang;
 use App\Models\Branch;
 use App\Models\HistoryItemMovement;
 use App\Models\ListofItems;
+use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -30,10 +31,14 @@ class DaftarBarangController extends Controller
             ->select('list_of_items.id',
                 'list_of_items.item_name',
                 'list_of_items.total_item',
+                'list_of_items.limit_item',
+                'list_of_items.diff_item',
                 'unit_item.id as unit_item_id',
                 'unit_item.unit_name',
                 'category_item.id as category_item_id',
                 'category_item.category_name',
+                'list_of_items.expired_date',
+                'list_of_items.diff_expired_days',
                 'branches.id as branch_id',
                 'branches.branch_name',
                 'users.id as user_id',
@@ -65,7 +70,8 @@ class DaftarBarangController extends Controller
             $item = $item->orderBy($request->column, $request->orderby);
         }
 
-        $item = $item->orderBy('list_of_items.id', 'desc');
+        $item = $item->orderBy('list_of_items.id', 'desc')
+            ->orderBy('diff_item', 'asc');
 
         $offset = ($page - 1) * $items_per_page;
 
@@ -269,6 +275,8 @@ class DaftarBarangController extends Controller
             'jumlah_barang' => 'required|numeric|min:0',
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
+            'limit_barang' => 'required|numeric|min:0',
+            'tanggal_expired' => 'required|date_format:d/m/Y',
         ]);
 
         if ($validator->fails()) {
@@ -305,7 +313,21 @@ class DaftarBarangController extends Controller
                     'errors' => ['Data sudah ada!'],
                 ], 422);
             }
+        }
 
+        $exp_date = \Carbon\Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->tanggal_expired)->format('Y/m/d'));
+
+        if ($request->jumlah_barang - $request->limit_barang < 0) {
+            return response()->json([
+                'message' => 'The data was invalid.',
+                'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
+            ], 422);
+
+        } elseif (\Carbon\Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+            return response()->json([
+                'message' => 'The data was invalid.',
+                'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
+            ], 422);
         }
 
         foreach ($result_branch as $key_branch) {
@@ -317,6 +339,10 @@ class DaftarBarangController extends Controller
                 'category_item_id' => $request->kategori_barang,
                 'branch_id' => $key_branch,
                 'user_id' => $request->user()->id,
+                'limit_item' => $request->limit_barang,
+                'expired_date' => $exp_date,
+                'diff_item' => $request->jumlah_barang - $request->limit_barang,
+                'diff_expired_days' => \Carbon\Carbon::parse(now())->diffInDays($exp_date, false),
             ]);
         }
 
@@ -342,6 +368,8 @@ class DaftarBarangController extends Controller
             'satuan_barang' => 'required|string|max:50',
             'kategori_barang' => 'required|string|max:50',
             'cabang_id' => 'required|string|max:50',
+            'limit_barang' => 'required|numeric|min:0',
+            'tanggal_expired' => 'required|date_format:d/m/Y',
         ]);
 
         if ($validator->fails()) {
@@ -412,6 +440,21 @@ class DaftarBarangController extends Controller
             ]);
         }
 
+        $exp_date = \Carbon\Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->tanggal_expired)->format('Y/m/d'));
+
+        if ($request->jumlah_barang - $request->limit_barang < 0) {
+            return response()->json([
+                'message' => 'The data was invalid.',
+                'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
+            ], 422);
+
+        } elseif (\Carbon\Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+            return response()->json([
+                'message' => 'The data was invalid.',
+                'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
+            ], 422);
+        }
+
         $item->item_name = $request->nama_barang;
         $item->total_item = $request->jumlah_barang;
         $item->unit_item_id = $request->satuan_barang;
@@ -419,6 +462,10 @@ class DaftarBarangController extends Controller
         $item->branch_id = $request->cabang_id;
         $item->user_update_id = $request->user()->id;
         $item->updated_at = \Carbon\Carbon::now();
+        $item->limit_item = $request->limit_barang;
+        $item->expired_date = $exp_date;
+        $item->diff_item = $request->jumlah_barang - $request->limit_barang;
+        $item->diff_expired_days = \Carbon\Carbon::parse(now())->diffInDays($exp_date, false);
         $item->save();
 
         return response()->json([
@@ -447,9 +494,8 @@ class DaftarBarangController extends Controller
         $item->isDeleted = true;
         $item->deleted_by = $request->user()->fullname;
         $item->deleted_at = \Carbon\Carbon::now();
-        $item->save();
-
-        //$item->delete();
+        //$item->save();
+        $item->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Barang',
@@ -481,7 +527,9 @@ class DaftarBarangController extends Controller
             'file' => 'required|mimes:xls,xlsx',
         ]);
 
-        $rows = Excel::toArray(new MultipleSheetImportDaftarBarang, $request->file('file'));
+        info($request->user()->id);
+
+        $rows = Excel::toArray(new MultipleSheetImportDaftarBarang($request->user()->id), $request->file('file'));
         $result = $rows[0];
 
         foreach ($result as $key_result) {
@@ -498,11 +546,26 @@ class DaftarBarangController extends Controller
                     'errors' => ['Data ' . $key_result['nama_barang'] . ' sudah ada!'],
                 ], 422);
             }
+
+            $exp_date = \Carbon\Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+
+            if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
+                ], 422);
+
+            } elseif (\Carbon\Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+                return response()->json([
+                    'message' => 'The data was invalid.',
+                    'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
+                ], 422);
+            }
         }
 
         $file = $request->file('file');
 
-        Excel::import(new MultipleSheetImportDaftarBarang, $file);
+        Excel::import(new MultipleSheetImportDaftarBarang($request->user()->id), $file);
 
         return response()->json([
             'message' => 'Berhasil mengupload Barang',

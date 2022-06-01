@@ -752,6 +752,7 @@ class HasilPemeriksaanController extends Controller
                     $count_item = $list_of_items->total_item - $value_item['quantity'];
 
                     $list_of_items->total_item = $count_item;
+                    $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                     $list_of_items->user_update_id = $request->user()->id;
                     $list_of_items->updated_at = \Carbon\Carbon::now();
                     $list_of_items->save();
@@ -1540,6 +1541,7 @@ class HasilPemeriksaanController extends Controller
 
                         $count_item = $list_of_items->total_item + $res_value_item;
 
+                        $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                         $list_of_items->total_item = $count_item;
                         $list_of_items->user_update_id = $request->user()->id;
                         $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -1592,6 +1594,7 @@ class HasilPemeriksaanController extends Controller
 
                             $count_item = $list_of_items->total_item - $value_item['quantity'];
 
+                            $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                             $list_of_items->total_item = $count_item;
                             $list_of_items->user_update_id = $request->user()->id;
                             $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -1627,6 +1630,7 @@ class HasilPemeriksaanController extends Controller
 
                             $count_item = $list_of_items->total_item + $res_value_item;
 
+                            $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                             $list_of_items->total_item = $count_item;
                             $list_of_items->user_update_id = $request->user()->id;
                             $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -1664,6 +1668,7 @@ class HasilPemeriksaanController extends Controller
 
                                 $count_item = $list_of_items->total_item - $res_value_item;
 
+                                $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                                 $list_of_items->total_item = $count_item;
                                 $list_of_items->user_update_id = $request->user()->id;
                                 $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -1699,6 +1704,7 @@ class HasilPemeriksaanController extends Controller
 
                                 $count_item = $list_of_items->total_item + $res_value_item;
 
+                                $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                                 $list_of_items->total_item = $count_item;
                                 $list_of_items->user_update_id = $request->user()->id;
                                 $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -1798,6 +1804,7 @@ class HasilPemeriksaanController extends Controller
 
                 $count_item = $list_of_items->total_item - $value_item['quantity'];
 
+                $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                 $list_of_items->total_item = $count_item;
                 $list_of_items->user_update_id = $request->user()->id;
                 $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -1833,6 +1840,7 @@ class HasilPemeriksaanController extends Controller
 
                 $count_item = $list_of_items->total_item + $res_value_item;
 
+                $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                 $list_of_items->total_item = $count_item;
                 $list_of_items->user_update_id = $request->user()->id;
                 $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -1870,6 +1878,7 @@ class HasilPemeriksaanController extends Controller
 
                     $count_item = $list_of_items->total_item - $res_value_item;
 
+                    $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                     $list_of_items->total_item = $count_item;
                     $list_of_items->user_update_id = $request->user()->id;
                     $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -1905,6 +1914,7 @@ class HasilPemeriksaanController extends Controller
 
                     $count_item = $list_of_items->total_item + $res_value_item;
 
+                    $list_of_items->diff_item = $count_item - $list_of_items->limit_item;
                     $list_of_items->total_item = $count_item;
                     $list_of_items->user_update_id = $request->user()->id;
                     $list_of_items->updated_at = \Carbon\Carbon::now();
@@ -2023,6 +2033,7 @@ class HasilPemeriksaanController extends Controller
                     $res_total_item = $check_list_of_item->total_item + $find_prev_stock->quantity;
 
                     $list_of_items = ListofItems::find($check_price_item->list_of_items_id);
+                    $list_of_items->diff_item = $res_total_item - $list_of_items->limit_item;
                     $list_of_items->total_item = $res_total_item;
                     $list_of_items->user_update_id = $request->user()->id;
                     $list_of_items->updated_at = \Carbon\Carbon::now();
