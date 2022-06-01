@@ -499,11 +499,11 @@ $(document).ready(function() {
       $('#limitBarangErr1').text(''); isValidLimitBarang = true;
     }
 
-    if (Number($('#limitBarang').val()) > Number($('#jumlahBarang').val())) {
-      $('#limitBarangErr1').text('Limit Barang harus kurang dari jumlah barang'); isValidLimitBarang = false;
-    } else {
-      $('#limitBarangErr1').text(''); isValidLimitBarang = true;
-    }
+    // if (Number($('#limitBarang').val()) > Number($('#jumlahBarang').val())) {
+    //   $('#limitBarangErr1').text('Limit Barang harus kurang dari jumlah barang'); isValidLimitBarang = false;
+    // } else {
+    //   $('#limitBarangErr1').text(''); isValidLimitBarang = true;
+    // }
 
     if (!$('#tanggalKadaluwarsa').datepicker('getDate')) {
 			$('#tanggalKadaluwarsaErr1').text('Tanggal kadaluwarsa harus di isi'); isValidTanggalKadaluwarsa = false;
@@ -511,11 +511,11 @@ $(document).ready(function() {
 			$('#tanggalKadaluwarsaErr1').text(''); isValidTanggalKadaluwarsa = true;
 		}
 
-    if (new Date($('#tanggalKadaluwarsa').datepicker('getDate')) <= new Date()) {
-      $('#tanggalKadaluwarsaErr1').text('Tanggal kedaluwarsa yang di input harus lebih dari hari ini'); isValidTanggalKadaluwarsa = false;
-    } else {
-      $('#tanggalKadaluwarsaErr1').text(''); isValidTanggalKadaluwarsa = true;
-    }
+    // if (new Date($('#tanggalKadaluwarsa').datepicker('getDate')) <= new Date()) {
+    //   $('#tanggalKadaluwarsaErr1').text('Tanggal kedaluwarsa yang di input harus lebih dari hari ini'); isValidTanggalKadaluwarsa = false;
+    // } else {
+    //   $('#tanggalKadaluwarsaErr1').text(''); isValidTanggalKadaluwarsa = true;
+    // }
 
     if (!$('#selectedSatuanBarang').val()) {
       $('#satuanBarangErr1').text('Satuan barang harus di isi'); isValidSelectedSatuanBarang = false;
