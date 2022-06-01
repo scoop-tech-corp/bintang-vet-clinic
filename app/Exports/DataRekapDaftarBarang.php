@@ -38,8 +38,10 @@ class DataRekapDaftarBarang implements FromCollection, ShouldAutoSize, WithHeadi
             ->select(
                 'list_of_items.item_name',
                 DB::raw("TRIM(list_of_items.total_item)+0 as total_item"),
+                DB::raw("TRIM(list_of_items.limit_item)+0 as limit_item"),
                 'unit_item.unit_name',
                 'category_item.category_name',
+                DB::raw("DATE_FORMAT(list_of_items.expired_date, '%d %b %Y') as expired_date"))
                 'branches.branch_name',
                 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
@@ -73,7 +75,7 @@ class DataRekapDaftarBarang implements FromCollection, ShouldAutoSize, WithHeadi
     public function headings(): array
     {
         return [
-            ['No.', 'Nama Barang', 'Jumlah Barang', 'Satuan', 'Kategori', 'Cabang', 'Dibuat Oleh',
+            ['No.', 'Nama Barang', 'Jumlah Barang','Limit Barang', 'Satuan', 'Kategori','Tanggal Kedaluwarsa', 'Cabang', 'Dibuat Oleh',
                 'Tanggal Dibuat'],
         ];
     }
@@ -90,8 +92,10 @@ class DataRekapDaftarBarang implements FromCollection, ShouldAutoSize, WithHeadi
                 $item->number,
                 $item->item_name,
                 strval($item->total_item),
+                strval($item->limit_item),
                 $item->unit_name,
                 $item->category_name,
+                $item->expired_date,
                 $item->branch_name,
                 $item->created_by,
                 $item->created_at,

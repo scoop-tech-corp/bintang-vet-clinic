@@ -216,9 +216,8 @@ class HargaKelompokObatController extends Controller
         $price_medicine_groups->isDeleted = true;
         $price_medicine_groups->deleted_by = $request->user()->fullname;
         $price_medicine_groups->deleted_at = \Carbon\Carbon::now();
-        $price_medicine_groups->save();
-
-        //$price_medicine_groups->delete();
+        //$price_medicine_groups->save();
+        $price_medicine_groups->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Data',
