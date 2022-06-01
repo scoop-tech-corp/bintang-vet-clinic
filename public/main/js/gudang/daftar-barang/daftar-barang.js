@@ -7,11 +7,15 @@ $(document).ready(function() {
 
   let getId = null;
   let modalState = '';
+  let getTanggalKadaluwarsa = '';
   let isValidNamaBarang = false;
   let isValidJumlahBarang = false;
+  let isValidLimitBarang = false;
   let isValidSelectedSatuanBarang = false;
   let isValidSelectedKategori = false;
   let isValidSelectedCabang = false;
+  let isValidTanggalKadaluwarsa = false;
+
   let isBeErr = false;
   let paramUrlSetup = {
     orderby: '',
@@ -50,6 +54,17 @@ $(document).ready(function() {
 
     // load cabang
     loadCabang();
+
+    $('#tanggalKadaluwarsa').datepicker({
+      autoclose: true,
+      clearBtn: true,
+      format: 'dd/mm/yyyy',
+      todayHighlight: true,
+      startDate: new Date()
+      }).on('changeDate', function(e) {
+        getTanggalKadaluwarsa = e.format();
+        validationForm();
+    });
   }
 
   // load daftar barang
@@ -205,9 +220,11 @@ $(document).ready(function() {
       const fd = new FormData();
       fd.append('nama_barang', $('#namaBarang').val());
       fd.append('jumlah_barang', $('#jumlahBarang').val());
+      fd.append('limit_barang', $('#limitBarang').val());
       fd.append('satuan_barang', $('#selectedSatuanBarang').val());
       fd.append('kategori_barang', $('#selectedKategoriBarang').val());
       fd.append('cabang', JSON.stringify($('#selectedCabang').val().map(x => +x)));
+      fd.append('tanggal_expired', getTanggalKadaluwarsa);
 
       $.ajax({
         url : $('.baseUrl').val() + '/api/daftar-barang',
@@ -256,9 +273,11 @@ $(document).ready(function() {
         id: getId,
         nama_barang: $('#namaBarang').val(),
         jumlah_barang: $('#jumlahBarang').val(),
+        limit_barang: $('#limitBarang').val(),
         satuan_barang:  $('#selectedSatuanBarang').val(),
         kategori_barang: $('#selectedKategoriBarang').val(),
-        cabang_id: $('#selectedCabang').val()
+        cabang_id: $('#selectedCabang').val(),
+        tanggal_expired: getTanggalKadaluwarsa
       };
 
       $.ajax({
@@ -354,13 +373,14 @@ $(document).ready(function() {
           $.each(getData, function(idx, v) {
             listDaftarBarang += `<tr>
               <td>${++idx}</td>
-              <td>${v.item_name}</td>
+              <td class="${v.diff_item < 0 ? 'item-outstock' : ''}">${v.item_name}</td>
               <td>${v.total_item}</td>
               <td>${v.unit_name}</td>
               <td>${v.category_name}</td>
               <td>${v.branch_name}</td>
               <td>${v.created_by}</td>
-              <td>${v.created_at}</td>`
+              <td>${v.created_at}</td>
+              <td class="${v.diff_expired_days < 60 ? 'expired-date' : ''}">${v.expired_date}</td>`
               + ((role.toLowerCase() != 'admin') ? `` : `<td>
                 <button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
                 <button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
@@ -368,7 +388,7 @@ $(document).ready(function() {
             +`</tr>`;
           });
         } else {
-          listDaftarBarang += `<tr class="text-center"><td colspan="9">Tidak ada data.</td></tr>`;
+          listDaftarBarang += `<tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>`;
         }
         $('#list-daftar-barang').append(listDaftarBarang);
 
@@ -385,9 +405,13 @@ $(document).ready(function() {
           getId = getObj.id;
           $('#namaBarang').val(getObj.item_name);
           $('#jumlahBarang').val(getObj.total_item);
+          $('#limitBarang').val(getObj.limit_item);
           $('#selectedSatuanBarang').val(getObj.unit_item_id); $('#selectedSatuanBarang').trigger('change');
           $('#selectedKategoriBarang').val(getObj.category_item_id); $('#selectedKategoriBarang').trigger('change');
           $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
+
+          const dateArr = getObj.expired_date.split('/');
+          $('#tanggalKadaluwarsa').datepicker('update', new Date(parseFloat(dateArr[2]), parseFloat(dateArr[1])-1, parseFloat(dateArr[0])));
         });
 
         $('.openFormDelete').click(function() {
@@ -428,6 +452,7 @@ $(document).ready(function() {
   function formConfigure() {
     $('#selectedSatuanBarang').select2();
     $('#selectedKategoriBarang').select2();
+
     $('#selectedCabang').select2({placeholder: 'Pilih Cabang'});
 
     $('#modal-daftar-barang').modal('show');
@@ -436,6 +461,8 @@ $(document).ready(function() {
     $('#namaBarang').keyup(function () { validationForm(); });
     $('#jumlahBarang').keyup(function () { validationForm(); });
     $('#jumlahBarang').change(function() { validationForm(); });
+    $('#limitBarang').keyup(function () { validationForm(); });
+    $('#limitBarang').change(function() { validationForm(); });
     $('#selectedSatuanBarang').change(function() { validationForm(); });
     $('#hargaSatuanBarang').keyup(function () { validationForm(); });
     $('#selectedKategoriBarang').change(function () { validationForm(); });
@@ -445,9 +472,11 @@ $(document).ready(function() {
   function refreshForm() {
     $('#namaBarang').val(null);
     $('#jumlahBarang').val(null);
+    $('#limitBarang').val(null);
     $('#selectedSatuanBarang').val(null);
     $('#selectedKategoriBarang').val(null);
     $('#selectedCabang').val(null);
+    $('#tanggalKadaluwarsa').datepicker('update', new Date());
     $('#beErr').empty(); isBeErr = false;
   }
 
@@ -462,6 +491,30 @@ $(document).ready(function() {
       $('#jumlahBarangErr1').text('Jumlah barang harus di isi'); isValidJumlahBarang = false;
     } else {
       $('#jumlahBarangErr1').text(''); isValidJumlahBarang = true;
+    }
+
+    if (!$('#limitBarang').val()) {
+      $('#limitBarangErr1').text('Limit barang harus di isi'); isValidLimitBarang = false;
+    } else {
+      $('#limitBarangErr1').text(''); isValidLimitBarang = true;
+    }
+
+    if (Number($('#limitBarang').val()) > Number($('#jumlahBarang').val())) {
+      $('#limitBarangErr1').text('Limit Barang harus kurang dari jumlah barang'); isValidLimitBarang = false;
+    } else {
+      $('#limitBarangErr1').text(''); isValidLimitBarang = true;
+    }
+
+    if (!$('#tanggalKadaluwarsa').datepicker('getDate')) {
+			$('#tanggalKadaluwarsaErr1').text('Tanggal kadaluwarsa harus di isi'); isValidTanggalKadaluwarsa = false;
+		} else { 
+			$('#tanggalKadaluwarsaErr1').text(''); isValidTanggalKadaluwarsa = true;
+		}
+
+    if (new Date($('#tanggalKadaluwarsa').datepicker('getDate')) <= new Date()) {
+      $('#tanggalKadaluwarsaErr1').text('Tanggal kedaluwarsa yang di input harus lebih dari hari ini'); isValidTanggalKadaluwarsa = false;
+    } else {
+      $('#tanggalKadaluwarsaErr1').text(''); isValidTanggalKadaluwarsa = true;
     }
 
     if (!$('#selectedSatuanBarang').val()) {
@@ -484,7 +537,7 @@ $(document).ready(function() {
 
     $('#beErr').empty(); isBeErr = false;
 
-    if (!isValidNamaBarang || !isValidJumlahBarang || !isValidSelectedSatuanBarang || !isValidSelectedKategori
+    if (!isValidNamaBarang || !isValidJumlahBarang || !isValidLimitBarang || !isValidTanggalKadaluwarsa || !isValidSelectedSatuanBarang || !isValidSelectedKategori
       || !isValidSelectedCabang || isBeErr) {
       $('#btnSubmitDaftarBarang').attr('disabled', true);
     } else {
