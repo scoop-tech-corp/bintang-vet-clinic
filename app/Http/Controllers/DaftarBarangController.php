@@ -30,15 +30,15 @@ class DaftarBarangController extends Controller
             ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
             ->select('list_of_items.id',
                 'list_of_items.item_name',
-                'list_of_items.total_item',
-                'list_of_items.limit_item',
-                'list_of_items.diff_item',
+                DB::raw("TRIM(list_of_items.total_item)+0 as total_item"),
+                DB::raw("TRIM(list_of_items.limit_item)+0 as limit_item"),
+                DB::raw("TRIM(list_of_items.diff_item)+0 as diff_item"),
                 'unit_item.id as unit_item_id',
                 'unit_item.unit_name',
                 'category_item.id as category_item_id',
                 'category_item.category_name',
-                'list_of_items.expired_date',
-                'list_of_items.diff_expired_days',
+                DB::raw('(CASE WHEN list_of_items.expired_date = "0000-00-00" THEN "" ELSE DATE_FORMAT(list_of_items.created_at, "%d/%m/%Y") END) as expired_date'),
+                DB::raw('(CASE WHEN list_of_items.expired_date = "0000-00-00" THEN 60 ELSE list_of_items.diff_expired_days END)+0 as diff_expired_days'),
                 'branches.id as branch_id',
                 'branches.branch_name',
                 'users.id as user_id',
@@ -315,20 +315,20 @@ class DaftarBarangController extends Controller
             }
         }
 
-        $exp_date = \Carbon\Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->tanggal_expired)->format('Y/m/d'));
+        $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->tanggal_expired)->format('Y/m/d'));
 
-        if ($request->jumlah_barang - $request->limit_barang < 0) {
-            return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
-            ], 422);
+        // if ($request->jumlah_barang - $request->limit_barang < 0) {
+        //     return response()->json([
+        //         'message' => 'The data was invalid.',
+        //         'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
+        //     ], 422);
 
-        } elseif (\Carbon\Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
-            return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
-            ], 422);
-        }
+        // } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+        //     return response()->json([
+        //         'message' => 'The data was invalid.',
+        //         'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
+        //     ], 422);
+        // }
 
         foreach ($result_branch as $key_branch) {
 
@@ -342,7 +342,7 @@ class DaftarBarangController extends Controller
                 'limit_item' => $request->limit_barang,
                 'expired_date' => $exp_date,
                 'diff_item' => $request->jumlah_barang - $request->limit_barang,
-                'diff_expired_days' => \Carbon\Carbon::parse(now())->diffInDays($exp_date, false),
+                'diff_expired_days' => Carbon::parse(now())->diffInDays($exp_date, false),
             ]);
         }
 
@@ -440,20 +440,20 @@ class DaftarBarangController extends Controller
             ]);
         }
 
-        $exp_date = \Carbon\Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->tanggal_expired)->format('Y/m/d'));
+        $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->tanggal_expired)->format('Y/m/d'));
 
-        if ($request->jumlah_barang - $request->limit_barang < 0) {
-            return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
-            ], 422);
+        // if ($request->jumlah_barang - $request->limit_barang < 0) {
+        //     return response()->json([
+        //         'message' => 'The data was invalid.',
+        //         'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
+        //     ], 422);
 
-        } elseif (\Carbon\Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
-            return response()->json([
-                'message' => 'The data was invalid.',
-                'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
-            ], 422);
-        }
+        // } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+        //     return response()->json([
+        //         'message' => 'The data was invalid.',
+        //         'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
+        //     ], 422);
+        // }
 
         $item->item_name = $request->nama_barang;
         $item->total_item = $request->jumlah_barang;
@@ -461,11 +461,11 @@ class DaftarBarangController extends Controller
         $item->category_item_id = $request->kategori_barang;
         $item->branch_id = $request->cabang_id;
         $item->user_update_id = $request->user()->id;
-        $item->updated_at = \Carbon\Carbon::now();
+        $item->updated_at = Carbon::now();
         $item->limit_item = $request->limit_barang;
         $item->expired_date = $exp_date;
         $item->diff_item = $request->jumlah_barang - $request->limit_barang;
-        $item->diff_expired_days = \Carbon\Carbon::parse(now())->diffInDays($exp_date, false);
+        $item->diff_expired_days = Carbon::parse(now())->diffInDays($exp_date, false);
         $item->save();
 
         return response()->json([
@@ -493,7 +493,7 @@ class DaftarBarangController extends Controller
 
         $item->isDeleted = true;
         $item->deleted_by = $request->user()->fullname;
-        $item->deleted_at = \Carbon\Carbon::now();
+        $item->deleted_at = Carbon::now();
         //$item->save();
         $item->delete();
 
@@ -547,7 +547,7 @@ class DaftarBarangController extends Controller
                 ], 422);
             }
 
-            $exp_date = \Carbon\Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+            $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
 
             if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
                 return response()->json([
@@ -555,7 +555,7 @@ class DaftarBarangController extends Controller
                     'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
                 ], 422);
 
-            } elseif (\Carbon\Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+            } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
                 return response()->json([
                     'message' => 'The data was invalid.',
                     'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
@@ -574,7 +574,7 @@ class DaftarBarangController extends Controller
 
     public function generate_excel(Request $request)
     {
-        $date = \Carbon\Carbon::now()->format('d-m-y');
+        $date = Carbon::now()->format('d-m-y');
 
         $branchId = "";
 
