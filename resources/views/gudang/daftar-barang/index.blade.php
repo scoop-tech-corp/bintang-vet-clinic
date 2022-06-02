@@ -28,7 +28,7 @@
             <th class="onOrdering" data='branch_name' orderby="none">Cabang <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='created_by' orderby="none">Dibuat Oleh <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
-            <th class="onOrdering" data='expired_date' orderby="none">Tanggal Kadaluwarsa <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='expired_date' orderby="none">Tanggal Kedaluwarsa <span class="fa fa-sort"></span></th>
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>

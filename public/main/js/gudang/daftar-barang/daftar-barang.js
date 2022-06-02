@@ -59,8 +59,7 @@ $(document).ready(function() {
       autoclose: true,
       clearBtn: true,
       format: 'dd/mm/yyyy',
-      todayHighlight: true,
-      startDate: new Date()
+      todayHighlight: true
       }).on('changeDate', function(e) {
         getTanggalKadaluwarsa = e.format();
         validationForm();
@@ -372,7 +371,7 @@ $(document).ready(function() {
         if (getData.length) {
           $.each(getData, function(idx, v) {
             listDaftarBarang += `<tr>
-              <td>${++idx}</td>
+              <td class="${v.diff_expired_days < 60 ? 'expired-date' : ''}">${++idx}</td>
               <td class="${v.diff_item < 0 ? 'item-outstock' : ''}">${v.item_name}</td>
               <td>${v.total_item}</td>
               <td>${v.unit_name}</td>
@@ -380,7 +379,7 @@ $(document).ready(function() {
               <td>${v.branch_name}</td>
               <td>${v.created_by}</td>
               <td>${v.created_at}</td>
-              <td class="${v.diff_expired_days < 60 ? 'expired-date' : ''}">${v.expired_date}</td>`
+              <td>${v.expired_date}</td>`
               + ((role.toLowerCase() != 'admin') ? `` : `<td>
                 <button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
                 <button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
@@ -510,12 +509,6 @@ $(document).ready(function() {
 		} else { 
 			$('#tanggalKadaluwarsaErr1').text(''); isValidTanggalKadaluwarsa = true;
 		}
-
-    // if (new Date($('#tanggalKadaluwarsa').datepicker('getDate')) <= new Date()) {
-    //   $('#tanggalKadaluwarsaErr1').text('Tanggal kedaluwarsa yang di input harus lebih dari hari ini'); isValidTanggalKadaluwarsa = false;
-    // } else {
-    //   $('#tanggalKadaluwarsaErr1').text(''); isValidTanggalKadaluwarsa = true;
-    // }
 
     if (!$('#selectedSatuanBarang').val()) {
       $('#satuanBarangErr1').text('Satuan barang harus di isi'); isValidSelectedSatuanBarang = false;
