@@ -37,7 +37,7 @@ class DaftarBarangController extends Controller
                 'unit_item.unit_name',
                 'category_item.id as category_item_id',
                 'category_item.category_name',
-                DB::raw('(CASE WHEN list_of_items.expired_date = "0000-00-00" THEN "" ELSE DATE_FORMAT(list_of_items.created_at, "%d/%m/%Y") END) as expired_date'),
+                DB::raw('(CASE WHEN list_of_items.expired_date = "0000-00-00" THEN "" ELSE DATE_FORMAT(list_of_items.expired_date, "%d/%m/%Y") END) as expired_date'),
                 DB::raw('(CASE WHEN list_of_items.expired_date = "0000-00-00" THEN 60 ELSE list_of_items.diff_expired_days END)+0 as diff_expired_days'),
                 'branches.id as branch_id',
                 'branches.branch_name',
