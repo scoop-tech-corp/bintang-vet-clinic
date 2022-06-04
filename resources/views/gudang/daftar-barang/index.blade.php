@@ -28,11 +28,12 @@
             <th class="onOrdering" data='branch_name' orderby="none">Cabang <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='created_by' orderby="none">Dibuat Oleh <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='expired_date' orderby="none">Tanggal Kedaluwarsa <span class="fa fa-sort"></span></th>
             <th class="columnAction">Aksi</th>
           </tr>
         </thead>
         <tbody id="list-daftar-barang">
-          <tr class="text-center"><td colspan="9">Tidak ada data.</td></tr>
+          <tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>
         </tbody>
       </table>
 
@@ -52,6 +53,7 @@
 @endsection
 @section('css-content')
   <link rel="stylesheet" type='text/css' href="{{ asset('main/css/daftar-barang.css') }}">
+  <link rel="stylesheet" href="{{ asset('bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
 @endsection
 @section('script-content')
   <script src="{{ asset('plugins/jquery.ui.widget.js') }}"></script>
@@ -61,5 +63,6 @@
   <script src="{{ asset('plugins/jquery.fileupload-process.js') }}"></script>
   <script src="{{ asset('plugins/jquery.fileupload-validate.js') }}"></script>
   <script src="{{ asset('main/js/gudang/daftar-barang/daftar-barang.js') }}"></script>
+  <script src="{{ asset('bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
 @endsection
 @section('vue-content')@endsection

@@ -12,7 +12,7 @@ class DaftarBarang implements ShouldAutoSize, WithHeadings, WithTitle
     public function headings(): array
     {
         return [
-            ['Nama Barang', 'Jumlah Barang', 'Kode Satuan Barang', 'Kode Kategori Barang', 'Kode Cabang Barang']
+            ['Nama Barang', 'Jumlah Barang', 'Limit Barang', 'Tanggal Kedaluwarsa Barang (dd/mm/yyyy)', 'Kode Satuan Barang', 'Kode Kategori Barang', 'Kode Cabang Barang'],
         ];
     }
 

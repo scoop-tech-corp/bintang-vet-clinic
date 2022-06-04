@@ -2,19 +2,22 @@
 
 namespace App\Imports;
 
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use App\Imports\DaftarBarangImport;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class MultipleSheetImportDaftarBarang implements WithMultipleSheets
 {
-    /**
-     * @param Collection $collection
-     */
+    protected $id;
+
+    public function __construct($id)
+    {
+        $this->id = $id;
+    }
+
     public function sheets(): array
     {
         return [
-            0 => new DaftarBarangImport(),
+            0 => new DaftarBarangImport($this->id),
         ];
     }
 }

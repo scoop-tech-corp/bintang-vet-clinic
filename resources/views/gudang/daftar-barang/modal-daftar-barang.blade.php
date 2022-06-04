@@ -39,6 +39,21 @@
 							<div id="cabangErr1" class="validate-error"></div>
 						</div>
 						<div class="form-group">
+							<label for="limitBarang">Limit Barang</label>
+							<input id="limitBarang" type="number" class="form-control" placeholder="Masukan Limit Barang">
+							<div id="limitBarangErr1" class="validate-error"></div>
+						</div>
+						<div class="form-group">
+							<label for="tanggalKedaluwarsa">Tanggal Kedaluwarsa</label>
+							<div class="input-group date">
+                <div class="input-group-addon">
+                  <i class="fa fa-calendar"></i>
+                </div>
+                <input type="text" class="form-control" id="tanggalKadaluwarsa" placeholder="dd/mm/yyyy" autocomplete="off">
+              </div>
+							<div id="tanggalKadaluwarsaErr1" class="validate-error"></div>
+						</div>
+						<div class="form-group">
 							<div id="beErr" class="validate-error"></div>
 						</div>
 					</div>
