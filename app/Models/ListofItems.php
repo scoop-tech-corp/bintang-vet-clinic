@@ -13,9 +13,13 @@ class ListofItems extends Model
     protected $guarded = ['id'];
 
     protected $fillable = ['item_name',
-    'total_item',
-    'unit_item_id',
-    'category_item_id',
-    'branch_id',
-    'user_id'];
+        'total_item',
+        'unit_item_id',
+        'category_item_id',
+        'branch_id',
+        'user_id',
+        'limit_item',
+        'expired_date',
+        'diff_expired_days',
+        'diff_item'];
 }

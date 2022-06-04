@@ -402,9 +402,8 @@ class HargaBarangController extends Controller
         $price_items->isDeleted = true;
         $price_items->deleted_by = $request->user()->fullname;
         $price_items->deleted_at = \Carbon\Carbon::now();
-        $price_items->save();
-
-        //$price_items->delete();
+        // $price_items->save();
+        $price_items->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Data',
