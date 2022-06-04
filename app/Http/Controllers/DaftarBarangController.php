@@ -70,8 +70,9 @@ class DaftarBarangController extends Controller
             $item = $item->orderBy($request->column, $request->orderby);
         }
 
-        $item = $item->orderBy('list_of_items.id', 'desc')
-            ->orderBy('diff_item', 'asc');
+        $item = $item->orderByRaw('diff_item !=0 DESC')
+            ->orderByRaw('diff_expired_days !=0 DESC')
+            ->orderBy('list_of_items.id', 'desc');
 
         $offset = ($page - 1) * $items_per_page;
 
