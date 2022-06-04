@@ -92,6 +92,82 @@ class DaftarBarangController extends Controller
 
     }
 
+    public function index_limit(Request $request)
+    {
+        $items_per_page = 50;
+
+        $page = $request->page;
+
+        $item = DB::table('list_of_items')
+            ->join('users', 'list_of_items.user_id', '=', 'users.id')
+            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
+            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
+            ->select('list_of_items.id',
+                'list_of_items.item_name',
+                DB::raw("TRIM(list_of_items.total_item)+0 as total_item"),
+                DB::raw("TRIM(list_of_items.limit_item)+0 as limit_item"),
+                DB::raw("TRIM(list_of_items.diff_item)+0 as diff_item"),
+                'unit_item.id as unit_item_id',
+                'unit_item.unit_name',
+                'category_item.id as category_item_id',
+                'category_item.category_name',
+                DB::raw('(CASE WHEN list_of_items.expired_date = "0000-00-00" THEN "" ELSE DATE_FORMAT(list_of_items.expired_date, "%d/%m/%Y") END) as expired_date'),
+                DB::raw('(CASE WHEN list_of_items.expired_date = "0000-00-00" THEN 60 ELSE list_of_items.diff_expired_days END)+0 as diff_expired_days'),
+                'branches.id as branch_id',
+                'branches.branch_name',
+                'users.id as user_id',
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
+            ->where('list_of_items.isDeleted', '=', 0)
+            ->where('list_of_items.diff_item', '<', 0)
+            ->Orwhere('list_of_items.diff_expired_days', '<', 0);
+
+        if ($request->keyword) {
+            $res = $this->Search($request);
+
+            if ($res) {
+                $item = $item->where($res, 'like', '%' . $request->keyword . '%');
+            } else {
+                $data = [];
+                return response()->json(['total_paging' => 0,
+                    'data' => $data], 200);
+            }
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->orderby) {
+            $item = $item->orderBy($request->column, $request->orderby);
+        }
+
+        $item = $item->orderByRaw('diff_item !=0 DESC')
+            ->orderByRaw('diff_expired_days !=0 DESC')
+            ->orderBy('list_of_items.id', 'desc');
+
+        $offset = ($page - 1) * $items_per_page;
+
+        $count_data = $item->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $item = $item->offset(0)->limit($items_per_page)->get();
+        } else {
+            $item = $item->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $item], 200);
+    }
+
     private function Search($request)
     {
         $temp_column = '';
