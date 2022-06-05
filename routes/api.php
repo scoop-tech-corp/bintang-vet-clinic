@@ -217,6 +217,12 @@ Route::group(['middleware' => ['api']], function () {
         Route::delete('penggajian', 'PenggajianController@delete');
 
         Route::get('penggajian/generate', 'PenggajianController@generate');
+
+        //pengeluaran
+        Route::get('pengeluaran', 'PengeluaranController@index');
+        Route::post('pengeluaran', 'PengeluaranController@create');
+        Route::put('pengeluaran', 'PengeluaranController@update');
+        Route::delete('pengeluaran', 'PengeluaranController@delete');
     });
 });
 
