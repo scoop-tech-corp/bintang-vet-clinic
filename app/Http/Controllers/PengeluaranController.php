@@ -42,9 +42,9 @@ class PengeluaranController extends Controller
             if ($res) {
                 $expenses = $expenses->where($res, 'like', '%' . $request->keyword . '%');
             } else {
-                $data = [];
+                $expenses = [];
                 return response()->json(['total_paging' => 0,
-                    'data' => $data], 200);
+                    'data' => $expenses], 200);
             }
         }
 
@@ -68,6 +68,61 @@ class PengeluaranController extends Controller
         return response()->json(['total_paging' => ceil($total_paging),
             'data' => $expenses], 200);
 
+    }
+
+    private function Search($request)
+    {
+        $temp_column = '';
+
+        $data = DB::table('expenses as e')
+            ->join('users', 'e.user_id', '=', 'users.id')
+            ->join('users as user_spender', 'e.user_id_spender', '=', 'user_spender.id')
+            ->join('branches as b', 'b.id', '=', 'user_spender.branch_id')
+            ->select(
+                'user_spender.fullname',
+                'e.item_name'
+            );
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $data = $data->where('b.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('user_spender.fullname', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'user_spender.fullname';
+            return $temp_column;
+        }
+
+        //=============================
+
+        $data = DB::table('expenses as e')
+            ->join('users', 'e.user_id', '=', 'users.id')
+            ->join('users as user_spender', 'e.user_id_spender', '=', 'user_spender.id')
+            ->join('branches as b', 'b.id', '=', 'user_spender.branch_id')
+            ->select(
+                'user_spender.fullname',
+                'e.item_name'
+            );
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $data = $data->where('b.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('e.item_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'e.item_name';
+            return $temp_column;
+        }
     }
 
     public function create(Request $request)
@@ -111,6 +166,7 @@ class PengeluaranController extends Controller
                 'item_name' => $item['item_name'],
                 'quantity' => $item['quantity'],
                 'amount' => $item['amount'],
+                'user_id' => $request->user()->id,
                 'amount_overall' => $item['amount_overall'],
             ]);
 
@@ -158,6 +214,9 @@ class PengeluaranController extends Controller
         $expense->quantity = $request->quantity;
         $expense->amount = $request->amount;
         $expense->amount_overall = $request->amount_overall;
+
+        $expense->user_update_id = $request->user()->id;
+        $expense->updated_at = Carbon::now();
 
         $expense->save();
 
