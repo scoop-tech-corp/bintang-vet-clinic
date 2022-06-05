@@ -12,5 +12,5 @@ class Expenses extends Model
 
     protected $guarded = ['id'];
 
-    protected $fillable = ['date_spend', 'user_id_spender', 'item_name', 'quantity', 'amount', 'amount_overall'];
+    protected $fillable = ['date_spend', 'user_id_spender', 'item_name', 'quantity', 'amount', 'amount_overall', 'user_id', 'user_update_id'];
 }
