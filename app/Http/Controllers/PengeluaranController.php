@@ -101,9 +101,9 @@ class PengeluaranController extends Controller
 
         // return $tmp_items;
 
-        // $items = json_decode($tmp_items, true);
+        $items = json_decode($tmp_items, true);
 
-        foreach ($tmp_items as $item) {
+        foreach ($items as $item) {
 
             $expense = Expenses::create([
                 'date_spend' => Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->date_spend)->format('Y/m/d')),
