@@ -1,5 +1,5 @@
 .menuCabang, .menuUser, .menuPasien, .menuPendaftaran, .menuDokter, .menuPeriksa,
-.menuTindakan, .menuGudang, .menuPembayaran, .menuKeuangan, .menuKunjungan, .menuPenggajian {
+.menuTindakan, .menuGudang, .menuPembayaran, .menuKeuangan, .menuKunjungan, .menuPenggajian, .menuPengeluaran {
 	display: none;
 }
 

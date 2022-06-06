@@ -74,6 +74,7 @@
 			</li>
 			<li class="menuPembayaran"><a href="{{ url('/pembayaran') }}"><i class="fa fa-money" aria-hidden="true"></i> <span>Pembayaran</span></a></li>
       <li class="menuPenggajian"><a href="{{ url('/penggajian') }}"><i class="fa fa-dollar" aria-hidden="true"></i> <span>Penggajian</span></a></li>
+			<li class="menuPengeluaran"><a href="{{ url('/pengeluaran') }}"><i class="fa fa-dollar" aria-hidden="true"></i> <span>Pengeluaran</span></a></li>
 			<li class="treeview menuKeuangan">
 				<a>
 					<i class="fa fa-file-text" aria-hidden="true"></i>
