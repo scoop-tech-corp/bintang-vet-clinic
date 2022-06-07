@@ -50,7 +50,7 @@
       </div>
     </div>
 
-    <div class="col-md-12 pasien">
+    <div class="col-md-12 daftar-barang-limit-expired">
       <div class="box box-info" id="daftar-barang-limit-expired-app">
         <div class="box-header ">
           <h3 class="box-title">Daftar barang limit dan expired</h3>
