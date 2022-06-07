@@ -70,9 +70,9 @@ class DaftarBarangController extends Controller
             $item = $item->orderBy($request->column, $request->orderby);
         }
 
-        $item = $item->orderByRaw('diff_item !=0 DESC')
-            ->orderByRaw('diff_expired_days !=0 DESC')
-            ->orderBy('list_of_items.id', 'desc');
+        $item = $item->orderBy('list_of_items.diff_item', 'ASC')
+            ->orderBy('list_of_items.diff_expired_days', 'ASC')
+            ->orderBy('list_of_items.id', 'DESC');
 
         $offset = ($page - 1) * $items_per_page;
 
@@ -136,10 +136,12 @@ class DaftarBarangController extends Controller
         }
 
         if ($request->branch_id && $request->user()->role == 'admin') {
+
             $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
         }
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            info($request->user()->branch_id);
             $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
         }
 
@@ -147,9 +149,9 @@ class DaftarBarangController extends Controller
             $item = $item->orderBy($request->column, $request->orderby);
         }
 
-        $item = $item->orderByRaw('diff_item !=0 DESC')
-            ->orderByRaw('diff_expired_days !=0 DESC')
-            ->orderBy('list_of_items.id', 'desc');
+        $item = $item->orderBy('list_of_items.diff_item', 'ASC')
+            ->orderBy('list_of_items.diff_expired_days', 'ASC')
+            ->orderBy('list_of_items.id', 'DESC');
 
         $offset = ($page - 1) * $items_per_page;
 
