@@ -162,6 +162,10 @@ Route::get('/penggajian', function () {
 	return view('penggajian.index');
 });
 
+Route::get('/pengeluaran', function () {
+	return view('pengeluaran.index');
+});
+
 Route::get('pembayaran/print/{check_up_result_id}/{service_payment}/{item_payment}', 'PembayaranController@print_pdf');
 
 Route::get('penggajian/generate/{id}', 'PenggajianController@generate');

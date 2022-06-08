@@ -46,6 +46,7 @@ $(document).ready(function() {
       $('.menuKeuangan').show(); $('.menuKunjungan').show();
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
+      $('.menuPengeluaran').show();
     } else if (role === 'resepsionis') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();

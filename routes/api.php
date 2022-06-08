@@ -66,6 +66,8 @@ Route::group(['middleware' => ['api']], function () {
         Route::delete('satuan-barang', 'SatuanBarangController@delete');
 
         //daftar barang
+        Route::get('daftar-barang-batas', 'DaftarBarangController@index_limit');
+
         Route::get('daftar-barang', 'DaftarBarangController@index');
         Route::post('daftar-barang', 'DaftarBarangController@create');
         Route::put('daftar-barang', 'DaftarBarangController@update');
@@ -215,6 +217,12 @@ Route::group(['middleware' => ['api']], function () {
         Route::delete('penggajian', 'PenggajianController@delete');
 
         Route::get('penggajian/generate', 'PenggajianController@generate');
+
+        //pengeluaran
+        Route::get('pengeluaran', 'PengeluaranController@index');
+        Route::post('pengeluaran', 'PengeluaranController@create');
+        Route::put('pengeluaran', 'PengeluaranController@update');
+        Route::delete('pengeluaran', 'PengeluaranController@delete');
     });
 });
 

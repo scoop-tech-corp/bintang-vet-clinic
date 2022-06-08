@@ -50,6 +50,45 @@
       </div>
     </div>
 
+    <div class="col-md-12 daftar-barang-limit-expired">
+      <div class="box box-info" id="daftar-barang-limit-expired-app">
+        <div class="box-header ">
+          <h3 class="box-title">Daftar barang limit dan expired</h3>
+          <div class="inner-box-title">
+            <div class="section-left-box-title"></div>
+            <div class="section-right-box-title">
+            </div>
+          </div>
+        </div>
+
+        <div class="box-body">
+          <div class="table-responsive">
+            <table class="table table-striped text-nowrap">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th class="onOrdering" data='item_name' orderby="none">Nama Barang <span class="fa fa-sort"></span></th>
+                  <th class="onOrdering" data='total_item' orderby="none">Jumlah <span class="fa fa-sort"></span></th>
+                  <th class="onOrdering" data='unit_name' orderby="none">Satuan <span class="fa fa-sort"></span></th>
+                  <th class="onOrdering" data='category_name' orderby="none">Kategori <span class="fa fa-sort"></span></th>
+                  <th class="onOrdering" data='branch_name' orderby="none">Cabang <span class="fa fa-sort"></span></th>
+                  <th class="onOrdering" data='created_by' orderby="none">Dibuat oleh <span class="fa fa-sort"></span></th>
+                  <th class="onOrdering" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
+                  <th class="onOrdering" data='expired_date' orderby="none">Tanggal kedaluwarsa <span class="fa fa-sort"></span></th>
+                </tr>
+              </thead>
+              <tbody id="list-daftar-barang-limit">
+                <tr class="text-center"><td colspan="9">Tidak ada data.</td></tr>
+              </tbody>
+            </table>
+
+            <ul class="pagination pagination-sm m-t-10px pull-left"></ul>
+          </div>
+        </div>
+      </div>
+      <!-- /.box-body -->
+    </div>
+
   </div>
 @endsection
 
