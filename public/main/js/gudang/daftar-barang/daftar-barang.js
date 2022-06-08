@@ -410,6 +410,7 @@ $(document).ready(function() {
           $('#selectedCabang').val(getObj.branch_id); $('#selectedCabang').trigger('change');
 
           const dateArr = getObj.expired_date.split('/');
+          getTanggalKadaluwarsa = getObj.expired_date;
           $('#tanggalKadaluwarsa').datepicker('update', new Date(parseFloat(dateArr[2]), parseFloat(dateArr[1])-1, parseFloat(dateArr[0])));
         });
 
