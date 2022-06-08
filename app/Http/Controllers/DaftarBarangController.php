@@ -120,8 +120,14 @@ class DaftarBarangController extends Controller
                 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
             ->where('list_of_items.isDeleted', '=', 0)
-            ->where('list_of_items.diff_item', '<', 0)
-            ->Orwhere('list_of_items.diff_expired_days', '<', 0);
+            ->where('list_of_items.diff_item', '<', 0);
+
+        // $item = $item->whereIn('list_of_items.diff_expired_days', function ($item) {
+        //     $item->from('list_of_items')
+        //         ->select('list_of_items.diff_expired_days')
+        //         ->where('list_of_items.diff_expired_days', '<', 0);
+        // });
+        // ->where('list_of_items.diff_expired_days', '<', 0);
 
         if ($request->keyword) {
             $res = $this->Search($request);
