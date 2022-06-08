@@ -139,6 +139,24 @@ $(document).ready(function() {
       keyword: '',
       branchId: ''
     };
+
+    if (role != 'admin') {
+      $('.section-right-box-title').append(`
+        <div class="input-search-section m-r-10px">
+          <input type="text" class="form-control" placeholder="cari..">
+          <i class="fa fa-search" aria-hidden="true"></i>
+        </div>
+      `);
+    } else {
+      $('.section-right-box-title').append(`
+        <div class="input-search-section m-r-10px">
+          <input type="text" class="form-control" placeholder="cari..">
+          <i class="fa fa-search" aria-hidden="true"></i>
+        </div>
+        <select id="filterCabangDaftarBarangLimit" style="width: 50%"></select>
+      `);
+    }
+
     $('.input-search-section .fa').click(function() {
       paramUrlSetup.keyword = $('.input-search-section input').val();
       loadDaftarBarangLimit(paramUrlSetup);
