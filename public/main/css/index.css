@@ -1,4 +1,14 @@
 
+.item-outstock {
+  background-color: red;
+  color: #ffffff;
+}
+
+.expired-date {
+  background-color: cornflowerblue;
+  color: #ffffff;
+}
+
 .rawat-inap .box-tools {
   display: flex;
 }
@@ -15,7 +25,7 @@
 
   .rawat-inap .box-tools {
     display: block;
-  }  
+  }
 
   .rawat-inap-datepicker {
     width: unset;

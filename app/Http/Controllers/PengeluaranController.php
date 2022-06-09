@@ -48,8 +48,14 @@ class PengeluaranController extends Controller
             }
         }
 
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $expenses = $expenses->where('user_spender.branch_id', '=', $request->branch_id);
+        }
+
         if ($request->orderby) {
             $expenses = $expenses->orderBy($request->column, $request->orderby);
+        } else {
+            $expenses = $expenses->orderBy('e.id', 'desc');
         }
 
         $offset = ($page - 1) * $items_per_page;
