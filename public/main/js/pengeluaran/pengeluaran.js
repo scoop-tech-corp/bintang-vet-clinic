@@ -161,7 +161,6 @@ $(document).ready(function() {
 		});
 
 		processAppendListFinalPengeluaran();
-		console.log('listFinalPengeluaran', listFinalPengeluaran);
 
 		// reset
 		$('#namaItem').val(null); $('#jumlah').val(null); $('#nominal').val(null);
@@ -303,7 +302,7 @@ $(document).ready(function() {
 				$('#list-pengeluaran tr').remove();
 
         if (getData.length) {
-          $.each(data, function(idx, v) {
+          $.each(getData, function(idx, v) {
             listPengeluaran += `<tr>
 							<td>${++idx}</td>
 							<td>${v.date}</td>
