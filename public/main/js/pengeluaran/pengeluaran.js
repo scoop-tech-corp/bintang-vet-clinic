@@ -161,7 +161,6 @@ $(document).ready(function() {
 		});
 
 		processAppendListFinalPengeluaran();
-		console.log('listFinalPengeluaran', listFinalPengeluaran);
 
 		// reset
 		$('#namaItem').val(null); $('#jumlah').val(null); $('#nominal').val(null);
