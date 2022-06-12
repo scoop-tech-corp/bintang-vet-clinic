@@ -362,6 +362,23 @@ class LaporanKeuanganHarianController extends Controller
 
         $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
 
+        $expenses = DB::table('expenses as e')
+            ->join('users as u', 'e.user_id_spender', '=', 'u.id')
+            ->join('branches as b', 'u.branch_id', '=', 'b.id')
+            ->select(DB::raw("TRIM(SUM(e.amount_overall))+0 as amount_overall"));
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $expenses = $expenses->where('b.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
+        }
+
+        $expenses = $expenses->first();
+
+        $total_expenses = $expenses->amount_overall;
+
+        $net_profit = $doctor_fee - $total_expenses;
+
         return response()->json([
             'data' => $data,
             'price_overall' => $price_overall,
@@ -369,7 +386,9 @@ class LaporanKeuanganHarianController extends Controller
             'doctor_fee' => $doctor_fee,
             'petshop_fee' => $petshop_fee,
             'amount_discount' => $amount_discount,
-            'total_paging' => ceil($total_paging)
+            'expenses' => $total_expenses,
+            'net_profit' => $net_profit,
+            'total_paging' => ceil($total_paging),
         ], 200);
     }
 
