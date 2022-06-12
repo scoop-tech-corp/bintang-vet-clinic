@@ -373,6 +373,10 @@ class LaporanKeuanganHarianController extends Controller
             $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
         }
 
+        if ($request->date) {
+          $expenses = $expenses->where(DB::raw('DATE(e.updated_at)'), '=', $request->date);
+      }
+
         $expenses = $expenses->first();
 
         $total_expenses = $expenses->amount_overall;
