@@ -365,7 +365,7 @@ class LaporanKeuanganHarianController extends Controller
         $expenses = DB::table('expenses as e')
             ->join('users as u', 'e.user_id_spender', '=', 'u.id')
             ->join('branches as b', 'u.branch_id', '=', 'b.id')
-            ->select(DB::raw("TRIM(SUM(e.amount_overall))+0 as amount_overall"));
+            ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $expenses = $expenses->where('b.id', '=', $request->branch_id);
@@ -374,12 +374,17 @@ class LaporanKeuanganHarianController extends Controller
         }
 
         if ($request->date) {
-          $expenses = $expenses->where(DB::raw('DATE(e.updated_at)'), '=', $request->date);
-      }
+            $expenses = $expenses->where(DB::raw('DATE(e.updated_at)'), '=', $request->date);
+        }
 
         $expenses = $expenses->first();
 
-        $total_expenses = $expenses->amount_overall;
+        $total_expenses = 0;
+
+        if (!is_null($expenses->amount_overall)) {
+
+            $total_expenses = $expenses->amount_overall;
+        }
 
         $net_profit = $doctor_fee - $total_expenses;
 
