@@ -167,12 +167,17 @@ $(document).ready(function() {
 				const docterFee    = (resp.doctor_fee > -1) ? resp.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 				const petshopFee   = (resp.petshop_fee > -1) ? resp.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
         const amountDiscount   = (resp.amount_discount > -1) ? resp.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+        const expenses   = (resp.expenses > -1) ? resp.expenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+				const netProfit   = (resp.net_profit > -1) ? resp.net_profit.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
 
         $('#total-keseluruhan-txt').text(`Rp. ${priceOverall}`);
         $('#harga-modal-txt').text(`Rp. ${capitalPrice}`);
         $('#fee-dokter-txt').text(`Rp. ${docterFee}`);
         $('#nominal-diskon-txt').text(`Rp. ${amountDiscount}`);
         $('#fee-petshop-txt').text(`Rp. ${petshopFee}`);
+        $('#pengeluaran-txt').text(`Rp. ${expenses}`);
+        $('#fee-bersih-txt').text(`Rp. ${netProfit}`);
+
 
         $('.openDetail').click(function() {
 					window.location.href = $('.baseUrl').val() + `/laporan-keuangan-mingguan/detail/${$(this).val()}?dateFrom=${paramUrlSetup.date_from}&dateTo=${paramUrlSetup.date_to}`;
