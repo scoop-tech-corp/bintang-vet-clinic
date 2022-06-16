@@ -374,7 +374,7 @@ class LaporanKeuanganHarianController extends Controller
         }
 
         if ($request->date) {
-            $expenses = $expenses->where(DB::raw('DATE(e.updated_at)'), '=', $request->date);
+            $expenses = $expenses->where(DB::raw('DATE(e.date_spend)'), '=', $request->date);
         }
 
         $expenses = $expenses->first();
