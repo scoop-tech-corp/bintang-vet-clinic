@@ -41,7 +41,7 @@ class DataRekapDaftarBarang implements FromCollection, ShouldAutoSize, WithHeadi
                 DB::raw("TRIM(list_of_items.limit_item)+0 as limit_item"),
                 'unit_item.unit_name',
                 'category_item.category_name',
-                DB::raw("DATE_FORMAT(list_of_items.expired_date, '%d %b %Y') as expired_date"))
+                DB::raw("DATE_FORMAT(list_of_items.expired_date, '%d %b %Y') as expired_date"),
                 'branches.branch_name',
                 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
