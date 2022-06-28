@@ -137,7 +137,7 @@ class LaporanKeuanganMingguanController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"));
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
@@ -179,7 +179,7 @@ class LaporanKeuanganMingguanController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price"));
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
@@ -221,7 +221,7 @@ class LaporanKeuanganMingguanController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"));
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
@@ -263,7 +263,7 @@ class LaporanKeuanganMingguanController extends Controller
             ->join('users', 'lop.user_id', '=', 'users.id')
             ->join('branches', 'users.branch_id', '=', 'branches.id')
             ->select(
-              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee"));
+                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee"));
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
@@ -344,6 +344,32 @@ class LaporanKeuanganMingguanController extends Controller
 
         $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
 
+        $expenses = DB::table('expenses as e')
+            ->join('users as u', 'e.user_id_spender', '=', 'u.id')
+            ->join('branches as b', 'u.branch_id', '=', 'b.id')
+            ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $expenses = $expenses->where('b.id', '=', $request->branch_id);
+        } elseif ($request->user()->role == 'dokter') {
+            $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->date_from && $request->date_to) {
+            $expenses = $expenses->whereBetween(DB::raw('DATE(e.date_spend)'), [$request->date_from, $request->date_to]);
+        }
+
+        $expenses = $expenses->first();
+
+        $total_expenses = 0;
+
+        if (!is_null($expenses->amount_overall)) {
+
+            $total_expenses = $expenses->amount_overall;
+        }
+
+        $net_profit = $doctor_fee - $total_expenses;
+
         return response()->json([
             'data' => $data,
             'price_overall' => $price_overall,
@@ -351,6 +377,9 @@ class LaporanKeuanganMingguanController extends Controller
             'doctor_fee' => $doctor_fee,
             'petshop_fee' => $petshop_fee,
             'amount_discount' => $amount_discount,
+            'expenses' => $total_expenses,
+            'net_profit' => $net_profit,
+            'total_paging' => ceil($total_paging),
         ], 200);
     }
 
