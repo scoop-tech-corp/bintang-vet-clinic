@@ -147,7 +147,6 @@ class DaftarBarangController extends Controller
         }
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            info($request->user()->branch_id);
             $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
         }
 
@@ -611,8 +610,6 @@ class DaftarBarangController extends Controller
         $this->validate($request, [
             'file' => 'required|mimes:xls,xlsx',
         ]);
-
-        info($request->user()->id);
 
         $rows = Excel::toArray(new MultipleSheetImportDaftarBarang($request->user()->id), $request->file('file'));
         $result = $rows[0];
