@@ -24,26 +24,25 @@ $(document).ready(function () {
 
   const listFinalPengeluaran = [];
 
-  if (role.toLowerCase() != "admin") {
-    $(".columnAction").hide();
-  } else {
-    $(".section-left-box-title").append(
-      `<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>`
-    );
+  // if (role.toLowerCase() != "admin") {
+  //   $(".columnAction").hide();
+
+  if (role.toLowerCase() == "admin") {
     $(".section-right-box-title").append(
       `<select id="filterCabang" style="width: 50%"></select>`
     );
 
     $("#filterCabang").select2({ placeholder: "Cabang", allowClear: true });
-
-    // load karyawan
-    loadKaryawan();
-
-    // load cabang
-    loadCabang();
+     loadCabang();
   }
 
-  // load pengeluaran
+  $(".section-left-box-title").append(
+      `<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>`
+    );
+    
+
+    // load karyawan
+  loadKaryawan();
   loadPengeluaran();
 
   $(".input-search-section .fa").click(function () {
@@ -79,7 +78,7 @@ $(document).ready(function () {
 
   $("#nominal").mask("#.##0", { reverse: true, maxlength: false });
 
-  $("#tanggal")
+  $("#datepicker")
     .datepicker({
       autoclose: true,
       clearBtn: true,
@@ -206,19 +205,13 @@ $(document).ready(function () {
           `<tr>` +
           `<td>${no}</td>` +
           `<td>${dt.item_name}</td>` +
-          `<td>${
+          `<td>Rp ${
             typeof dt.amount == "number"
               ? dt.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
               : ""
           }</td>` +
           `<td>${dt.quantity}</td>` +
-          `<td>${
-            typeof dt.amount_overall == "number"
-              ? dt.amount_overall
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-              : ""
-          }</td>` +
+          `<td>Rp ${typeof(dt.amount_overall) == 'number' ? dt.amount_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>` +
           `<td>
 							<button type="button" class="btn btn-danger btnRemoveListFinalPengeluaran" value=${idx}>
 								<i class="fa fa-trash-o" aria-hidden="true"></i>
@@ -369,22 +362,22 @@ $(document).ready(function () {
 							<td>${v.fullname}</td>
 							<td>${v.item_name}</td>
 							<td>${v.quantity}</td>
-							<td>${v.amount}</td>
-							<td>${v.amount_overall}</td>
+							<td>Rp ${typeof(v.amount) == 'number' ? v.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
+							<td>Rp ${typeof(v.amount_overall) == 'number' ? v.amount_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
 							<td>${v.created_by}</td>
 							<td>${v.created_at}</td>
 							<td>
 								<button type="button" class="btn btn-warning openFormEdit" value=${
                   v.id
                 }><i class="fa fa-pencil" aria-hidden="true"></i></button>
-								<button type="button" class="btn btn-danger openFormDelete" value=${
+								<button type="button" class="btn btn-danger openFormDelete" ${role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${
                   v.id
                 }><i class="fa fa-trash-o" aria-hidden="true"></i></button>
 							</td>
             </tr>`;
           });
         } else {
-          listPengeluaran += `<tr class="text-center"><td colspan="7">Tidak ada data.</td></tr>`;
+          listPengeluaran += `<tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>`;
         }
         $("#list-pengeluaran").append(listPengeluaran);
 
@@ -402,6 +395,7 @@ $(document).ready(function () {
           getId = getObj.id;
 
           getDate = getObj.date_spend;
+          
           const dateArr = getObj.date_spend.split("/");
           $("#datepicker").datepicker(
             "update",
@@ -411,6 +405,7 @@ $(document).ready(function () {
               parseFloat(dateArr[0])
             )
           );
+          
           $("#selectedNamaUser").val(getObj.user_id_spender);
           $("#selectedNamaUser").trigger("change");
           $("#namaItem").val(getObj.item_name);
@@ -544,7 +539,7 @@ $(document).ready(function () {
         : dateNow.getMonth() + 1;
     getDate = tanggal + "/" + bulan + "/" + dateNow.getFullYear();
 
-    $("#tanggal").datepicker("update", new Date());
+    $("#datepicker").datepicker("update", new Date());
 
     $("#selectedNamaUser").val(null);
     $("#namaItem").val(null);
@@ -566,7 +561,7 @@ $(document).ready(function () {
   }
 
   function validationForm() {
-    if (!$("#tanggal").datepicker("getDate")) {
+    if (!$("#datepicker").datepicker("getDate")) {
       $("#tanggalErr1").text("Tanggal harus di isi");
       isValidTanggal = false;
     } else {
