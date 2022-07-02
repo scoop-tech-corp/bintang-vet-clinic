@@ -13,13 +13,6 @@ class PengeluaranController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
-
         $items_per_page = 50;
 
         $page = $request->page;
@@ -29,19 +22,18 @@ class PengeluaranController extends Controller
             ->join('users as user_spender', 'e.user_id_spender', '=', 'user_spender.id')
             ->select(
                 'e.id as id',
-                'e.date_spend',
+                DB::raw("DATE_FORMAT(e.date_spend, '%d/%m/%Y') as date_spend"),
                 'user_spender.fullname',
                 'e.user_id_spender',
                 'e.item_name',
                 'e.quantity',
-                'e.amount',
-                'e.amount_overall',
+                DB::raw("TRIM(e.amount)+0 as amount"),
+                DB::raw("TRIM(e.amount_overall)+0 as amount_overall"),
                 'users.fullname as created_by',
                 DB::raw("DATE_FORMAT(e.created_at, '%d %b %Y') as created_at"));
 
         if ($request->keyword) {
             $res = $this->Search($request);
-
             if ($res) {
                 $expenses = $expenses->where($res, 'like', '%' . $request->keyword . '%');
             } else {
@@ -53,6 +45,10 @@ class PengeluaranController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $expenses = $expenses->where('user_spender.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $expenses = $expenses->where('user_spender.id', '=', $request->user()->id);
         }
 
         if ($request->orderby) {
@@ -93,7 +89,7 @@ class PengeluaranController extends Controller
             );
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $data = $data->where('b.branch_id', '=', $request->user()->branch_id);
+            $data = $data->where('b.id', '=', $request->user()->branch_id);
         }
 
         if ($request->keyword) {
@@ -119,7 +115,7 @@ class PengeluaranController extends Controller
             );
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $data = $data->where('b.branch_id', '=', $request->user()->branch_id);
+            $data = $data->where('b.id', '=', $request->user()->branch_id);
         }
 
         if ($request->keyword) {
@@ -136,13 +132,6 @@ class PengeluaranController extends Controller
 
     public function create(Request $request)
     {
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
-
         $validate = Validator::make($request->all(), [
             'date_spend' => 'required|date_format:d/m/Y',
             'user_id_spender' => 'required|numeric',
@@ -162,8 +151,6 @@ class PengeluaranController extends Controller
         }
 
         $tmp_items = $request->items;
-
-        // return $tmp_items;
 
         $items = json_decode($tmp_items, true);
 
@@ -191,20 +178,11 @@ class PengeluaranController extends Controller
 
     public function update(Request $request)
     {
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
-
         $validate = Validator::make($request->all(), [
-            'date_spend' => 'required|date_format:d/m/Y',
             'user_id_spender' => 'required|numeric',
             'item_name' => 'required|string',
             'quantity' => 'required|numeric',
             'amount' => 'required|numeric',
-            'amount_overall' => 'required|numeric',
         ]);
 
         if ($validate->fails()) {
@@ -216,13 +194,22 @@ class PengeluaranController extends Controller
             ], 422);
         }
 
+        $date = "";
+        if (str_contains($request->date_spend, "/")) {
+
+            $date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->date_spend)->format('Y-m-d'));
+
+        } else {
+            $date = Carbon::parse(Carbon::createFromFormat('Y-m-d', $request->date_spend)->format('Y-m-d'));
+        }
+
         $expense = Expenses::find($request->id);
-        $expense->date_spend = Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->date_spend)->format('Y/m/d'));
+        $expense->date_spend = $date;
         $expense->user_id_spender = $request->user_id_spender;
         $expense->item_name = $request->item_name;
         $expense->quantity = $request->quantity;
         $expense->amount = $request->amount;
-        $expense->amount_overall = $request->amount_overall;
+        $expense->amount_overall = $request->amount * $request->quantity;
 
         $expense->user_update_id = $request->user()->id;
         $expense->updated_at = Carbon::now();

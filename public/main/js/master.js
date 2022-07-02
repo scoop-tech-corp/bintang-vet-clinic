@@ -52,12 +52,14 @@ $(document).ready(function() {
       $('.menuTindakan').show(); $('.menuPembayaran').show();
       $('.menuKunjungan').show(); $('.menuGudang').show();
       $('.menuPenggajian').show();
+      $('.menuPengeluaran').show();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
       $('.menuKunjungan').show(); $('.menuPeriksa').show();
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
+      $('.menuPengeluaran').show();
     }
   }
 

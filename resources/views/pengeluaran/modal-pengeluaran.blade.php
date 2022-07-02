@@ -16,7 +16,7 @@
                 <div class="input-group-addon">
                   <i class="fa fa-calendar"></i>
                 </div>
-                <input type="text" class="form-control" id="tanggal" placeholder="dd/mm/yyyy" autocomplete="off">
+                <input type="text" class="form-control" id="datepicker" placeholder="dd/mm/yyyy" autocomplete="off">
               </div>
 							<div id="tanggalErr1" class="validate-error"></div>
 						</div>
