@@ -142,13 +142,6 @@ class UserController extends Controller
 
     public function index(Request $request)
     {
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
-
         if ($request->keyword) {
 
             $res = $this->Search($request);
@@ -159,6 +152,10 @@ class UserController extends Controller
                     , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
                     DB::raw("DATE_FORMAT(users.created_at, '%d %b %Y') as created_at"))
                 ->where('users.isDeleted', '=', 0);
+
+            if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                $user = $user->where('users.id','=',$request->user()->id);
+            }
 
             if ($res) {
                 $user = $user->where($res, 'like', '%' . $request->keyword . '%');
@@ -189,6 +186,10 @@ class UserController extends Controller
                     , 'users.role', 'users.phone_number', 'branches.branch_name', 'users.status', 'users.created_by',
                     DB::raw("DATE_FORMAT(users.created_at, '%d %b %Y') as created_at"))
                 ->where('users.isDeleted', '=', 0);
+
+                if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+                    $user = $user->where('users.id','=',$request->user()->id);
+                }
 
             if ($request->branch_id) {
                 $user = $user->where('users.branch_id', '=', $request->branch_id);
