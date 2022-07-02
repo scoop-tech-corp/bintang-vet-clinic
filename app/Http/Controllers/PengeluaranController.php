@@ -27,8 +27,11 @@ class PengeluaranController extends Controller
         $expenses = DB::table('expenses as e')
             ->join('users', 'e.user_id', '=', 'users.id')
             ->join('users as user_spender', 'e.user_id_spender', '=', 'user_spender.id')
-            ->select('e.date_spend',
+            ->select(
+                'e.id as id',
+                'e.date_spend',
                 'user_spender.fullname',
+                'e.user_id_spender',
                 'e.item_name',
                 'e.quantity',
                 'e.amount',
