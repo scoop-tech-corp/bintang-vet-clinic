@@ -391,7 +391,7 @@ $(document).ready(function () {
         generatePagination(getCurrentPage, resp.total_paging);
 
         $(".openFormEdit").click(function () {
-          const getObj = data.find((x) => x.id == $(this).val());
+          const getObj = getData.find((x) => x.id == $(this).val());
           modalState = "edit";
           refreshForm();
           $(".modal-title").text("Edit Pengeluaran");
@@ -403,7 +403,7 @@ $(document).ready(function () {
 
           getDate = getObj.date_spend;
           const dateArr = getObj.date_spend.split("/");
-          $("#tanggal").datepicker(
+          $("#datepicker").datepicker(
             "update",
             new Date(
               parseFloat(dateArr[2]),
@@ -411,7 +411,6 @@ $(document).ready(function () {
               parseFloat(dateArr[0])
             )
           );
-
           $("#selectedNamaUser").val(getObj.user_id_spender);
           $("#selectedNamaUser").trigger("change");
           $("#namaItem").val(getObj.item_name);
