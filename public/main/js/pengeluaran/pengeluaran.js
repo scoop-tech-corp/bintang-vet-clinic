@@ -35,10 +35,12 @@ $(document).ready(function () {
     $("#filterCabang").select2({ placeholder: "Cabang", allowClear: true });
      loadCabang();
   }
-
-  $(".section-left-box-title").append(
+  
+  if (role.toLowerCase() == "admin" || role.toLowerCase() == "dokter") {
+    $(".section-left-box-title").append(
       `<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>`
     );
+  }
     
 
     // load karyawan

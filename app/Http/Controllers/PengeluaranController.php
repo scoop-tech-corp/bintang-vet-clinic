@@ -48,7 +48,7 @@ class PengeluaranController extends Controller
         }
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $expenses = $expenses->where('user_spender.id', '=', $request->user()->id);
+            $expenses = $expenses->where('user_spender.id', '=', $request->user()->branch_id);
         }
 
         if ($request->orderby) {
@@ -132,6 +132,13 @@ class PengeluaranController extends Controller
 
     public function create(Request $request)
     {
+        if ($request->user()->role == 'resepsionis') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
+
         $validate = Validator::make($request->all(), [
             'date_spend' => 'required|date_format:d/m/Y',
             'user_id_spender' => 'required|numeric',
