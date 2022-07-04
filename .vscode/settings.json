@@ -2,5 +2,6 @@
     "editor.tabSize": 2,
     "intelephense.diagnostics.undefinedMethods": false,
     "intelephense.diagnostics.undefinedTypes": false,
-    "intelephense.diagnostics.undefinedFunctions": false
+    "intelephense.diagnostics.undefinedFunctions": false,
+    "intelephense.diagnostics.undefinedVariables": false
 }
