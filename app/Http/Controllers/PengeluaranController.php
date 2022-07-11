@@ -20,6 +20,7 @@ class PengeluaranController extends Controller
         $expenses = DB::table('expenses as e')
             ->join('users', 'e.user_id', '=', 'users.id')
             ->join('users as user_spender', 'e.user_id_spender', '=', 'user_spender.id')
+            //->join('branches as b', 'user_spender.branch_id', '=', 'b.id')
             ->select(
                 'e.id as id',
                 DB::raw("DATE_FORMAT(e.date_spend, '%d/%m/%Y') as date_spend"),
@@ -48,7 +49,7 @@ class PengeluaranController extends Controller
         }
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $expenses = $expenses->where('user_spender.id', '=', $request->user()->branch_id);
+            $expenses = $expenses->where('user_spender.branch_id', '=', $request->user()->branch_id);
         }
 
         if ($request->orderby) {
