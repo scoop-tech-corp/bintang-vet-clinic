@@ -154,7 +154,7 @@ class UserController extends Controller
                 ->where('users.isDeleted', '=', 0);
 
             if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                $user = $user->where('users.id','=',$request->user()->id);
+                $user = $user->where('branches.id','=',$request->user()->branch_id);
             }
 
             if ($res) {
@@ -188,7 +188,7 @@ class UserController extends Controller
                 ->where('users.isDeleted', '=', 0);
 
                 if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-                    $user = $user->where('users.id','=',$request->user()->id);
+                    $user = $user->where('branches.id','=',$request->user()->branch_id);
                 }
 
             if ($request->branch_id) {

@@ -72,7 +72,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                     DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"),
                     DB::raw("TRIM(lopm.discount)+0 as discount"),
                     DB::raw("TRIM(lopm.amount_discount)+0 as amount_discount"),
-                    DB::raw("TRIM(pmg.doctor_fee - lopm.amount_discount)+0 as after_discount"),
+                    DB::raw("TRIM(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END - lopm.amount_discount)+0 as after_discount"),
                     'p.pet_name as pet_name',
                     DB::raw('(CASE WHEN p.owner_name = "" THEN owners.owner_name ELSE p.owner_name END) AS owner_name'),
                     'branches.id as branchId',
@@ -159,8 +159,32 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
             $array[] = $data;
         }
 
+        $expenses = DB::table('expenses as e')
+            ->join('users as u', 'e.user_id_spender', '=', 'u.id')
+            ->join('branches as b', 'u.branch_id', '=', 'b.id')
+            ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
+
+        if ($this->branch_id) {
+            $expenses = $expenses->where('b.id', '=', $this->branch_id);
+        }
+
+        if ($this->month && $this->year) {
+            $expenses = $expenses->where(DB::raw('MONTH(e.date_spend)'), '=', $this->month)
+            ->where(DB::raw('YEAR(e.date_spend)'), '=', $this->year);
+        }
+
+        $expenses = $expenses->first();
+
+        $total_expenses = 0;
+
+        if (!is_null($expenses->amount_overall)) {
+
+            $total_expenses = $expenses->amount_overall;
+        }
+
         return view('laporan-keuangan', [
             'data' => $array,
+            'expenses' => $total_expenses,
         ]);
     }
 
