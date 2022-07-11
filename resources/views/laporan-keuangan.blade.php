@@ -13,6 +13,7 @@
             <th style="text-align: center; border: 1px solid black;" width="16"><b>NOMINAL DISKON</b></th>
             <th style="text-align: center; border: 1px solid black;" width="26"><b>FEE DOKTER SETELAH DISKON</b></th>
             <th style="text-align: center; border: 1px solid black;" width="13"><b>TOTAL DOKTER</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="13"><b>PENGELUARAN</b></th>
             <th style="text-align: center; border: 1px solid black;" width="22"><b>METODE PEMBAYARAN</b></th>
         </tr>
     </thead>
@@ -149,6 +150,8 @@
                     </td>
                     <td style="text-align: right; border: 1px solid black;"></td>
 
+                    <td style="text-align: right; border: 1px solid black;"></td>
+
                     <td style="text-align: right; border: 1px solid black;">{{ $res_data->payment_name }}</td>
                 </tr>
 
@@ -231,6 +234,17 @@
                         @endphp
                         {{ $float }}
                         {{-- {{ number_format($total_capital + $total_doctor, 2, ',', '.') }} --}}
+                    </b>
+                </td>
+
+                <td style="text-align: right; border: 1px thick black;">
+                    <b>
+                        {{ $expenses }}
+                    </b>
+                </td>
+                <td style="text-align: right; border: 1px thick black;">
+                    <b>
+                        {{ $total_doctor_after_discount - $expenses }}
                     </b>
                 </td>
             </tr>
