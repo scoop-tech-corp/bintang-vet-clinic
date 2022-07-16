@@ -20,7 +20,7 @@ class PengeluaranController extends Controller
         $expenses = DB::table('expenses as e')
             ->join('users', 'e.user_id', '=', 'users.id')
             ->join('users as user_spender', 'e.user_id_spender', '=', 'user_spender.id')
-            //->join('branches as b', 'user_spender.branch_id', '=', 'b.id')
+        //->join('branches as b', 'user_spender.branch_id', '=', 'b.id')
             ->select(
                 'e.id as id',
                 DB::raw("DATE_FORMAT(e.date_spend, '%d/%m/%Y') as date_spend"),
@@ -133,13 +133,6 @@ class PengeluaranController extends Controller
 
     public function create(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
-
         $validate = Validator::make($request->all(), [
             'date_spend' => 'required|date_format:d/m/Y',
             'user_id_spender' => 'required|numeric',
