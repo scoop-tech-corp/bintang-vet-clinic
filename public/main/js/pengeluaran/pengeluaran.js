@@ -36,11 +36,9 @@ $(document).ready(function () {
      loadCabang();
   }
   
-  if (role.toLowerCase() == "admin" || role.toLowerCase() == "dokter") {
     $(".section-left-box-title").append(
       `<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>`
     );
-  }
     
 
     // load karyawan
