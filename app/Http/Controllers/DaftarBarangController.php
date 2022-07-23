@@ -637,18 +637,18 @@ class DaftarBarangController extends Controller
 
             //Carbon::parse(Carbon::createFromFormat('d/m/Y', $tmp_date->format('d/m/Y'))->format('d/m/Y'));
 
-            if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
-                return response()->json([
-                    'message' => 'The data was invalid.',
-                    'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
-                ], 422);
+            // if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
+            //     return response()->json([
+            //         'message' => 'The data was invalid.',
+            //         'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
+            //     ], 422);
 
-            } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
-                return response()->json([
-                    'message' => 'The data was invalid.',
-                    'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
-                ], 422);
-            }
+            // } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+            //     return response()->json([
+            //         'message' => 'The data was invalid.',
+            //         'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
+            //     ], 422);
+            // }
         }
 
         $file = $request->file('file');
