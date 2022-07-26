@@ -13,12 +13,12 @@ class LaporanKeuanganHarianController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $items_per_page = 50;
 
@@ -106,7 +106,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $data = $data->where('branchId', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $data = $data->where('branchId', '=', $request->user()->branch_id);
         }
 
@@ -150,7 +150,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -171,7 +171,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -195,7 +195,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $capital_price_item = $capital_price_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -216,7 +216,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $capital_price_service = $capital_price_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $capital_price_service = $capital_price_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -240,7 +240,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -261,7 +261,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -285,7 +285,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -306,7 +306,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -330,7 +330,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -351,7 +351,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
         }
 
@@ -369,7 +369,7 @@ class LaporanKeuanganHarianController extends Controller
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $expenses = $expenses->where('b.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
+        } elseif ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
         }
 
@@ -403,12 +403,12 @@ class LaporanKeuanganHarianController extends Controller
 
     public function detail(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $data = ListofPayments::find($request->id);
 
@@ -568,12 +568,12 @@ class LaporanKeuanganHarianController extends Controller
 
     public function download_excel(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         if ($request->user()->role == 'admin') {
             $branch = $request->branch_id;

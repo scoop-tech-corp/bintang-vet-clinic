@@ -53,6 +53,7 @@ $(document).ready(function() {
       $('.menuKunjungan').show(); $('.menuGudang').show();
       $('.menuPenggajian').show();
       $('.menuPengeluaran').show();
+      $('.menuKeuangan').show();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
