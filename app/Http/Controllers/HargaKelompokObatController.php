@@ -314,9 +314,14 @@ class HargaKelompokObatController extends Controller
 
             if ($check_branch > 0) {
 
+                $data_medicine_group = DB::table('price_medicine_groups as pmg')
+                    ->join('medicine_groups as mg', 'mg.id', 'pmg.medicine_group_id')
+                    ->where('medicine_group_id', '=', $key_result['kode_kelompok_obat'])
+                    ->first();
+
                 return response()->json([
                     'message' => 'The data was invalid.',
-                    'errors' => ['Data ' . $key_result['nama_kelompok'] . ' sudah ada!'],
+                    'errors' => ['Data ' . $data_medicine_group->group_name . ' sudah ada!'],
                 ], 422);
             }
         }
