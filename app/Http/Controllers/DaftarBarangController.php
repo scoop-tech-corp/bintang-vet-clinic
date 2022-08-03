@@ -629,11 +629,15 @@ class DaftarBarangController extends Controller
                 ], 422);
             }
 
-            $format_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($key_result['tanggal_kedaluwarsa_barang_ddmmyyyy']));
+            //info($key_result['tanggal_kedaluwarsa_barang_ddmmyyyy']);
 
-            $tmp_date = Carbon::parse($format_date);
+            //$format_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($key_result['tanggal_kedaluwarsa_barang_ddmmyyyy']));
 
-            $exp_date = $tmp_date->format('Y/m/d');
+            // $tmp_date = Carbon::parse($key_result['tanggal_kedaluwarsa_barang_ddmmyyyy']);
+
+            // info($tmp_date);
+
+            // $exp_date = $tmp_date->format('Y/m/d');
 
             //Carbon::parse(Carbon::createFromFormat('d/m/Y', $tmp_date->format('d/m/Y'))->format('d/m/Y'));
 

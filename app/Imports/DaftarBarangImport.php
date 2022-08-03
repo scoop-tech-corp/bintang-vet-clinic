@@ -22,14 +22,18 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
 
     public function model(array $row)
     {
-        $exp_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['tanggal_kedaluwarsa_barang_ddmmyyyy']));
+        //$exp_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($row['tanggal_kedaluwarsa_barang_ddmmyyyy']));
         
+        $exp_date = Carbon::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('d-m-Y');
+
+        $exp_date_insert = Carbon::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y-m-d');
+
         return new ListofItems(
             [
                 'item_name' => $row['nama_barang'],
                 'total_item' => $row['jumlah_barang'],
                 'limit_item' => $row['limit_barang'],
-                'expired_date' => $exp_date,
+                'expired_date' => $exp_date_insert,
                 'unit_item_id' => $row['kode_satuan_barang'],
                 'category_item_id' => $row['kode_kategori_barang'],
                 'branch_id' => $row['kode_cabang_barang'],
