@@ -118,7 +118,7 @@ class UserController extends Controller
             ->where('branch_id', '=', $request->id_cabang)
             ->count();
 
-        $staff_number = 'HVC-U-' . $request->kode_cabang . '-' . str_pad($lastuser + 1, 4, 0, STR_PAD_LEFT);
+        $staff_number = 'SVC-U-' . $request->kode_cabang . '-' . str_pad($lastuser + 1, 4, 0, STR_PAD_LEFT);
 
         $user = User::create([
             'staffing_number' => $staff_number,
@@ -357,7 +357,7 @@ class UserController extends Controller
                 ->where('branch_id', '=', $request->id_cabang)
                 ->count();
 
-            $staff_number = 'HVC-U-' . $request->kode_cabang . '-' . str_pad($lastuser + 1, 4, 0, STR_PAD_LEFT);
+            $staff_number = 'SVC-U-' . $request->kode_cabang . '-' . str_pad($lastuser + 1, 4, 0, STR_PAD_LEFT);
         } else {
 
             $staff_number = $request->nomor_kepegawaian;

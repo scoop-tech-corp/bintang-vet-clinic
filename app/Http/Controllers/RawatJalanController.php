@@ -95,7 +95,7 @@ class RawatJalanController extends Controller
             ->where('id', '=', $request->user()->branch_id)
             ->first();
 
-        $out_patient_number = 'HVC-RJ-' . $getbranchuser->branch_code . '-' . str_pad($lasttransaction + 1, 4, 0, STR_PAD_LEFT);
+        $out_patient_number = 'SVC-RJ-' . $getbranchuser->branch_code . '-' . str_pad($lasttransaction + 1, 4, 0, STR_PAD_LEFT);
 
         $patient = OutPatient::create([
             'id_number' => $out_patient_number,

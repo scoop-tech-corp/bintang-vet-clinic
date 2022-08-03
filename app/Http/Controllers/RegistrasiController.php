@@ -464,7 +464,7 @@ class RegistrasiController extends Controller
             ->where('id', '=', $request->user()->branch_id)
             ->first();
 
-        $registration_number = 'HVC-RP-' . $getbranchuser->branch_code . '-' . str_pad($lasttransaction + 1, 4, 0, STR_PAD_LEFT);
+        $registration_number = 'SVC-RP-' . $getbranchuser->branch_code . '-' . str_pad($lasttransaction + 1, 4, 0, STR_PAD_LEFT);
 
         $patient = Registration::create([
             'id_number' => $registration_number,
