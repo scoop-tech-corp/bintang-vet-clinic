@@ -171,6 +171,7 @@ class HargaKelompokObatController extends Controller
         $check_list_medicine_group = DB::table('price_medicine_groups')
             ->where('medicine_group_id', '=', $request->MedicineGroupId)
             ->where('id', '!=', $request->id)
+            ->where('isdeleted', '=', 0)
             ->count();
 
         if ($check_list_medicine_group > 0) {
@@ -216,8 +217,8 @@ class HargaKelompokObatController extends Controller
         $price_medicine_groups->isDeleted = true;
         $price_medicine_groups->deleted_by = $request->user()->fullname;
         $price_medicine_groups->deleted_at = \Carbon\Carbon::now();
-        //$price_medicine_groups->save();
-        $price_medicine_groups->delete();
+        $price_medicine_groups->save();
+        //$price_medicine_groups->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Data',
