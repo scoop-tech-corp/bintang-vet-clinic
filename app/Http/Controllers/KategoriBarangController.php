@@ -142,7 +142,7 @@ class KategoriBarangController extends Controller
         $category_item->isDeleted = true;
         $category_item->deleted_by = $request->user()->fullname;
         $category_item->deleted_at = \Carbon\Carbon::now();
-        $category_item->delete();
+        $category_item->save();
 
         return response()->json([
             'message' => 'Berhasil menghapus Kategori Barang',

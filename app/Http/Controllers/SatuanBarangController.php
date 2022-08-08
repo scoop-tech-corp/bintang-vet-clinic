@@ -142,8 +142,8 @@ class SatuanBarangController extends Controller
 
         $unit_item->isDeleted = true;
         $unit_item->deleted_by = $request->user()->fullname;
-        $unit_item->deleted_at = \Carbon\Carbon::now();
-        // $unit_item->save();
+        //$unit_item->deleted_at = \Carbon\Carbon::now();
+        $unit_item->save();
 
         $unit_item->delete();
 
