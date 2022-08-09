@@ -481,7 +481,14 @@ class HasilPemeriksaanController extends Controller
 
             foreach ($result_item as $res_group) {
 
-                $check_medicine_group = DB::table('medicine_groups')
+                //different with admin
+
+                // $check_medicine_group = DB::table('medicine_groups')
+                //     ->select('id')
+                //     ->where('id', '=', $res_group['medicine_group_id'])
+                //     ->first();
+
+                $check_medicine_group = DB::table('price_medicine_groups')
                     ->select('id')
                     ->where('id', '=', $res_group['medicine_group_id'])
                     ->first();
@@ -1089,7 +1096,7 @@ class HasilPemeriksaanController extends Controller
                     if (is_null($check_detail_medicine_group)) {
                         return response()->json([
                             'message' => 'The data was invalid.',
-                            'errors' => ['Data Kelompok Obat tidak ditemukan asdsad!'],
+                            'errors' => ['Data Kelompok Obat tidak ditemukan!'],
                         ], 404);
                     }
 
