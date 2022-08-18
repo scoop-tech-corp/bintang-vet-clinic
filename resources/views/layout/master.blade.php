@@ -54,7 +54,7 @@
 				<!-- mini logo for sidebar mini 50x50 pixels -->
 				<span class="logo-mini"><b>H</b>VC</span>
 				<!-- logo for regular state and mobile devices -->
-				<span class="logo-lg"><b>Hello</b> <b>VET</b> CLINIC</span>
+				<span class="logo-lg"><b>HELLO</b> <b>VET</b> CLINIC</span>
 			</a>
 
 			<!-- Header Navbar: style can be found in header.less -->
