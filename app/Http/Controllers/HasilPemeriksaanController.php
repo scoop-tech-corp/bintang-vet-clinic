@@ -481,7 +481,7 @@ class HasilPemeriksaanController extends Controller
 
             foreach ($result_item as $res_group) {
 
-                $check_medicine_group = DB::table('medicine_groups')
+                $check_medicine_group = DB::table('price_medicine_groups')
                     ->select('id')
                     ->where('id', '=', $res_group['medicine_group_id'])
                     ->first();
