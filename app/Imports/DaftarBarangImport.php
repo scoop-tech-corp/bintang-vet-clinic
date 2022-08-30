@@ -22,7 +22,15 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
 
     public function model(array $row)
     {
-        $exp_date = \Carbon\Carbon::parse(Carbon::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+        if ($row['tanggal_kedaluwarsa_barang_ddmmyyyy']) {
+            $exp_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((int) $row['tanggal_kedaluwarsa_barang_ddmmyyyy']));
+            //$exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+            $diff_expired = Carbon::parse(now())->diffInDays($exp_date, false);
+        } else {
+            $exp_date = '0000/00/00';
+            $diff_expired = 0;
+        }
+
         return new ListofItems(
             [
                 'item_name' => $row['nama_barang'],
@@ -33,7 +41,7 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
                 'category_item_id' => $row['kode_kategori_barang'],
                 'branch_id' => $row['kode_cabang_barang'],
                 'diff_item' => $row['jumlah_barang'] - $row['limit_barang'],
-                'diff_expired_days' => \Carbon\Carbon::parse(now())->diffInDays($exp_date, false),
+                'diff_expired_days' => $diff_expired,
                 'user_id' => $this->id,
             ]);
     }
@@ -42,9 +50,9 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
     {
         return [
             '*.nama_barang' => 'required|string',
-            '*.jumlah_barang' => 'required|integer',
-            '*.limit_barang' => 'required|integer',
-            '*.tanggal_kedaluwarsa_barang_ddmmyyyy' => 'required|date_format:d/m/Y',
+            '*.jumlah_barang' => 'required|numeric',
+            '*.limit_barang' => 'required|numeric',
+            // '*.tanggal_kedaluwarsa_barang_ddmmyyyy' => 'required|date_format:d/m/Y',
             '*.kode_satuan_barang' => 'required|integer',
             '*.kode_kategori_barang' => 'required|integer',
             '*.kode_cabang_barang' => 'required|integer',
