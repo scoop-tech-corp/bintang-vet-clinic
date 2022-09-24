@@ -727,6 +727,7 @@ class HasilPemeriksaanController extends Controller
                     'medicine_group_id' => $res_group['medicine_group_id'],
                     'status_paid_off' => 0,
                     'quantity' => $res_group['quantity'],
+                    'remark' => $res_group['remark'],
                     'user_id' => $request->user()->id,
                 ]);
 
@@ -873,6 +874,7 @@ class HasilPemeriksaanController extends Controller
                 DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
                 'detail_medicine_group_check_up_results.medicine_group_id as medicine_group_id',
                 'detail_medicine_group_check_up_results.quantity as quantity',
+                'detail_medicine_group_check_up_results.remark as remark',
                 'medicine_groups.group_name',
                 'branches.id as branch_id',
                 'branches.branch_name')
@@ -1566,6 +1568,7 @@ class HasilPemeriksaanController extends Controller
 
                     $detail_medicine_group->medicine_group_id = $res_group['medicine_group_id'];
                     $detail_medicine_group->quantity = $res_group['quantity'];
+                    $detail_medicine_group->remark = $res_group['remark'];
                     $detail_medicine_group->user_update_id = $request->user()->id;
                     $detail_medicine_group->updated_at = \Carbon\Carbon::now();
                     $detail_medicine_group->save();
