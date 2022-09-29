@@ -1,0 +1,33 @@
+input[type='file'] {
+  color: #ffffff;
+}
+
+.item-outstock {
+  background-color: red;
+  color: #ffffff;
+}
+
+.expired-date {
+  background-color: cornflowerblue;
+  color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .openFormUpload, .section-right-box-title .select2-container, .btn-download-excel {
+    margin-top: 10px;
+  }
+
+  .section-right-box-title .select2-container {
+    width: 100% !important;
+  }
+
+  .section-left-box-title {
+    width: 200px;
+    margin-right: 10px;
+  }
+
+  .section-right-box-title {
+    display: block;
+  }
+
+}

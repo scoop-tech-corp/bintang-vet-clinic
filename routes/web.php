@@ -53,8 +53,16 @@ Route::get('/daftar-barang', function () {
 	return view('gudang.daftar-barang.index');
 });
 
+Route::get('/daftar-barang-petshop', function () {
+	return view('gudang.daftar-barang-petshop.index');
+});
+
 Route::get('/pembagian-harga-barang', function () {
 	return view('gudang.pembagian-harga.index');
+});
+
+Route::get('/pembagian-harga-barang-petshop', function () {
+	return view('gudang.pembagian-harga-petshop.index');
 });
 
 Route::get('/pembagian-harga-kelompok-obat', function () {
