@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\ListofItemsPetShop;
 use App\Exports\MultipleSheetUploadDaftarBarangPetShop;
 use App\Exports\RekapDaftarBarangPetShop;
 use App\Imports\MultipleSheetImportDaftarBarangPetShop;
+use App\Models\ListofItemsPetShop;
 use Carbon\Carbon;
 use DB;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Validator;
 
@@ -38,15 +38,8 @@ class DaftarBarangPetshopController extends Controller
             ->where('loi.isDeleted', '=', 0);
 
         if ($request->keyword) {
-            $res = $this->Search($request);
 
-            if ($res) {
-                $item = $item->where($res, 'like', '%' . $request->keyword . '%');
-            } else {
-                $data = [];
-                return response()->json(['total_paging' => 0,
-                    'data' => $data], 200);
-            }
+            $item = $item->where('loi.item_name', 'like', '%' . $request->keyword . '%');
         }
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -311,7 +304,7 @@ class DaftarBarangPetshopController extends Controller
             ], 403);
         }
 
-        return (new MultipleSheetUploadDaftarBarangPetShop())->download('Template Daftar Barang.xlsx');
+        return (new MultipleSheetUploadDaftarBarangPetShop())->download('Template Daftar Barang Pet Shop.xlsx');
     }
 
     public function upload_template(Request $request)
@@ -322,6 +315,8 @@ class DaftarBarangPetshopController extends Controller
                 'errors' => ['Akses User tidak diizinkan!'],
             ], 403);
         }
+
+        INFO('MULAI');
 
         $this->validate($request, [
             'file' => 'required|mimes:xls,xlsx',
@@ -345,20 +340,20 @@ class DaftarBarangPetshopController extends Controller
                 ], 422);
             }
 
-            $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+            // $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
 
-            if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
-                return response()->json([
-                    'message' => 'The data was invalid.',
-                    'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
-                ], 422);
+            // if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
+            //     return response()->json([
+            //         'message' => 'The data was invalid.',
+            //         'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
+            //     ], 422);
 
-            } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
-                return response()->json([
-                    'message' => 'The data was invalid.',
-                    'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
-                ], 422);
-            }
+            // } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+            //     return response()->json([
+            //         'message' => 'The data was invalid.',
+            //         'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
+            //     ], 422);
+            // }
         }
 
         $file = $request->file('file');
