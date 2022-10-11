@@ -2,16 +2,22 @@
 
 namespace App\Imports;
 
-use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\ToCollection;
+use App\Imports\DaftarBarangImportPetShop;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class MultipleSheetImportDaftarBarangPetShop implements ToCollection
+class MultipleSheetImportDaftarBarangPetShop implements WithMultipleSheets
 {
-    /**
-    * @param Collection $collection
-    */
-    public function collection(Collection $collection)
+    protected $id;
+
+    public function __construct($id)
     {
-        //
+        $this->id = $id;
+    }
+
+    public function sheets(): array
+    {
+        return [
+            0 => new DaftarBarangImportPetShop($this->id),
+        ];
     }
 }

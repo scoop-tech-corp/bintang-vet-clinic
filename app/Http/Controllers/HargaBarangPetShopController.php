@@ -462,7 +462,7 @@ class HargaBarangPetShopController extends Controller
             ], 403);
         }
 
-        return (new MultipleSheetUploadHargaBarangPetShop())->download('Template Harga Barang.xlsx');
+        return (new MultipleSheetUploadHargaBarangPetShop())->download('Template Harga Barang Pet Shop.xlsx');
     }
 
     public function upload_template(Request $request)

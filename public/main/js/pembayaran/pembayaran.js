@@ -16,9 +16,11 @@ $(document).ready(function() {
 	// } else {
 		if (role.toLowerCase() != 'admin') {
       $('#filterCabang').hide();
+      $('#filterCabangPet').hide();
     } else {
       loadCabang();
       $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
+      $('#filterCabangPet').select2({ placeholder: 'Cabang', allowClear: true });
     }
 	//}
 
@@ -54,9 +56,23 @@ $(document).ready(function() {
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
+  
+	$('#filterCabangPet').on('select2:select', function () { onFilterCabang($(this).val()); });
+  $('#filterCabangPet').on("select2:unselect", function () { onFilterCabang($(this).val()); });
 
   $('.openFormAdd').click(function() {
     window.location.href = $('.baseUrl').val() + '/pembayaran/tambah';
+  });
+
+	$('.openFormAddPetShop').click(function() {
+    modalState = 'add';
+    $('.modal-title').text('Tambah Pembayaran');
+
+    if (role.toLowerCase() == 'kasir') {
+      loadBarang(branchId);
+    }
+
+    refreshForm(); formConfigure();
   });
 
   $('#submitConfirm').click(function() {
@@ -199,6 +215,8 @@ $(document).ready(function() {
 					}
 				}
 				$('#filterCabang').append(optCabang);
+				$('#filterCabangPet').append(optCabang);
+				$('#selectedCabang').append(optCabang);
 			}, complete: function() { $('#loading-screen').hide(); },
 			error: function(err) {
 				if (err.status == 401) {
@@ -208,5 +226,118 @@ $(document).ready(function() {
 			}
 		});
 	}
+
+	function loadBarang(getCabangId) {
+    optBarang = `<option value=''>Pilih Barang</option>`;
+
+    $.ajax({
+      url: $('.baseUrl').val() + '/api/payment/filteritem',
+      headers: { 'Authorization': `Bearer ${token}` },
+      type: 'GET',
+      data: { branch_id: getCabangId },
+      beforeSend: function () { $('#loading-screen').show(); },
+      success: function (data) {
+        $('#selectedBarang option').remove();
+  
+        if (data.length) {
+          for (let i = 0 ; i < data.length ; i++) {
+            optBarang += `<option value=${data[i].id}>${data[i].item_name} - ${data[i].category}</option>`;
+            listBarang.push(data[i]);
+          }
+        }
+        $('#selectedCabang').prop('disabled', true);
+        $('.showDropdownBarang').show();
+        $('#selectedBarang').append(optBarang);
+
+        validationForm();
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-shop');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+  }
+
+	function refreshForm() {
+		$('#selectedCabang').val(null);
+    $('#selectedBarang').val(null);
+    listSelectedBarang = [];
+    drawTableSelectedBarang();
+
+    $('#selectedCabang').prop('disabled', false);
+
+    if(role.toLowerCase() == 'admin') {
+      $('.showDropdownBarang').hide();
+    }
+
+    $('#beErr').empty(); isBeErr = false;
+
+    $('#cabangErr1').text(''); isValidSelectedCabang = true;
+    $('#barangErr1').text(''); isValidListSelectedBarang = true;
+  }
+
+	function formConfigure() {
+    $('#selectedCabang').select2();
+    $('#selectedBarang').select2();
+
+		$('#modal-tambah-pembayaran').modal('show');
+		$('#btnSubmitPembayaran').attr('disabled', true);
+  }
+
+	function drawTableSelectedBarang() {
+    let listSelectedBarangTxt = '';
+    $('#list-selected-barang tr').remove();
+
+    if (listSelectedBarang.length) {
+      listSelectedBarang.forEach((barang, idx) => {
+        listSelectedBarangTxt += `<tr>`
+          + `<td>${idx + 1}</td>`
+          + `<td>${barang.item_name}</td>`
+          + `<td>${barang.category}</td>`
+          + `<td><input type="number" min="0" class="qty-input-barang" index=${idx} value=${barang.total_item}></td>`
+          + `<td>Rp ${barang.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>`
+          + `<td>Rp <span id="overallPrice-${idx}">
+              ${typeof(barang.price_overall) == 'number' ?
+                barang.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+                : ''}</span>
+            </td>`
+          +`<td>
+              <button type="button" class="btn btn-danger btnDeleteSelectedBarang" value=${idx}>
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+              </button>
+            </td>`
+          + `</tr>`;
+      });
+    } else {
+      listSelectedBarangTxt += `<tr class="text-center"><td colspan="7">Tidak ada data.</td></tr>`;
+    }
+
+    $('#list-selected-barang').append(listSelectedBarangTxt);
+
+    $('.qty-input-barang').on('input', function(e) {
+      const idx        = $(this).attr('index');
+      const value      = parseFloat($(this).val());
+      const eachItem   = parseFloat(listSelectedBarang[idx].selling_price);
+      let overallPrice = value * eachItem;
+
+      listSelectedBarang[idx].total_item = value;
+      listSelectedBarang[idx].price_overall = overallPrice;
+      validationForm();
+
+      $('#overallPrice-'+idx).text(overallPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+    });
+
+    $('.btnDeleteSelectedBarang').click(function() {
+      const getObj = listSelectedBarang[$(this).val()];
+      listBarang.push(getObj);
+      drawDropdownListBarang();
+
+      listSelectedBarang.splice($(this).val(), 1);
+      drawTableSelectedBarang();
+      validationForm();
+    });
+  }
 
 });

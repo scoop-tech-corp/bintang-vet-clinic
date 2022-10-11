@@ -2,24 +2,22 @@
 
 namespace App\Exports;
 
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-use App\Exports\Cabang;
-use App\Exports\DaftarBarangPetshop;
-
-class MultipleSheetUploadDaftarBarangPetShop implements WithMultipleSheets
+class MultipleSheetUploadHargaBarangPetShop implements WithMultipleSheets
 {
     use Exportable;
-
+   
     protected $sheets;
 
     public function __construct()
     {
-        
+
     }
 
-    public function array(): array
+    function array(): array
     {
         return $this->sheets;
     }
@@ -29,8 +27,8 @@ class MultipleSheetUploadDaftarBarangPetShop implements WithMultipleSheets
         $sheets = [];
 
         $sheets = [
-            new DaftarBarangPetShop(),
-            new Cabang()
+            new DataHarga(),
+            new DataDaftarBarang(),
         ];
 
         return $sheets;
