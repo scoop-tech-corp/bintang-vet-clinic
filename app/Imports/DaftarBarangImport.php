@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\ListofItems;
 use Carbon\Carbon;
+use DateTime;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -22,7 +23,25 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
 
     public function model(array $row)
     {
-        $exp_date = \Carbon\Carbon::parse(Carbon::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+
+        $Temp = DateTime::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy']);
+
+        if ($Temp) {
+            $exp_date = DateTime::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy']);
+
+            // info($exp_date);
+            // // $date = DateTime::createFromFormat('d/m/Y', $exp_date);
+
+            // info($Temp);
+
+            $diff_expired = Carbon::parse(now())->diffInDays($exp_date, false);
+        } else {
+            $exp_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((int) $row['tanggal_kedaluwarsa_barang_ddmmyyyy']));
+            //$exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+
+            $diff_expired = Carbon::parse(now())->diffInDays($exp_date, false);
+        }
+
         return new ListofItems(
             [
                 'item_name' => $row['nama_barang'],
@@ -33,7 +52,7 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
                 'category_item_id' => $row['kode_kategori_barang'],
                 'branch_id' => $row['kode_cabang_barang'],
                 'diff_item' => $row['jumlah_barang'] - $row['limit_barang'],
-                'diff_expired_days' => \Carbon\Carbon::parse(now())->diffInDays($exp_date, false),
+                'diff_expired_days' => $diff_expired,
                 'user_id' => $this->id,
             ]);
     }
