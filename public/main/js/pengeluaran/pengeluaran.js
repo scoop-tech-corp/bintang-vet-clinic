@@ -20,6 +20,8 @@ $(document).ready(function () {
     column: "",
     keyword: "",
     branchId: "",
+    month: "",
+    year: "",
   };
 
   const listFinalPengeluaran = [];
@@ -35,6 +37,22 @@ $(document).ready(function () {
     $("#filterCabang").select2({ placeholder: "Cabang", allowClear: true });
      loadCabang();
   }
+
+  $('#datepickerfilter').datepicker({
+    autoclose: true,
+    clearBtn: true,
+    format: 'mm-yyyy',
+    todayHighlight: true,
+    startView: 'months',
+    minViewMode: 'months'
+  }).on('changeDate', function(e) {
+    const getDate = e.format();
+    const getMonth = getDate.split('-')[0];
+    const getYear = getDate.split('-')[1];
+    paramUrlSetup.month = getMonth;
+    paramUrlSetup.year  = getYear;
+    loadPengeluaran();
+  });
   
     $(".section-left-box-title").append(
       `<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>`
@@ -345,6 +363,9 @@ $(document).ready(function () {
         column: paramUrlSetup.column,
         keyword: paramUrlSetup.keyword,
         branch_id: paramUrlSetup.branchId,
+        month: paramUrlSetup.month, 
+        year: paramUrlSetup.year,
+        page: getCurrentPage
       },
       beforeSend: function () {
         $("#loading-screen").show();
@@ -382,6 +403,10 @@ $(document).ready(function () {
         $("#list-pengeluaran").append(listPengeluaran);
 
         generatePagination(getCurrentPage, resp.total_paging);
+
+        const amountOverall = (resp.amount_overall > -1) ? resp.amount_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+
+        $('#total-pengeluaran-txt').text(`Rp. ${amountOverall}`);
 
         $(".openFormEdit").click(function () {
           const getObj = getData.find((x) => x.id == $(this).val());

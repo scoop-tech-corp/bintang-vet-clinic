@@ -316,8 +316,6 @@ class DaftarBarangPetshopController extends Controller
             ], 403);
         }
 
-        INFO('MULAI');
-
         $this->validate($request, [
             'file' => 'required|mimes:xls,xlsx',
         ]);
@@ -340,20 +338,9 @@ class DaftarBarangPetshopController extends Controller
                 ], 422);
             }
 
-            // $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+            if ($key_branch['']) {
 
-            // if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
-            //     return response()->json([
-            //         'message' => 'The data was invalid.',
-            //         'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
-            //     ], 422);
-
-            // } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
-            //     return response()->json([
-            //         'message' => 'The data was invalid.',
-            //         'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
-            //     ], 422);
-            // }
+            }
         }
 
         $file = $request->file('file');
@@ -382,9 +369,9 @@ class DaftarBarangPetshopController extends Controller
         $filename = "";
 
         if ($listBranch) {
-            $filename = 'Rekap Daftar Barang Cabang ' . $listBranch->branch_name . ' ' . $date . '.xlsx';
+            $filename = 'Rekap Daftar Barang Pet Shop Cabang ' . $listBranch->branch_name . ' ' . $date . '.xlsx';
         } else {
-            $filename = 'Rekap Daftar Barang ' . $date . '.xlsx';
+            $filename = 'Rekap Daftar Barang Pet Shop ' . $date . '.xlsx';
         }
 
         return (new RekapDaftarBarangPetShop($request->orderby, $request->column, $request->keyword, $branchId, $request->user()->role))
