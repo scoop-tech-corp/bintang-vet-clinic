@@ -171,6 +171,11 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('pembayaran', 'PembayaranController@create');
         Route::put('pembayaran', 'PembayaranController@update');
         Route::get('pembayaran/detail', 'PembayaranController@detail');
+
+
+        Route::get('pembayaranpetshop/filteritem', 'PembayaranPetShopController@filteritempetshop');
+        Route::post('pembayaranpetshop', 'PembayaranPetShopController@create');
+        Route::get('pembayaranpetshop/printreceipt', 'PaymentController@print_receipt');
         // Route::get('pembayaran/print', 'PembayaranController@print_pdf');
         //Route::post('pembayaran/printpdf', 'PembayaranController@print_pdf');
 

@@ -31,7 +31,6 @@
                     <tr>
                       <th>No</th>
                       <th>Nama Barang</th>
-                      <th>Kategori Barang</th>
                       <th>Jumlah</th>
                       <th>Harga Satuan</th>
                       <th>Harga Keseluruhan</th>

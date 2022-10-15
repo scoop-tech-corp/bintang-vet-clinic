@@ -2,7 +2,8 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Exports\DataDaftarBarangPetShop;
+use App\Exports\DataHargaPetShop;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
@@ -27,8 +28,8 @@ class MultipleSheetUploadHargaBarangPetShop implements WithMultipleSheets
         $sheets = [];
 
         $sheets = [
-            new DataHarga(),
-            new DataDaftarBarang(),
+            new DataHargaPetShop(),
+            new DataDaftarBarangPetShop(),
         ];
 
         return $sheets;

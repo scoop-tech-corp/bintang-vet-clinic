@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+  let listBarang = [];
+  let listSelectedBarang = [];
 	let optCabang = '';
 	let getCurrentPage = 1;
 
@@ -231,7 +233,7 @@ $(document).ready(function() {
     optBarang = `<option value=''>Pilih Barang</option>`;
 
     $.ajax({
-      url: $('.baseUrl').val() + '/api/payment/filteritem',
+      url: $('.baseUrl').val() + '/api/pembayaranpetshop/filteritem',
       headers: { 'Authorization': `Bearer ${token}` },
       type: 'GET',
       data: { branch_id: getCabangId },
@@ -241,7 +243,7 @@ $(document).ready(function() {
   
         if (data.length) {
           for (let i = 0 ; i < data.length ; i++) {
-            optBarang += `<option value=${data[i].id}>${data[i].item_name} - ${data[i].category}</option>`;
+            optBarang += `<option value=${data[i].id}>${data[i].item_name}</option>`;
             listBarang.push(data[i]);
           }
         }
@@ -258,6 +260,24 @@ $(document).ready(function() {
         }
       }
     });
+  }
+
+  function validationForm() {
+    if (!$('#selectedCabang').val() && role.toLowerCase() == 'admin') {
+      $('#cabangErr1').text('Cabang harus di isi'); isValidSelectedCabang = false;
+    } else {
+      $('#cabangErr1').text(''); isValidSelectedCabang = true;
+    }
+
+    if (!listSelectedBarang.length) {
+      $('#barangErr1').text('Barang harus di pilih'); isValidListSelectedBarang = false;
+    } else {
+      $('#barangErr1').text(''); isValidListSelectedBarang = true;
+    }
+
+    $('#beErr').empty(); isBeErr = false;
+
+    $('#btnSubmitPembayaran').attr('disabled', (!isValidSelectedCabang || !isValidListSelectedBarang || isBeErr) ? true : false);
   }
 
 	function refreshForm() {
@@ -295,7 +315,6 @@ $(document).ready(function() {
         listSelectedBarangTxt += `<tr>`
           + `<td>${idx + 1}</td>`
           + `<td>${barang.item_name}</td>`
-          + `<td>${barang.category}</td>`
           + `<td><input type="number" min="0" class="qty-input-barang" index=${idx} value=${barang.total_item}></td>`
           + `<td>Rp ${barang.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>`
           + `<td>Rp <span id="overallPrice-${idx}">
@@ -338,6 +357,101 @@ $(document).ready(function() {
       drawTableSelectedBarang();
       validationForm();
     });
+  }
+
+  $('#selectedCabang').on('select2:select', function (e) {
+    const getCabangId = $(this).val();
+    if (getCabangId) { loadBarang(getCabangId); }
+  });
+
+  $('#selectedBarang').on('select2:select', function (e) {
+    const getBarangId = $(this).val();
+    let getObj = listBarang.find(barang => barang.id == getBarangId);
+    listSelectedBarang.push({
+      id: getObj.id,
+      item_name: getObj.item_name,
+      total_item: 0,
+      selling_price: getObj.selling_price,
+      price_overall: 0
+    });
+    drawTableSelectedBarang();
+
+    // deleted list barang
+    let getIdxBarang = listBarang.findIndex(barang => barang.id == getBarangId);
+    listBarang.splice(getIdxBarang, 1);
+    drawDropdownListBarang();
+
+    validationForm();
+  });
+
+  function drawDropdownListBarang() {
+    optBarang = `<option value=''>Pilih Barang</option>`;
+    $('#selectedBarang option').remove();
+
+    if (listBarang.length) {
+      for (let i = 0 ; i < listBarang.length ; i++) {
+        optBarang += `<option value=${listBarang[i].id}>${listBarang[i].item_name}</option>`;
+      }
+    }
+    $('#selectedBarang').append(optBarang);
+  }
+
+  $('#btnSubmitPembayaran').click(function() {
+    let finalSelectedBarang = [];
+    const fd = new FormData();
+    const getBranchId = (role.toLowerCase() == 'admin') ? $('#selectedCabang').val() : branchId;
+
+    listSelectedBarang.forEach(barang => {
+      finalSelectedBarang.push({
+        price_item_pet_shop_id: barang.id,
+        total_item: barang.total_item
+      })
+    });
+
+    fd.append('branch_id', getBranchId); // for kasir id cabang from login data
+    fd.append('price_item_pet_shops', JSON.stringify(finalSelectedBarang));
+
+    $.ajax({
+      url: $('.baseUrl').val() + '/api/pembayaranpetshop',
+      type: 'POST',
+      dataType: 'JSON',
+      headers: { 'Authorization': `Bearer ${token}` },
+      data: fd, contentType: false, cache: false,
+      processData: false,
+      beforeSend: function () { $('#loading-screen').show(); },
+      success: function (resp) {
+
+        $("#msg-box .modal-body").text('Berhasil Menambah Data');
+        $('#msg-box').modal('show');
+
+        const getMasterPaymentId = resp.master_payment_petshop_id;
+
+        processPrint(getMasterPaymentId);
+
+        setTimeout(() => {
+          $('#modal-tambah-pembayaran').modal('toggle');
+          refreshForm(); loadPembayaran();
+        }, 1000);
+      }, complete: function () { $('#loading-screen').hide(); }
+      , error: function (err) {
+        if (err.status === 422) {
+          let errText = ''; $('#beErr').empty(); $('#btnSubmitPembayaran').attr('disabled', true);
+          $.each(err.responseJSON.errors, function (idx, v) {
+            errText += v + ((idx !== err.responseJSON.errors.length - 1) ? '<br/>' : '');
+          });
+          $('#beErr').append(errText); isBeErr = true;
+        } else if (err.status == 401) {
+          localStorage.removeItem('vet-shop');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+
+  });
+
+  function processPrint(master_payment_id) {
+    let url = '/pembayaranpetshop/printreceipt/' + master_payment_id;
+    window.open($('.baseUrl').val() + url, '_blank');
   }
 
 });
