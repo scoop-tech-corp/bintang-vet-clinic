@@ -27,6 +27,8 @@ $(document).ready(function() {
 	//}
 
   loadPembayaran();
+  
+  loadPembayaranPetshop();
 
   $('.input-search-section .fa').click(function() {
 		onSearch($('.input-search-section input').val());
@@ -59,8 +61,8 @@ $(document).ready(function() {
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
   
-	$('#filterCabangPet').on('select2:select', function () { onFilterCabang($(this).val()); });
-  $('#filterCabangPet').on("select2:unselect", function () { onFilterCabang($(this).val()); });
+	$('#filterCabangPet').on('select2:select', function () { onFilterCabangPetShop($(this).val()); });
+  $('#filterCabangPet').on("select2:unselect", function () { onFilterCabangPetShop($(this).val()); });
 
   $('.openFormAdd').click(function() {
     window.location.href = $('.baseUrl').val() + '/pembayaran/tambah';
@@ -104,9 +106,41 @@ $(document).ready(function() {
 			});
   });
 
+  $('#submitConfirmPetShop').click(function() {
+    // process delete
+			$.ajax({
+				url     : $('.baseUrl').val() + '/api/pembayaranpetshop',
+				headers : { 'Authorization': `Bearer ${token}` },
+				type    : 'DELETE',
+				data	  : { id: getId },
+				beforeSend: function() { $('#loading-screen').show(); },
+				success: function(data) {
+					$('#modal-confirmation-pet-shop .modal-title').text('Peringatan');
+					$('#modal-confirmation-pet-shop').modal('toggle');
+
+					$("#msg-box .modal-body").text('Berhasil menghapus data');
+					$('#msg-box').modal('show');
+
+					loadPembayaranPetshop();
+
+				}, complete: function() { $('#loading-screen').hide(); }
+				, error: function(err) {
+					if (err.status == 401) {
+						localStorage.removeItem('vet-clinic');
+						location.href = $('.baseUrl').val() + '/masuk';
+					}
+				}
+			});
+  });
+
   function onFilterCabang(value) {
     paramUrlSetup.branchId = value;
 		loadPembayaran();
+  }
+
+  function onFilterCabangPetShop(value) {
+    paramUrlSetup.branchId = value;
+		loadPembayaranPetshop();
   }
 
   function onSearch(keyword) {
@@ -174,6 +208,16 @@ $(document).ready(function() {
           }
 				});
 
+        $('.openFormDeletePetShop').click(function() {
+          getId = $(this).val();
+          
+					if (role.toLowerCase() == 'admin') {
+            $('#modal-confirmation-pet-shop .modal-title').text('Peringatan');
+						$('#modal-confirmation-pet-shop .box-body').text('Anda yakin ingin menghapus data ini?');
+						$('#modal-confirmation-pet-shop').modal('show');
+          }
+				});
+
 				$('.pagination > li > a').click(function() {
 					const getClassName = this.className;
 					const getNumber = parseFloat($(this).text());
@@ -190,6 +234,95 @@ $(document).ready(function() {
 					}
 
 					loadPembayaran()
+				});
+
+			}, complete: function() { $('#loading-screen').hide(); },
+			error: function(err) {
+				if (err.status == 401) {
+					localStorage.removeItem('vet-clinic');
+					location.href = $('.baseUrl').val() + '/masuk';
+				}
+			}
+		});
+  }
+
+  function loadPembayaranPetshop(){
+    $.ajax({
+			url     : $('.baseUrl').val() + '/api/pembayaranpetshop',
+			headers : { 'Authorization': `Bearer ${token}` },
+			type    : 'GET',
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId, page: getCurrentPage },
+			beforeSend: function() { $('#loading-screen').show(); },
+			success: function(resp) {
+				const getData = resp.data;
+
+				let listPembayaranPetShop = '';
+				$('#list-pembayaran-petshop tr').remove();
+
+        if (getData.length) {
+          $.each(getData, function(idx, v) {
+            listPembayaranPetShop += `<tr>`
+              + `<td>${++idx}</td>`
+              + `<td>${v.created_at}</td>`
+              + `<td>${v.branch_name}</td>`
+              + `<td>${v.payment_number}</td>`
+              + `<td>${v.item_name}</td>`
+              + `<td>${v.total_item}</td>`
+              + `<td>Rp ${
+                typeof v.each_price == "number"
+                  ? v.each_price
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  : ""
+              }</td>`
+              + `<td>Rp ${
+                typeof v.overall_price == "number"
+                  ? v.overall_price
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  : ""
+              }</td>`
+              + `<td>${v.created_by}</td>`
+              + `<td>
+                  <button type="button" class="btn btn-danger openFormDeletePetShop"
+                    ${role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                </td>`
+              + `</tr>`;
+          });
+        } else {
+          listPembayaranPetShop += `<tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>`;
+        }
+
+				$('#list-pembayaran-petshop').append(listPembayaranPetShop);
+
+				generatePagination(getCurrentPage, resp.total_paging);
+
+				$('.openFormDeletePetShop').click(function() {
+          getId = $(this).val();
+
+					if (role.toLowerCase() == 'admin') {
+            $('#modal-confirmation-pet-shop .modal-title').text('Peringatan');
+						$('#modal-confirmation-pet-shop .box-body').text('Anda yakin ingin menghapus data ini?');
+						$('#modal-confirmation-pet-shop').modal('show');
+          }
+				});
+
+				$('.pagination > li > a').click(function() {
+					const getClassName = this.className;
+					const getNumber = parseFloat($(this).text());
+
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+
+					if (getClassName.includes('arrow-left')) {
+						getCurrentPage = getCurrentPage - 1;
+					} else if (getClassName.includes('arrow-right')) {
+						getCurrentPage = getCurrentPage + 1;
+					} else {
+						getCurrentPage = getNumber;
+					}
+
+					loadPembayaranPetshop()
 				});
 
 			}, complete: function() { $('#loading-screen').hide(); },
@@ -430,7 +563,7 @@ $(document).ready(function() {
 
         setTimeout(() => {
           $('#modal-tambah-pembayaran').modal('toggle');
-          refreshForm(); loadPembayaran();
+          refreshForm(); loadPembayaranPetshop();
         }, 1000);
       }, complete: function () { $('#loading-screen').hide(); }
       , error: function (err) {

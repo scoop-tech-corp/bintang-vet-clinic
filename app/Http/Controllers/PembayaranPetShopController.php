@@ -16,30 +16,29 @@ class PembayaranPetShopController extends Controller
 {
     public function index(Request $request)
     {
-
         $items_per_page = 50;
 
         $page = $request->page;
 
-        $payment = DB::table('payments as py')
-            ->join('master_payments as mp', 'py.master_payment_id', '=', 'mp.id')
-            ->join('list_of_items as loi', 'py.list_of_item_id', '=', 'loi.id')
-            ->join('users', 'py.user_id', '=', 'users.id')
+        $data = DB::table('payment_petshops as pp')
+            ->join('master_payment_petshops as mp', 'pp.master_payment_petshop_id', '=', 'mp.id')
+            ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', '=', 'pip.id')
+            ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', '=', 'loi.id')
+            ->join('users', 'mp.user_id', '=', 'users.id')
             ->join('branches', 'mp.branch_id', '=', 'branches.id')
             ->select(
-                'py.id',
+                'pp.id',
                 'mp.payment_number',
                 'loi.item_name',
-                'py.total_item',
-                'loi.category',
-                DB::raw("TRIM(loi.selling_price)+0 as each_price"),
-                DB::raw("TRIM(loi.selling_price * py.total_item)+0 as overall_price"),
+                'pp.total_item',
+                DB::raw("TRIM(pip.selling_price)+0 as each_price"),
+                DB::raw("TRIM(pip.selling_price * pp.total_item)+0 as overall_price"),
                 'branches.id as branch_id',
                 'branches.branch_name',
                 'users.id as user_id',
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(py.created_at, '%d/%m/%Y') as created_at"))
-            ->where('py.isDeleted', '=', 0);
+                DB::raw("DATE_FORMAT(mp.created_at, '%d/%m/%Y') as created_at"))
+            ->where('mp.isDeleted', '=', 0);
 
         if ($request->keyword) {
 
@@ -55,23 +54,35 @@ class PembayaranPetShopController extends Controller
 
         }
 
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $payment = $payment->where('loi.branch_id', '=', $request->branch_id);
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
         }
 
-        if ($request->user()->role == 'kasir') {
-            $payment = $payment->where('mp.branch_id', '=', $request->user()->branch_id);
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
         }
 
         if ($request->orderby) {
-            $payment = $payment->orderBy($request->column, $request->orderby);
+            $data = $data->orderBy($request->column, $request->orderby);
         }
 
-        $payment = $payment->orderBy('py.id', 'desc');
+        $data = $data->orderBy('pp.id', 'desc');
 
-        $payment = $payment->get();
+        $offset = ($page - 1) * $items_per_page;
 
-        return response()->json($payment, 200);
+        $count_data = $data->count();
+        $count_result = $count_data - $offset;
+
+        if ($count_result < 0) {
+            $data = $data->offset(0)->limit($items_per_page)->get();
+        } else {
+            $data = $data->offset($offset)->limit($items_per_page)->get();
+        }
+
+        $total_paging = $count_data / $items_per_page;
+
+        return response()->json(['total_paging' => ceil($total_paging),
+            'data' => $data], 200);
 
     }
 
@@ -154,11 +165,6 @@ class PembayaranPetShopController extends Controller
         );
     }
 
-    public function update(Request $request)
-    {
-
-    }
-
     public function delete(Request $request)
     {
         if ($request->user()->role == 'kasir') {
@@ -168,8 +174,7 @@ class PembayaranPetShopController extends Controller
             ], 403);
         }
 
-        $payment = payment_petshop::where('id', '=', $request->id)
-            ->count();
+        $payment = payment_petshop::where('id', '=', $request->id)->count();
 
         if ($payment == 0) {
             return response()->json([
@@ -178,23 +183,25 @@ class PembayaranPetShopController extends Controller
             ], 422);
         }
 
-        $payment = payment_petshop::find($request->id);
+        $payment_find = payment_petshop::find($request->id);
 
-        $find_item = ListofItemsPetShop::find($payment->list_of_item_pet_shop_id);
+        $check_stock = DB::table('payment_petshops as pp')
+            ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', 'pip.id')
+            ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', 'loi.id')
+            ->select('loi.id as list_of_item_id', 'pp.total_item as total_item_buy', 'loi.total_item as total_item_stock', 'loi.diff_item')
+            ->where('pp.id', '=', $request->id)
+            ->get();
 
-        $res_value = $find_item->total_item + $payment->total_item;
+        foreach ($check_stock as $res) {
 
-        $find_item->total_item = $res_value;
-        $find_item->user_update_id = $request->user()->id;
-        $find_item->updated_at = \Carbon\Carbon::now();
-        $find_item->save();
+            $list_of_item_pet_shop = ListofItemsPetShop::find($res->list_of_item_id);
 
-        $payment->user_update_id = $request->user()->id;
-        $payment->isDeleted = 1;
-        $payment->deleted_by = $request->user()->id;
-        $payment->updated_at = \Carbon\Carbon::now();
-        $payment->deleted_at = \Carbon\Carbon::now();
-        $payment->save();
+            $list_of_item_pet_shop->total_item = $res->total_item_stock + $res->total_item_buy;
+            $list_of_item_pet_shop->diff_item = $res->diff_item + $res->total_item_buy;
+            $list_of_item_pet_shop->save();
+        }
+
+        $payment_find->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Data',

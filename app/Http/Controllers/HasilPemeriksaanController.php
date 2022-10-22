@@ -2353,7 +2353,7 @@ class HasilPemeriksaanController extends Controller
 
         $user = DB::table('check_up_results')
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->select('users.id as user_id', 'users.username as username')
+            ->select('users.id as user_id', 'users.username as username','users.branch_id')
             ->where('users.id', '=', $data->user_id)
             ->first();
 

@@ -72,19 +72,19 @@
                             <thead>
                               <tr>
                                 <th>No</th>
-                                <th class="onOrdering" data='registration_number' orderby="none">No. Registrasi <span class="fa fa-sort"></span></th>
                                 <th class="onOrdering" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='patient_number' orderby="none">No. Pasien <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='pet_category' orderby="none">Jenis Hewan <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='pet_name' orderby="none">Nama Hewan <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='complaint' orderby="none">Keluhan <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='status_outpatient_inpatient' orderby="none">Perawatan <span class="fa fa-sort"></span></th>
+                                <th class="onOrdering" data='branch_name' orderby="none">Cabang <span class="fa fa-sort"></span></th>
+                                <th class="onOrdering" data='payment_number' orderby="none">No.Pembayaran <span class="fa fa-sort"></span></th>
+                                <th class="onOrdering" data='item_name' orderby="none">Nama Barang <span class="fa fa-sort"></span></th>
+                                <th class="onOrdering" data='quantity' orderby="none">Jumlah <span class="fa fa-sort"></span></th>
+                                <th class="onOrdering" data='each_price' orderby="none">Harga Satuan <span class="fa fa-sort"></span></th>
+                                <th class="onOrdering" data='overall_price' orderby="none">Harga Keseluruhan <span class="fa fa-sort"></span></th>
                                 <th class="onOrdering" data='created_by' orderby="none">Dibuat Oleh <span class="fa fa-sort"></span></th>
                                 <th>Aksi</th>
                               </tr>
                             </thead>
-                            <tbody id="list-pembayaran-pet">
-                              <tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>
+                            <tbody id="list-pembayaran-petshop">
+                              <tr class="text-center"><td colspan="9">Tidak ada data.</td></tr>
                             </tbody>
                           </table>
 
@@ -102,6 +102,7 @@
 
 @component('pembayaran.pembayaran-petshop-tambah') @endcomponent
 @component('layout.modal-confirmation') @endcomponent
+@component('layout.modal-confirmation-pet-shop') @endcomponent
 @component('layout.message-box') @endcomponent
 
 @endsection
