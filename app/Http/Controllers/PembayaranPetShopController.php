@@ -117,6 +117,7 @@ class PembayaranPetShopController extends Controller
 
         $master_payment = master_payment_petshop::create([
             'payment_number' => $payment_number,
+            'payment_method_id' => $request->payment_method_id,
             'user_id' => $request->user()->id,
             'branch_id' => $request->branch_id,
         ]);

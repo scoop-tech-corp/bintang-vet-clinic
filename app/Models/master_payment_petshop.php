@@ -13,5 +13,5 @@ class master_payment_petshop extends Model
 
     protected $guarded = ['id'];
 
-    protected $fillable = ['payment_number', 'user_id','branch_id', 'user_update_id'];
+    protected $fillable = ['payment_number','payment_method_id', 'user_id','branch_id', 'user_update_id'];
 }
