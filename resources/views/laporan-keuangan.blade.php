@@ -219,23 +219,23 @@
                 @else
                     @if($flag_color == 0)
                         <tr>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
-                            <td style="text-align: left; border: 1px solid black; background-color: #F6D7B8;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
                         </tr>
                         <tr>
                             <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->created_at }}</td>
