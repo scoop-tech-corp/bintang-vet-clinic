@@ -179,6 +179,7 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                 ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', 'loi.id')
                 ->join('users', 'pp.user_id', '=', 'users.id')
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('payment_methods as pm', 'mp.payment_method_id', '=', 'pm.id')
                 ->select(
                     'pp.id', // 'list_of_payment_id',
                     DB::raw("'' as check_up_result_id"), // 'check_up_result_id',
@@ -195,11 +196,11 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                     DB::raw("0 as discount"), // 'discount',
                     DB::raw("0 as amount_discount"), // 'amount_discount',
                     DB::raw("TRIM(pip.profit * pp.total_item)+0 as after_discount"), // 'after_discount',
-                    'loi.item_name as pet_name',    // pet name
+                    'loi.item_name as pet_name', // pet name
                     'mp.payment_number as owner_name', // 'owner_name',
                     'branches.id as branchId', // 'branchId',
                     DB::raw("DATE_FORMAT(pp.created_at, '%d/%m/%Y') as created_at"), // 'created_at',
-                    DB::raw("'' AS payment_name"), // 'payment_name'
+                    'pm.payment_name as payment_name', // 'payment_name'
                     DB::raw("'shop' as data_category")
                 )
                 ->where(DB::raw("DATE(pp.created_at)"), '=', $result_data->date)
@@ -243,7 +244,7 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
             }
 
             $data = $data->orderBy('check_up_result_id', 'asc')
-                ->orderBy('data_category','asc')
+                ->orderBy('data_category', 'asc')
                 ->get();
 
             $array[] = $data;
@@ -271,9 +272,115 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
             $total_expenses = $expenses->amount_overall;
         }
 
+        $payment_method = DB::table('payment_methods')
+            ->select('id', 'payment_name')
+            ->where('id', '!=', 0)
+            ->get();
+
+        foreach ($payment_method as $data_pay) {
+
+            $total_each_payment = 0;
+
+            $count_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('payment_methods as pm', 'lopm.payment_method_id', '=', 'pm.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"));
+
+            $count_item = $count_item->where('lopm.payment_method_id', '=', $data_pay->id);
+
+            if ($this->branch_id) {
+                $count_item = $count_item->where('branches.id', '=', $this->branch_id);
+            }
+
+            if ($this->date_from && $this->date_to) {
+                $count_item = $count_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$this->date_from, $this->date_to]);
+            }
+            $count_item = $count_item->first();
+
+            $total_each_payment += $count_item->price_overall;
+
+            //service
+            $count_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('payment_methods as pm', 'list_of_payment_services.payment_method_id', '=', 'pm.id')
+                ->select(
+                    DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"));
+
+            $count_service = $count_service->where('list_of_payment_services.payment_method_id', '=', $data_pay->id);
+
+            if ($this->branch_id) {
+                $count_service = $count_service->where('branches.id', '=', $this->branch_id);
+            }
+
+            if ($this->date_from && $this->date_to) {
+                $count_service = $count_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$this->date_from, $this->date_to]);
+            }
+            $count_service = $count_service->first();
+
+            $total_each_payment += $count_service->price_overall;
+
+            //pet shop with clinic
+            $count_pet_shop_clinic = DB::table('list_of_payments as lop')
+                ->join('payment_petshop_with_clinics as ppwc', 'lop.id', '=', 'ppwc.list_of_payment_id')
+                ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', '=', 'pip.id')
+                ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', '=', 'loi.id')
+                ->join('users', 'ppwc.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('payment_methods as pm', 'ppwc.payment_method_id', '=', 'pm.id')
+                ->select(DB::raw("TRIM(SUM(pip.selling_price * ppwc.total_item))+0 as price_overall"));
+
+            $count_pet_shop_clinic = $count_pet_shop_clinic->where('ppwc.payment_method_id', '=', $data_pay->id);
+
+            if ($this->branch_id) {
+                $count_pet_shop_clinic = $count_pet_shop_clinic->where('branches.id', '=', $this->branch_id);
+            }
+
+            if ($this->date_from && $this->date_to) {
+                $count_pet_shop_clinic = $count_pet_shop_clinic->whereBetween(DB::raw('DATE(ppwc.created_at)'), [$this->date_from, $this->date_to]);
+            }
+            $count_pet_shop_clinic = $count_pet_shop_clinic->first();
+
+            $total_each_payment += $count_pet_shop_clinic->price_overall;
+
+            //pet shop
+            $count_pet_shop = DB::table('master_payment_petshops as mp')
+                ->join('payment_petshops as pp', 'pp.master_payment_petshop_id', 'mp.id')
+                ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', 'pip.id')
+                ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', 'loi.id')
+                ->join('users', 'pp.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->join('payment_methods as pm', 'mp.payment_method_id', '=', 'pm.id')
+                ->select(DB::raw("TRIM(SUM(pip.selling_price * pp.total_item))+0 as price_overall"));
+
+            $count_pet_shop = $count_pet_shop->where('mp.payment_method_id', '=', $data_pay->id);
+
+            if ($this->branch_id) {
+                $count_pet_shop = $count_pet_shop->where('branches.id', '=', $this->branch_id);
+            }
+
+            if ($this->date_from && $this->date_to) {
+                $count_pet_shop = $count_pet_shop->whereBetween(DB::raw('DATE(pp.created_at)'), [$this->date_from, $this->date_to]);
+            }
+            $count_pet_shop = $count_pet_shop->first();
+
+            $total_each_payment += $count_pet_shop->price_overall;
+
+            $arr_payment[] = array('amount' => $total_each_payment, 'payment_name' => $data_pay->payment_name);
+        }
+
         return view('laporan-keuangan', [
             'data' => $array,
             'expenses' => $total_expenses,
+            'data_payment_method' => $arr_payment,
         ]);
     }
 

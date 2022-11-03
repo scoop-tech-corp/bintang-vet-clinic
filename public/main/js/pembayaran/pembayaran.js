@@ -4,6 +4,8 @@ $(document).ready(function() {
   let listSelectedBarang = [];
 	let optCabang = '';
 	let getCurrentPage = 1;
+  let optMetodePembayaran = '';
+  let isValidMetodePembayaran = false;
 
   let paramUrlSetup = {
 		orderby:'',
@@ -26,9 +28,14 @@ $(document).ready(function() {
     }
 	//}
 
+  loadMetodePembayaran();
   loadPembayaran();
   
   loadPembayaranPetshop();
+
+  $('#selectedMetodePembayaran').on('select2:select', function (e) {
+    validationForm();
+  });
 
   $('.input-search-section .fa').click(function() {
 		onSearch($('.input-search-section input').val());
@@ -335,6 +342,33 @@ $(document).ready(function() {
 		});
   }
 
+  function loadMetodePembayaran(){
+    $.ajax({
+      url     : $('.baseUrl').val() + '/api/metode-pembayaran',
+      headers : { 'Authorization': `Bearer ${token}` },
+      type    : 'GET',
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data) {
+        const getData = data;
+        optMetodePembayaran += `<option value=""></option>`;
+
+				if (getData.length) {
+					for (let i = 0 ; i < getData.length ; i++) {
+						optMetodePembayaran += `<option value=${getData[i].id}>${getData[i].payment_name}</option>`;
+					}
+				}
+				$('#selectedMetodePembayaran').append(optMetodePembayaran);
+
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+  }
+
 	function loadCabang() {
 		$.ajax({
 			url     : $('.baseUrl').val() + '/api/cabang',
@@ -402,6 +436,12 @@ $(document).ready(function() {
       $('#cabangErr1').text(''); isValidSelectedCabang = true;
     }
 
+    if (!$('#selectedMetodePembayaran').val()) {
+      $('#metodePembayaranErr1').text('Metode pembayaran harus di isi'); isValidMetodePembayaran = false;
+    } else {
+      $('#metodePembayaranErr1').text(''); isValidMetodePembayaran = true;
+    }
+
     if (!listSelectedBarang.length) {
       $('#barangErr1').text('Barang harus di pilih'); isValidListSelectedBarang = false;
     } else {
@@ -410,7 +450,7 @@ $(document).ready(function() {
 
     $('#beErr').empty(); isBeErr = false;
 
-    $('#btnSubmitPembayaran').attr('disabled', (!isValidSelectedCabang || !isValidListSelectedBarang || isBeErr) ? true : false);
+    $('#btnSubmitPembayaran').attr('disabled', (!isValidSelectedCabang || !isValidMetodePembayaran || !isValidListSelectedBarang || isBeErr) ? true : false);
   }
 
 	function refreshForm() {
@@ -418,6 +458,9 @@ $(document).ready(function() {
     $('#selectedBarang').val(null);
     listSelectedBarang = [];
     drawTableSelectedBarang();
+
+    $('#selectedMetodePembayaran').val(null);
+    $('#metodePembayaranErr1').text(''); isValidMetodePembayaran = true;
 
     $('#selectedCabang').prop('disabled', false);
 
@@ -435,6 +478,7 @@ $(document).ready(function() {
     $('#selectedCabang').select2();
     $('#selectedBarang').select2();
 
+    $('#selectedMetodePembayaran').select2({placeholder: 'Pilih Metode Pembayaran'});
 		$('#modal-tambah-pembayaran').modal('show');
 		$('#btnSubmitPembayaran').attr('disabled', true);
   }
@@ -543,6 +587,7 @@ $(document).ready(function() {
 
     fd.append('branch_id', getBranchId); // for kasir id cabang from login data
     fd.append('price_item_pet_shops', JSON.stringify(finalSelectedBarang));
+    fd.append('payment_method_id', $('#selectedMetodePembayaran').val());
 
     $.ajax({
       url: $('.baseUrl').val() + '/api/pembayaranpetshop',
