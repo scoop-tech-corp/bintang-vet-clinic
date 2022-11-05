@@ -22,6 +22,10 @@
     </thead>
     <tbody>
 
+        @php
+            $j = 0;
+        @endphp
+
         @foreach ($data as $datas)
             @php
                 $total_income = 0;
@@ -446,15 +450,18 @@
 
                 <td style="text-align: right; border: 1px thick black;">
                     <b>
-                        {{ $expenses }}
+                        {{ number_format($expenses[$j], 2,',','.') }}
                     </b>
                 </td>
                 <td style="text-align: right; border: 1px thick black;">
                     <b>
-                        {{ $total_doctor_after_discount - $expenses }}
+                        {{ number_format($total_doctor_after_discount - $expenses[$j], 2,',','.') }}
                     </b>
                 </td>
             </tr>
+            @php
+            $j+=1;
+            @endphp
         @endforeach
 
         <tr>
