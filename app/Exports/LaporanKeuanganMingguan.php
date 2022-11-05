@@ -248,28 +248,28 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
                 ->get();
 
             $array[] = $data;
-        }
 
-        $expenses = DB::table('expenses as e')
-            ->join('users as u', 'e.user_id_spender', '=', 'u.id')
-            ->join('branches as b', 'u.branch_id', '=', 'b.id')
-            ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
+            $expenses = DB::table('expenses as e')
+                ->join('users as u', 'e.user_id_spender', '=', 'u.id')
+                ->join('branches as b', 'u.branch_id', '=', 'b.id')
+                ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
 
-        if ($this->branch_id) {
-            $expenses = $expenses->where('b.id', '=', $this->branch_id);
-        }
+            if ($this->branch_id) {
+                $expenses = $expenses->where('b.id', '=', $this->branch_id);
+            }
 
-        if ($this->date_from && $this->date_to) {
-            $expenses = $expenses->whereBetween(DB::raw('DATE(e.date_spend)'), [$this->date_from, $this->date_to]);
-        }
+            $expenses = $expenses->where(DB::raw('DATE(e.date_spend)'), '=', $result_data->date);
 
-        $expenses = $expenses->first();
+            $expenses = $expenses->first();
 
-        $total_expenses = 0;
+            $total_expenses = 0;
 
-        if (!is_null($expenses->amount_overall)) {
+            if (!is_null($expenses->amount_overall)) {
 
-            $total_expenses = $expenses->amount_overall;
+                $total_expenses = $expenses->amount_overall;
+            }
+
+            $expenses_per_day[] = $total_expenses;
         }
 
         $payment_method = DB::table('payment_methods')
@@ -379,7 +379,7 @@ class LaporanKeuanganMingguan implements FromView, WithTitle
 
         return view('laporan-keuangan', [
             'data' => $array,
-            'expenses' => $total_expenses,
+            'expenses' => $expenses_per_day,
             'data_payment_method' => $arr_payment,
         ]);
     }

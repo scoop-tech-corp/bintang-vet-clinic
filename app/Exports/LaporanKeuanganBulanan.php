@@ -248,29 +248,28 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
                 ->get();
 
             $array[] = $data;
-        }
 
-        $expenses = DB::table('expenses as e')
-            ->join('users as u', 'e.user_id_spender', '=', 'u.id')
-            ->join('branches as b', 'u.branch_id', '=', 'b.id')
-            ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
+            $expenses = DB::table('expenses as e')
+                ->join('users as u', 'e.user_id_spender', '=', 'u.id')
+                ->join('branches as b', 'u.branch_id', '=', 'b.id')
+                ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
 
-        if ($this->branch_id) {
-            $expenses = $expenses->where('b.id', '=', $this->branch_id);
-        }
+            if ($this->branch_id) {
+                $expenses = $expenses->where('b.id', '=', $this->branch_id);
+            }
 
-        if ($this->month && $this->year) {
-            $expenses = $expenses->where(DB::raw('MONTH(e.date_spend)'), '=', $this->month)
-                ->where(DB::raw('YEAR(e.date_spend)'), '=', $this->year);
-        }
+            $expenses = $expenses->where(DB::raw('DATE(e.date_spend)'), '=', $result_data->date);
 
-        $expenses = $expenses->first();
+            $expenses = $expenses->first();
 
-        $total_expenses = 0;
+            $total_expenses = 0;
 
-        if (!is_null($expenses->amount_overall)) {
+            if (!is_null($expenses->amount_overall)) {
 
-            $total_expenses = $expenses->amount_overall;
+                $total_expenses = $expenses->amount_overall;
+            }
+
+            $expenses_per_day[] = $total_expenses;
         }
 
         $payment_method = DB::table('payment_methods')
@@ -299,7 +298,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
 
             if ($this->month && $this->year) {
                 $count_item = $count_item->where(DB::raw('MONTH(lopm.updated_at)'), '=', $this->month)
-                ->where(DB::raw('YEAR(lopm.updated_at)'), '=', $this->year);
+                    ->where(DB::raw('YEAR(lopm.updated_at)'), '=', $this->year);
             }
             $count_item = $count_item->first();
 
@@ -325,7 +324,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
 
             if ($this->month && $this->year) {
                 $count_service = $count_service->where(DB::raw('MONTH(list_of_payment_services.updated_at)'), '=', $this->month)
-                ->where(DB::raw('YEAR(list_of_payment_services.updated_at)'), '=', $this->year);
+                    ->where(DB::raw('YEAR(list_of_payment_services.updated_at)'), '=', $this->year);
             }
             $count_service = $count_service->first();
 
@@ -349,7 +348,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
 
             if ($this->month && $this->year) {
                 $count_pet_shop_clinic = $count_pet_shop_clinic->where(DB::raw('MONTH(ppwc.created_at)'), '=', $this->month)
-                ->where(DB::raw('YEAR(ppwc.created_at)'), '=', $this->year);
+                    ->where(DB::raw('YEAR(ppwc.created_at)'), '=', $this->year);
             }
             $count_pet_shop_clinic = $count_pet_shop_clinic->first();
 
@@ -373,7 +372,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
 
             if ($this->month && $this->year) {
                 $count_pet_shop = $count_pet_shop->where(DB::raw('MONTH(pp.created_at)'), '=', $this->month)
-                ->where(DB::raw('YEAR(pp.created_at)'), '=', $this->year);
+                    ->where(DB::raw('YEAR(pp.created_at)'), '=', $this->year);
             }
             $count_pet_shop = $count_pet_shop->first();
 
@@ -384,7 +383,7 @@ class LaporanKeuanganBulanan implements FromView, WithTitle
 
         return view('laporan-keuangan', [
             'data' => $array,
-            'expenses' => $total_expenses,
+            'expenses' => $expenses_per_day,
             'data_payment_method' => $arr_payment,
         ]);
     }
