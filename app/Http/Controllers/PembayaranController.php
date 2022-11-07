@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\CheckUpResult;
 use App\Models\DetailServicePatient;
 use App\Models\Detail_medicine_group_check_up_result;
+use App\Models\ListofItemsPetShop;
 use App\Models\ListofPaymentItem;
 use App\Models\ListofPayments;
 use App\Models\ListofPaymentService;
 use App\Models\list_of_payment_medicine_groups;
+use App\Models\payment_petshop_with_clinic;
 use DB;
 use Illuminate\Http\Request;
 use PDF;
@@ -591,6 +593,24 @@ class PembayaranController extends Controller
 
         $data['paid_item'] = $paid_item;
 
+        $pet_shop = DB::table('payment_petshop_with_clinics as ppwc')
+            ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', '=', 'pip.id')
+            ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', '=', 'loi.id')
+            ->join('users', 'ppwc.user_id', '=', 'users.id')
+            ->join('payment_methods as pm', 'ppwc.payment_method_id', '=', 'pm.id')
+            ->select('loi.item_name',
+                'ppwc.total_item',
+                DB::raw("TRIM(pip.selling_price)+0 as selling_price"),
+                DB::raw("TRIM(pip.selling_price * ppwc.total_item)+0 as price_overall"),
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(ppwc.created_at, '%d %b %Y') as created_at"),
+                'pm.payment_name as payment_method')
+            ->where('ppwc.list_of_payment_id', '=', $request->list_of_payment_id)
+            ->orderBy('ppwc.id', 'desc')
+            ->get();
+
+        $data['pet_shop'] = $pet_shop;
+
         return response()->json($data, 200);
     }
 
@@ -688,6 +708,42 @@ class PembayaranController extends Controller
                         'message' => 'The data was invalid.',
                         'errors' => ['Data tidak ditemukan!'],
                     ], 404);
+                }
+            }
+        }
+
+        //validation pet shop
+        $item_pet_shops = $request->petshop_payment;
+        $result_pet_shops = json_decode($item_pet_shops, true);
+
+        if (count($result_pet_shops) != 0) {
+
+            foreach ($result_pet_shops as $value_item) {
+
+                $check_item = DB::table('price_item_pet_shops as pip')
+                    ->where('pip.id', '=', $value_item['id'])
+                    ->get();
+
+                if (is_null($check_item)) {
+                    return response()->json([
+                        'message' => 'The data was invalid.',
+                        'errors' => ['Data tidak ditemukan!'],
+                    ], 404);
+                }
+
+                $check_item = DB::table('price_item_pet_shops as pip')
+                    ->join('list_of_item_pet_shops as loi', 'loi.id', 'pip.list_of_item_pet_shop_id')
+                    ->where('pip.id', '=', $value_item['id'])
+                    ->select('loi.total_item as total_item')
+                    ->first();
+
+                $calculate_stock = $check_item->total_item - $value_item['total_item'];
+
+                if ($calculate_stock < 0) {
+                    return response()->json([
+                        'message' => 'The given data was invalid.',
+                        'errors' => ['Jumlah stok ' . $value_item['item_name'] . ' Pet Shop kurang atau habis!'],
+                    ], 422);
                 }
             }
         }
@@ -804,6 +860,33 @@ class PembayaranController extends Controller
             }
         }
 
+        //simpan data pet shop
+        if (count($result_pet_shops) != 0) {
+
+            foreach ($result_pet_shops as $value_item) {
+
+                $get_stock = DB::table('price_item_pet_shops as pip')
+                    ->join('list_of_item_pet_shops as loi', 'loi.id', 'pip.list_of_item_pet_shop_id')
+                    ->where('pip.id', '=', $value_item['id'])
+                    ->select('loi.id')
+                    ->first();
+
+                $list_of_item_pet_shop = ListofItemsPetShop::find($get_stock->id);
+                $list_of_item_pet_shop->total_item = $list_of_item_pet_shop->total_item - $value_item['total_item'];
+                $list_of_item_pet_shop->diff_item = $list_of_item_pet_shop->diff_item - $value_item['total_item'];
+                $list_of_item_pet_shop->user_update_id = $request->user()->id;
+                $list_of_item_pet_shop->updated_at = \Carbon\Carbon::now();
+                $list_of_item_pet_shop->save();
+
+                payment_petshop_with_clinic::create([
+                    'price_item_pet_shop_id' => $value_item['id'],
+                    'list_of_payment_id' => $list_of_payment->id,
+                    'payment_method_id' => $request->payment_method_id,
+                    'total_item' => $value_item['total_item'],
+                    'user_id' => $request->user()->id,
+                ]);
+            }
+        }
         //cek kelunasan jasa
 
         $count_payed_service = DB::table('list_of_payment_services')
@@ -1275,7 +1358,26 @@ class PembayaranController extends Controller
             $update_paid_off->save();
         }
 
-        $medicine_group_payment = list_of_payment_medicine_groups::where('list_of_payment_id', '=', $request->list_of_payment_id)
+        list_of_payment_medicine_groups::where('list_of_payment_id', '=', $request->list_of_payment_id)
+            ->delete();
+
+        $check_stock = DB::table('payment_petshop_with_clinics as ppwc')
+            ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', 'pip.id')
+            ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', 'loi.id')
+            ->select('loi.id as list_of_item_id', 'ppwc.total_item as total_item_buy', 'loi.total_item as total_item_stock', 'loi.diff_item')
+            ->where('ppwc.list_of_payment_id', '=', $request->list_of_payment_id)
+            ->get();
+
+        foreach ($check_stock as $res) {
+
+            $list_of_item_pet_shop = ListofItemsPetShop::find($res->list_of_item_id);
+
+            $list_of_item_pet_shop->total_item = $res->total_item_stock + $res->total_item_buy;
+            $list_of_item_pet_shop->diff_item = $res->diff_item + $res->total_item_buy;
+            $list_of_item_pet_shop->save();
+        }
+
+        payment_petshop_with_clinic::where('list_of_payment_id', '=', $request->list_of_payment_id)
             ->delete();
 
         $check_payment->delete();
@@ -1446,6 +1548,7 @@ class PembayaranController extends Controller
 
         $price_service = 0;
         $price_item = 0;
+        $price_petshop = 0;
 
         $res_discount_service = 0;
 
@@ -1466,8 +1569,6 @@ class PembayaranController extends Controller
         if ($price_overall_item) {
             $price_item = $price_overall_item->price_overall - $res_discount_item;
         }
-
-        $price_overall = $price_service + $price_item;
 
         $address = DB::table('check_up_results')
             ->join('registrations', 'check_up_results.patient_registration_id', 'registrations.id')
@@ -1496,8 +1597,25 @@ class PembayaranController extends Controller
             ->where('list_of_payments.check_up_result_id', '=', $request->check_up_result_id)
             ->first();
 
+        $data_petshop = DB::table('payment_petshop_with_clinics as ppwc')
+            ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', 'pip.id')
+            ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', 'loi.id')
+            ->select('ppwc.total_item as quantity',
+                'loi.item_name',
+                DB::raw("TRIM(pip.selling_price)+0 as selling_price"),
+                DB::raw("TRIM(pip.selling_price * ppwc.total_item)+0 as price_overall"))
+            ->where('ppwc.list_of_payment_id', '=', $check_list_of_payment->id)
+            ->get();
+
+        foreach ($data_petshop as $dp) {
+            $price_petshop += $dp->price_overall;
+        }
+
+        $price_overall = $price_service + $price_item + $price_petshop;
+
         $data = ['data_item' => $data_item,
             'data_service' => $data_service,
+            'data_petshop' => $data_petshop,
             'price_overall' => $price_overall,
             'address' => $address->address,
             'registration_number' => $data_patient[0]->id_number,

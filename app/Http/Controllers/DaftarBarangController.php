@@ -578,8 +578,8 @@ class DaftarBarangController extends Controller
         $item->isDeleted = true;
         $item->deleted_by = $request->user()->fullname;
         $item->deleted_at = Carbon::now();
-        //$item->save();
-        $item->delete();
+        $item->save();
+        //$item->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Barang',
@@ -619,6 +619,7 @@ class DaftarBarangController extends Controller
             $check_branch = DB::table('list_of_items')
                 ->where('branch_id', '=', $key_result['kode_cabang_barang'])
                 ->where('item_name', '=', $key_result['nama_barang'])
+                ->where('isDeleted', '=', 0)
                 ->count();
 
             if ($check_branch > 0) {
@@ -629,13 +630,7 @@ class DaftarBarangController extends Controller
                 ], 422);
             }
 
-            $format_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($key_result['tanggal_kedaluwarsa_barang_ddmmyyyy']));
-
-            $tmp_date = Carbon::parse($format_date);
-
-            $exp_date = $tmp_date->format('Y/m/d');
-
-            //Carbon::parse(Carbon::createFromFormat('d/m/Y', $tmp_date->format('d/m/Y'))->format('d/m/Y'));
+            // $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
 
             // if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
             //     return response()->json([

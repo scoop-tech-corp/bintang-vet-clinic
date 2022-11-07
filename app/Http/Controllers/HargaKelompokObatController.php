@@ -171,6 +171,7 @@ class HargaKelompokObatController extends Controller
         $check_list_medicine_group = DB::table('price_medicine_groups')
             ->where('medicine_group_id', '=', $request->MedicineGroupId)
             ->where('id', '!=', $request->id)
+            ->where('isdeleted', '=', 0)
             ->count();
 
         if ($check_list_medicine_group > 0) {
@@ -216,8 +217,8 @@ class HargaKelompokObatController extends Controller
         $price_medicine_groups->isDeleted = true;
         $price_medicine_groups->deleted_by = $request->user()->fullname;
         $price_medicine_groups->deleted_at = \Carbon\Carbon::now();
-        //$price_medicine_groups->save();
-        $price_medicine_groups->delete();
+        $price_medicine_groups->save();
+        //$price_medicine_groups->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Data',
@@ -314,9 +315,14 @@ class HargaKelompokObatController extends Controller
 
             if ($check_branch > 0) {
 
+                $data_medicine_group = DB::table('price_medicine_groups as pmg')
+                    ->join('medicine_groups as mg', 'mg.id', 'pmg.medicine_group_id')
+                    ->where('medicine_group_id', '=', $key_result['kode_kelompok_obat'])
+                    ->first();
+
                 return response()->json([
                     'message' => 'The data was invalid.',
-                    'errors' => ['Data ' . $key_result['nama_kelompok'] . ' sudah ada!'],
+                    'errors' => ['Data ' . $data_medicine_group->group_name . ' sudah ada!'],
                 ], 422);
             }
         }
