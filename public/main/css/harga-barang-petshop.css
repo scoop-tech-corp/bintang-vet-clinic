@@ -1,0 +1,18 @@
+
+
+@media (max-width: 768px) {
+  .openFormUpload, .btn-download-excel {
+    margin-top: 10px;
+  }
+
+  .input-search-section {
+    width: 100%;
+    margin-right: 0px;
+  }
+
+  .section-left-box-title {
+    width: 200px;
+    margin-right: 10px;
+  }
+
+}

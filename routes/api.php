@@ -78,6 +78,19 @@ Route::group(['middleware' => ['api']], function () {
         Route::get('daftar-barang/download-template', 'DaftarBarangController@download_template');
         Route::post('daftar-barang/upload', 'DaftarBarangController@upload_template');
 
+        //daftar barang pet shop
+        // Route::get('daftar-barang-batas', 'DaftarBarangController@index_limit');
+
+        Route::get('daftar-barang-petshop', 'DaftarBarangPetshopController@index');
+        Route::post('daftar-barang-petshop', 'DaftarBarangPetshopController@create');
+        Route::put('daftar-barang-petshop', 'DaftarBarangPetshopController@update');
+        Route::delete('daftar-barang-petshop', 'DaftarBarangPetshopController@delete');
+
+        Route::get('daftar-barang-petshop/generate-excel', 'DaftarBarangPetshopController@generate_excel');
+
+        Route::get('daftar-barang-petshop/download-template', 'DaftarBarangPetshopController@download_template');
+        Route::post('daftar-barang-petshop/upload', 'DaftarBarangPetshopController@upload_template');
+
         //kategori jasa
         Route::get('kategori-jasa', 'KategoriJasaController@index');
         Route::post('kategori-jasa', 'KategoriJasaController@create');
@@ -113,6 +126,20 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('pembagian-harga-barang/upload', 'HargaBarangController@upload_template');
 
         Route::get('pembagian-harga-barang/dropdown', 'HargaBarangController@dropdown');
+        
+        //pembagian harga barang pet shop
+        Route::get('pembagian-harga-barang-petshop', 'HargaBarangPetShopController@index');
+        Route::post('pembagian-harga-barang-petshop', 'HargaBarangPetShopController@create');
+        Route::put('pembagian-harga-barang-petshop', 'HargaBarangPetShopController@update');
+        Route::delete('pembagian-harga-barang-petshop', 'HargaBarangPetShopController@delete');
+        Route::get('pembagian-harga-barang-petshop/barang-petshop', 'HargaBarangPetShopController@item_category');
+        // Route::get('pembagian-harga-barang-petshop/nama-barang-petshop', 'HargaBarangPetShopController@item_name');
+
+        Route::get('pembagian-harga-barang-petshop/generate-excel', 'HargaBarangPetShopController@generate_excel');
+        Route::get('pembagian-harga-barang-petshop/download-template', 'HargaBarangPetShopController@download_template');
+        Route::post('pembagian-harga-barang-petshop/upload', 'HargaBarangPetShopController@upload_template');
+
+        Route::get('pembagian-harga-barang-petshop/dropdown', 'HargaBarangPetShopController@dropdown');
 
         //registrasi pasien
         Route::get('registrasi-pasien', 'RegistrasiController@index');
@@ -144,10 +171,18 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('pembayaran', 'PembayaranController@create');
         Route::put('pembayaran', 'PembayaranController@update');
         Route::get('pembayaran/detail', 'PembayaranController@detail');
+        Route::delete('pembayaran', 'PembayaranController@delete');
+
+        //pembayaran petshop
+        Route::get('pembayaranpetshop', 'PembayaranPetShopController@index');
+        Route::get('pembayaranpetshop/filteritem', 'PembayaranPetShopController@filteritempetshop');
+        Route::post('pembayaranpetshop', 'PembayaranPetShopController@create');
+        Route::get('pembayaranpetshop/printreceipt', 'PembayaranPetShopController@print_receipt');
+        Route::delete('pembayaranpetshop', 'PembayaranPetShopController@delete');
         // Route::get('pembayaran/print', 'PembayaranController@print_pdf');
         //Route::post('pembayaran/printpdf', 'PembayaranController@print_pdf');
 
-        Route::delete('pembayaran', 'PembayaranController@delete');
+        
 
         //Metode Pembayaran
         Route::get('metode-pembayaran', 'DaftarMetodePembayaranController@index');

@@ -12,5 +12,5 @@ class Detail_medicine_group_check_up_result extends Model
 
     protected $guarded = ['id'];
 
-    protected $fillable = ['check_up_result_id', 'medicine_group_id', 'status_paid_off', 'user_id','quantity'];
+    protected $fillable = ['check_up_result_id', 'medicine_group_id', 'status_paid_off', 'user_id','quantity','remark'];
 }

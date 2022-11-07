@@ -68,6 +68,8 @@
 					<li><a href="{{ url('/satuan-barang') }}"><i class="fa fa-circle-o"></i> Satuan Barang</a></li>
 					<li><a href="{{ url('/daftar-barang') }}"><i class="fa fa-circle-o"></i> Daftar Barang</a></li>
 					<li><a href="{{ url('/pembagian-harga-barang') }}"><i class="fa fa-circle-o"></i> Pembagian Harga Barang</a></li>
+					<li><a href="{{ url('/daftar-barang-petshop') }}"><i class="fa fa-circle-o"></i> Daftar Barang Pet Shop</a></li>
+					<li><a href="{{ url('/pembagian-harga-barang-petshop') }}"><i class="fa fa-circle-o"></i> Harga Barang Pet Shop</a></li>
 					<li><a href="{{ url('/kelompok-obat') }}"><i class="fa fa-circle-o"></i> Kelompok Obat</a></li>
 					<li><a href="{{ url('/pembagian-harga-kelompok-obat') }}"><i class="fa fa-circle-o"></i> Harga Kelompok Obat</a></li>
 				</ul>

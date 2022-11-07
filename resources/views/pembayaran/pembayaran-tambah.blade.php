@@ -177,6 +177,34 @@
         </table>
       </div>
     </div>
+
+    <div class="col-md-12 m-b-10px">
+      <label for="petShop">Pet Shop</label>
+      <select id="petShop" class="form-control" style="width: 100%"></select>
+      <div id="petShopErr1" class="validate-error"></div>
+    </div>
+
+    <div class="col-md-12 indented-pet-shop">
+      <div class="label-detail-div m-b-10px"></div>
+      <div class="table-responsive">
+        <table class="table table-striped text-nowrap">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Barang</th>
+              <th>Jumlah</th>
+              <th>Harga Satuan</th>
+              <th>Harga Keseluruhan</th>
+              <th>Hapus</th>
+            </tr>
+          </thead>
+          <tbody id="list-selected-pet-shop">
+            <tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="col-md-12 indented-detail-tagihan">
       <div class="d-flex m-b-10px">
         <div style="font-weight: 700">Total tagihan</div>

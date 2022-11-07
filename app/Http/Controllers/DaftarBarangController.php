@@ -578,8 +578,8 @@ class DaftarBarangController extends Controller
         $item->isDeleted = true;
         $item->deleted_by = $request->user()->fullname;
         $item->deleted_at = Carbon::now();
-        //$item->save();
-        $item->delete();
+        $item->save();
+        //$item->delete();
 
         return response()->json([
             'message' => 'Berhasil menghapus Barang',
@@ -619,6 +619,7 @@ class DaftarBarangController extends Controller
             $check_branch = DB::table('list_of_items')
                 ->where('branch_id', '=', $key_result['kode_cabang_barang'])
                 ->where('item_name', '=', $key_result['nama_barang'])
+                ->where('isDeleted', '=', 0)
                 ->count();
 
             if ($check_branch > 0) {
