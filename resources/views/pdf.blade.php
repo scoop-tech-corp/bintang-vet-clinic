@@ -200,6 +200,17 @@
                     @endif
                 @endforeach
             @endif
+
+            @if($data_petshop)
+                @foreach ($data_petshop as $petshop)
+                    <tr>
+                        <td>{{ $petshop->item_name }}</td>
+                        <td>{{ $petshop->quantity }}</td>
+                        <td>{{ number_format($petshop->selling_price) }}</td>
+                        <td>{{ number_format($petshop->price_overall) }}</td>
+                    </tr>
+                @endforeach
+            @endif
         </tbody>
     </table>
 

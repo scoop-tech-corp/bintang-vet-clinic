@@ -112,7 +112,8 @@ $(document).ready(function() {
         rowKelompokObat += `<div class="target" style="margin-bottom: 30px">`
         + `<div class="m-b-10px" style="font-weight: 700">Kelompok Obat ${no}</div>`
         + `<div>${li.group_name} - ${li.branch_name} - ${li.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</div>`
-        + `<div class="m-b-10px">Jumlah: ${li.quantity}</div>`
+        + `<div>Jumlah: ${li.quantity}</div>`
+        + `<div class="m-b-10px">Keterangan: ${li.remark}</div>`
         + `<div class="table-responsive" id="table-list-barang-${idx}">`
         +   `<table class="table table-striped text-nowrap">`
         +    `<thead>`

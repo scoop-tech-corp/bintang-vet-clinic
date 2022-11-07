@@ -13,6 +13,7 @@ class PengeluaranController extends Controller
 {
     public function index(Request $request)
     {
+
         $items_per_page = 50;
 
         $page = $request->page;
@@ -40,12 +41,18 @@ class PengeluaranController extends Controller
             } else {
                 $expenses = [];
                 return response()->json(['total_paging' => 0,
-                    'data' => $expenses], 200);
+                    'data' => $expenses,
+                    'amount_overall' => 0], 200);
             }
         }
 
         if ($request->branch_id && $request->user()->role == 'admin') {
             $expenses = $expenses->where('user_spender.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->month && $request->year) {
+            $expenses = $expenses->where(DB::raw("MONTH(e.date_spend)"), $request->month)
+                ->where(DB::raw("YEAR(e.date_spend)"), $request->year);
         }
 
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
@@ -63,6 +70,14 @@ class PengeluaranController extends Controller
         $count_data = $expenses->count();
         $count_result = $count_data - $offset;
 
+        $data_before_limit = $expenses->get();
+
+        $amount_overall = 0;
+
+        foreach ($data_before_limit as $res) {
+            $amount_overall += $res->amount_overall;
+        }
+
         if ($count_result < 0) {
             $expenses = $expenses->offset(0)->limit($items_per_page)->get();
         } else {
@@ -72,7 +87,8 @@ class PengeluaranController extends Controller
         $total_paging = $count_data / $items_per_page;
 
         return response()->json(['total_paging' => ceil($total_paging),
-            'data' => $expenses], 200);
+            'data' => $expenses,
+            'amount_overall' => $amount_overall], 200);
 
     }
 

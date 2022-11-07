@@ -167,6 +167,28 @@
       </div>
     </div>
     <div class="col-md-12 indented-detail-tagihan">
+      <div class="label-detail-div m-b-10px">Pet Shop</div>
+      <div class="table-responsive">
+        <table class="table table-striped text-nowrap">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Tanggal</th>
+              <th>Dibuat Oleh</th>
+              <th>Nama Barang</th>
+              <th>Jumlah</th>
+              <th>Harga Satuan</th>
+              <th>Harga Keseluruhan</th>
+              <th>Pembayaran</th>
+            </tr>
+          </thead>
+          <tbody id="list-tagihan-pet-shop">
+            <tr class="text-center"><td colspan="8">Tidak ada data.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-12 indented-detail-tagihan">
       <div class="d-flex m-b-10px">
         <div style="font-weight: 700" id="label-tagihan"></div>
         <div id="totalBayarTxt" class="p-left-10px" style="word-break: break-all;"></div>

@@ -53,8 +53,16 @@ Route::get('/daftar-barang', function () {
 	return view('gudang.daftar-barang.index');
 });
 
+Route::get('/daftar-barang-petshop', function () {
+	return view('gudang.daftar-barang-petshop.index');
+});
+
 Route::get('/pembagian-harga-barang', function () {
 	return view('gudang.pembagian-harga.index');
+});
+
+Route::get('/pembagian-harga-barang-petshop', function () {
+	return view('gudang.pembagian-harga-petshop.index');
 });
 
 Route::get('/pembagian-harga-kelompok-obat', function () {
@@ -170,6 +178,7 @@ Route::get('pembayaran/print/{check_up_result_id}/{service_payment}/{item_paymen
 
 Route::get('penggajian/generate/{id}', 'PenggajianController@generate');
 
+Route::get('pembayaranpetshop/printreceipt/{master_payment_id}', 'PembayaranPetShopController@print_receipt');
 
 Route::post('/print', function(Request $request) {
   if ($request->ajax()) {

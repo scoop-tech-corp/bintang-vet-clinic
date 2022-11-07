@@ -175,6 +175,7 @@ $(document).ready(function() {
       let newObj = {medicine_group_id: null, quantity: null, list_of_medicine: []};
       newObj.medicine_group_id = ko.kelompokObatId;
       newObj.quantity = ko.quantity;
+      newObj.remark = ko.remark;
 
       ko.selectedListBarang.forEach(lb => {
         newObj.list_of_medicine.push({price_item_id: lb.price_item_id, quantity: lb.quantity, price_overall: lb.price_overall});
@@ -261,6 +262,7 @@ $(document).ready(function() {
       newObj.id = ko.id;
       newObj.medicine_group_id = ko.kelompokObatId;
       newObj.quantity = ko.quantity;
+      newObj.remark = ko.remark;
 
       ko.deletedUpdateListBarang.forEach(dul => {
         newObj.list_of_medicine.push({id: dul.id, price_item_id: dul.price_item_id, quantity: dul.quantity, price_overall: dul.price_overall, status: 'del'});
@@ -500,6 +502,7 @@ $(document).ready(function() {
             newObj.id = item.id; // untuk membedakan data lama dan baru
             newObj.kelompokObatId = item.medicine_group_id;
             newObj.quantity = item.quantity;
+            newObj.remark = item.remark;
             item.list_of_medicine.forEach(lom => {
               newObj.selectDropdownBarang.push(lom.price_item_id);
               newObj.selectedListBarang.push({
