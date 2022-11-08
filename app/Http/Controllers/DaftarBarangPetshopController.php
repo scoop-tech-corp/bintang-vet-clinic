@@ -337,10 +337,6 @@ class DaftarBarangPetshopController extends Controller
                     'errors' => ['Data ' . $key_result['nama_barang'] . ' sudah ada!'],
                 ], 422);
             }
-
-            if ($key_branch['']) {
-
-            }
         }
 
         $file = $request->file('file');
