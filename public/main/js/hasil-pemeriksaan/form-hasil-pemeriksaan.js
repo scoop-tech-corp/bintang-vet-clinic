@@ -31,9 +31,9 @@ $(document).ready(function() {
   const stuff = url.split('/');
   const lastUrl = stuff[stuff.length-1];
 
-  if (role.toLowerCase() == 'resepsionis') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;
-	} else {
+  // if (role.toLowerCase() == 'resepsionis') {
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	// } else {
     formConfigure();
     loadPasien();
     loadJasa();
@@ -48,7 +48,7 @@ $(document).ready(function() {
       $('.box-image-upload').magnificPopup({delegate: 'a', type:'image'});
       loadFormEdit();
     }
-  }
+  // }
 
   $('.btn-back-to-list .text, #btnKembali').click(function() {
     window.location.href = $('.baseUrl').val() + '/hasil-pemeriksaan';
