@@ -13,12 +13,12 @@ class LaporanKeuanganBulananController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $page = $request->page;
         $items_per_page = 50;
@@ -395,12 +395,12 @@ class LaporanKeuanganBulananController extends Controller
 
     public function detail(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $data = ListofPayments::find($request->id);
 
@@ -555,12 +555,12 @@ class LaporanKeuanganBulananController extends Controller
 
     public function download_excel(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         if ($request->user()->role == 'admin') {
             $branch = $request->branch_id;
