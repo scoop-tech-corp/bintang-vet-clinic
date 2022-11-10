@@ -77,7 +77,6 @@ class DaftarBarangPetshopController extends Controller
 
     public function create(Request $request)
     {
-        info($request);
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
             return response()->json([
                 'message' => 'The user role was invalid.',

@@ -11,7 +11,7 @@ class DataHargaPetShop implements ShouldAutoSize, WithHeadings, WithTitle
     public function headings(): array
     {
         return [
-            ['Kode Daftar Barang', 'Harga Jual', 'Harga Modal'],
+            ['Kode Daftar Barang', 'Harga Jual', 'Harga Modal', 'Kode Cabang'],
         ];
     }
 
