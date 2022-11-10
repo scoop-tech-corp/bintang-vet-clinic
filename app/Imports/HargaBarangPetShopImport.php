@@ -3,36 +3,45 @@
 namespace App\Imports;
 
 use App\Models\PriceItemPetShop;
-use Maatwebsite\Excel\Concerns\ToModel;
-use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\Importable;
+use Maatwebsite\Excel\Concerns\ToModel;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
 class HargaBarangPetShopImport implements ToModel, WithHeadingRow, WithValidation
 {
-  use Importable;
+    use Importable;
 
-  public function model(array $row)
-  {
+    protected $id;
 
-      return new PriceItemPetShop([
-          'list_of_items_id' => $row['kode_daftar_barang'],
-          'selling_price' => $row['harga_jual'],
-          'capital_price' => $row['harga_modal'],
-          'doctor_fee' => $row['fee_dokter'],
-          'petshop_fee' => $row['fee_petshop'],
-          'user_id' => 1,
-      ]);
-  }
+    public function __construct($id)
+    {
+        $this->id = $id;
+    }
 
-  public function rules(): array
-  {
-      return [
-          '*.kode_daftar_barang' => 'required|integer',
-          '*.harga_jual' => 'required|numeric',
-          '*.harga_modal' => 'required|numeric',
-          '*.fee_dokter' => 'required|numeric',
-          '*.fee_petshop' => 'required|numeric',
-      ];
-  }
+    public function model(array $row)
+    {
+
+        $modal = str_replace(",","",$row['harga_modal']);
+        $jual = str_replace(",","",$row['harga_jual']);
+
+        return new PriceItemPetShop([
+            'list_of_item_pet_shop_id' => $row['kode_daftar_barang'],
+            'selling_price' => $jual,
+            'capital_price' => $modal,
+            'profit' => $jual - $modal,
+            'branch_id' => $row['kode_cabang'],
+            'user_id' => $this->id,
+        ]);
+    }
+
+    public function rules(): array
+    {
+        return [
+            '*.kode_daftar_barang' => 'required|integer',
+            '*.harga_jual' => 'required',
+            '*.harga_modal' => 'required',
+            '*.kode_cabang' => 'required|numeric',
+        ];
+    }
 }
