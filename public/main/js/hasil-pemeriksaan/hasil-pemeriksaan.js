@@ -10,9 +10,9 @@ $(document).ready(function() {
     branchId: ''
   };
 
-  if (role.toLowerCase() == 'resepsionis') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;
-	} else {
+  // if (role.toLowerCase() == 'resepsionis') {
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	// } else {
     if (role.toLowerCase() != 'admin') {
       $('#filterCabang').hide();
     } else {
@@ -21,7 +21,7 @@ $(document).ready(function() {
     }
 
 		loadHasilPemeriksaan();
-	}
+	// }
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });

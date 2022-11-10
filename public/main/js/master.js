@@ -51,8 +51,8 @@ $(document).ready(function() {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();
       $('.menuKunjungan').show(); $('.menuGudang').show();
-      $('.menuPenggajian').show();
-      $('.menuPengeluaran').show();
+      $('.menuPenggajian').show(); $('.menuPeriksa').show();
+      $('.menuPengeluaran').show(); $('.menuKeuangan').show();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
