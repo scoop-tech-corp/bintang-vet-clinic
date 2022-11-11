@@ -692,20 +692,20 @@ function validationForm() {
   } else { isValidSelectedPasien = true; }
 
   if (!$('#anamnesa').val()) {
-    $('#anamnesaErr1').text('Anamnesa harus di isi'); isValidAnamnesa = false;
-  } else {
+  //   $('#anamnesaErr1').text('Anamnesa harus di isi'); isValidAnamnesa = false;
+  // } else {
     $('#anamnesaErr1').text(''); isValidAnamnesa = true;
   }
 
   if (!$('#sign').val()) {
-    $('#signErr1').text('Sign harus di isi'); isValidSign = false;
-  } else {
+  //   $('#signErr1').text('Sign harus di isi'); isValidSign = false;
+  // } else {
     $('#signErr1').text(''); isValidSign = true;
   }
 
   if (!$('#diagnosa').val()) {
-    $('#diagnosaErr1').text('Diagnosa harus di isi'); isValidDiagnosa = false;
-  } else {
+  //   $('#diagnosaErr1').text('Diagnosa harus di isi'); isValidDiagnosa = false;
+  // } else {
     $('#diagnosaErr1').text(''); isValidDiagnosa = true;
   }
 
