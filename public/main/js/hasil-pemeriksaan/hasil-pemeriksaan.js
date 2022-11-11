@@ -125,7 +125,7 @@ $(document).ready(function() {
               + `<td>${v.created_by}</td>`
               + `<td>
                   <button type="button" class="btn btn-info openDetail" ${v.status_finish == 0 && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-warning openFormEdit" ${v.status_finish == 1 && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-danger openFormDelete" ${v.status_finish == 1 && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 </td>`
               + `</tr>`;
@@ -159,9 +159,9 @@ $(document).ready(function() {
 
 				$('.openFormEdit').click(function() {
           const getObj = getData.find(x => x.id == $(this).val());
-					if (getObj.status_finish != 1 || role.toLowerCase() == 'admin') {
+					// if (getObj.status_finish != 1 || role.toLowerCase() == 'admin') {
             window.location.href = $('.baseUrl').val() + `/hasil-pemeriksaan/edit/${$(this).val()}`;
-          }
+          // }
 				});
 
 				$('.openFormDelete').click(function() {

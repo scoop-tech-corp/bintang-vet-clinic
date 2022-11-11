@@ -358,9 +358,9 @@ class HasilPemeriksaanController extends Controller
 
             $validate = Validator::make($request->all(), [
                 'patient_registration_id' => 'required|numeric',
-                'anamnesa' => 'required|string|min:10',
-                'sign' => 'required|string|min:10',
-                'diagnosa' => 'required|string|min:10',
+                // 'anamnesa' => 'required|string',
+                // 'sign' => 'required|string',
+                // 'diagnosa' => 'required|string',
                 'status_finish' => 'required|bool',
                 'status_outpatient_inpatient' => 'required|bool',
             ]);
@@ -381,9 +381,9 @@ class HasilPemeriksaanController extends Controller
 
             $validate = Validator::make($request->all(), [
                 'patient_registration_id' => 'required|numeric|unique:check_up_results,patient_registration_id',
-                'anamnesa' => 'required|string|min:1',
-                'sign' => 'required|string|min:1',
-                'diagnosa' => 'required|string|min:1',
+                // 'anamnesa' => 'required|string|min:1',
+                // 'sign' => 'required|string|min:1',
+                // 'diagnosa' => 'required|string|min:1',
                 'status_finish' => 'required|bool',
                 'status_outpatient_inpatient' => 'required|bool',
             ], $message_patient);
@@ -687,12 +687,27 @@ class HasilPemeriksaanController extends Controller
 
         }
 
+        $anamnesa = "";
+        if(!is_null($request->anamnesa)){
+            $anamnesa = $request->anamnesa;
+        }
+
+        $sign = "";
+        if(!is_null($request->sign)){
+            $sign = $request->sign;
+        }
+
+        $diagnosa = "";
+        if(!is_null($request->diagnosa)){
+            $diagnosa = $request->diagnosa;
+        }
+
         //insert data
         $item = CheckUpResult::create([
             'patient_registration_id' => $request->patient_registration_id,
-            'anamnesa' => $request->anamnesa,
-            'sign' => $request->sign,
-            'diagnosa' => $request->diagnosa,
+            'anamnesa' => $anamnesa,
+            'sign' => $sign,
+            'diagnosa' => $diagnosa,
             'status_finish' => $request->status_finish,
             'status_outpatient_inpatient' => $request->status_outpatient_inpatient,
             'status_paid_off' => 0,
@@ -942,9 +957,9 @@ class HasilPemeriksaanController extends Controller
         $validate = Validator::make($request->all(), [
             'id' => 'required|numeric',
             'patient_registration_id' => 'required|numeric',
-            'anamnesa' => 'required|string|min:10',
-            'sign' => 'required|string|min:10',
-            'diagnosa' => 'required|string|min:10',
+            // 'anamnesa' => 'required|string|min:10',
+            // 'sign' => 'required|string|min:10',
+            // 'diagnosa' => 'required|string|min:10',
             'status_outpatient_inpatient' => 'required|bool',
             'status_finish' => 'required|bool',
         ]);
@@ -1451,10 +1466,25 @@ class HasilPemeriksaanController extends Controller
             ], 404);
         }
 
+        $anamnesa = "";
+        if(!is_null($request->anamnesa)){
+            $anamnesa = $request->anamnesa;
+        }
+
+        $sign = "";
+        if(!is_null($request->sign)){
+            $sign = $request->sign;
+        }
+
+        $diagnosa = "";
+        if(!is_null($request->diagnosa)){
+            $diagnosa = $request->diagnosa;
+        }
+
         $check_up_result->patient_registration_id = $request->patient_registration_id;
-        $check_up_result->anamnesa = $request->anamnesa;
-        $check_up_result->sign = $request->sign;
-        $check_up_result->diagnosa = $request->diagnosa;
+        $check_up_result->anamnesa = $anamnesa;
+        $check_up_result->sign = $sign;
+        $check_up_result->diagnosa = $diagnosa;
         $check_up_result->status_outpatient_inpatient = $request->status_outpatient_inpatient;
         $check_up_result->status_finish = $request->status_finish;
         $check_up_result->user_update_id = $request->user()->id;
