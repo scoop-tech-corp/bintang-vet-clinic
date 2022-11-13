@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\ListofItems;
 use Carbon\Carbon;
+use DateTime;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -22,13 +23,18 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
 
     public function model(array $row)
     {
-        if ($row['tanggal_kedaluwarsa_barang_ddmmyyyy']) {
-            $exp_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((int) $row['tanggal_kedaluwarsa_barang_ddmmyyyy']));
-            //$exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+
+        $Temp = DateTime::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy']);
+
+        if ($Temp) {
+            $exp_date = DateTime::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy']);
+
             $diff_expired = Carbon::parse(now())->diffInDays($exp_date, false);
         } else {
-            $exp_date = '0000/00/00';
-            $diff_expired = 0;
+            $exp_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((int) $row['tanggal_kedaluwarsa_barang_ddmmyyyy']));
+            //$exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+
+            $diff_expired = Carbon::parse(now())->diffInDays($exp_date, false);
         }
 
         return new ListofItems(

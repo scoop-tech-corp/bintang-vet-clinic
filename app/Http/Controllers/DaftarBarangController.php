@@ -619,6 +619,7 @@ class DaftarBarangController extends Controller
             $check_branch = DB::table('list_of_items')
                 ->where('branch_id', '=', $key_result['kode_cabang_barang'])
                 ->where('item_name', '=', $key_result['nama_barang'])
+                ->where('isDeleted', '=', 0)
                 ->count();
 
             if ($check_branch > 0) {

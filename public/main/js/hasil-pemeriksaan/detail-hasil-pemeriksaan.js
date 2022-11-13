@@ -1,9 +1,9 @@
 
 $(document).ready(function() {
 
-  if (role.toLowerCase() == 'resepsionis') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;	
-	} else {
+  // if (role.toLowerCase() == 'resepsionis') {
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;	
+	// } else {
     const url = window.location.pathname;
     const stuff = url.split('/');
     const lastUrl = stuff[stuff.length-1];
@@ -11,7 +11,7 @@ $(document).ready(function() {
     refreshText();
     loadDetailHasilPemeriksaan(lastUrl);
     $('#section-foto-kondisi-pasien').magnificPopup({delegate: 'a', type:'image'});
-	}
+	// }
 
   $('.btn-back-to-list .text').click(function() {
     window.location.href = $('.baseUrl').val() + '/hasil-pemeriksaan';
@@ -112,7 +112,8 @@ $(document).ready(function() {
         rowKelompokObat += `<div class="target" style="margin-bottom: 30px">`
         + `<div class="m-b-10px" style="font-weight: 700">Kelompok Obat ${no}</div>`
         + `<div>${li.group_name} - ${li.branch_name} - ${li.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</div>`
-        + `<div class="m-b-10px">Jumlah: ${li.quantity}</div>`
+        + `<div>Jumlah: ${li.quantity}</div>`
+        + `<div class="m-b-10px">Keterangan: ${li.remark}</div>`
         + `<div class="table-responsive" id="table-list-barang-${idx}">`
         +   `<table class="table table-striped text-nowrap">`
         +    `<thead>`
