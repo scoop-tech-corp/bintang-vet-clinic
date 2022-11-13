@@ -7,7 +7,7 @@ let selectedListBarang = [];
 $(document).ready(function() {
 
   $('#btnTambahKelompokObat').click(function() {
-    arrayKelompokObat.push({ id: null, kelompokObatId: null, quantity: null ,selectDropdownBarang: [], selectedListBarang: [], deletedUpdateListBarang: [] });
+    arrayKelompokObat.push({ id: null, kelompokObatId: null, quantity: null ,selectDropdownBarang: [], selectedListBarang: [], deletedUpdateListBarang: [], remark: "" });
     drawListKelompokObat();
     validationForm();
   });
@@ -29,11 +29,11 @@ function drawListKelompokObat() {
       + `<div class="m-b-10px">`
       +  `<select class="selectedKelompokObat" class="form-control" style="width: 100%" idx=${idx}></select>`
       + `</div>`
-      + `<div class="m-b-10px"><input type="number" min="0" class="qty-kelompok-obat form-control" placeholder="Masukan Jumlah" index=${idx} value=${ko.quantity}></div>`
+      + `<div class="m-b-10px"><input type="number" min="0" class="qty-kelompok-obat form-control" placeholder="Masukkan Jumlah" index=${idx} value=${ko.quantity}></div>`
       + `<div class="m-b-10px">`
       +  `<select class="form-control selectedBarang" id="selectedBarang-${idx}" style="width: 100%" multiple="multiple" idx=${idx}></select>`
       + `</div>`
-      + `<div class="table-responsive" id="table-list-barang-${idx}" style="display: ${ko.selectedListBarang.length ? 'block': 'none'}">`
+      + `<div class="table-responsive m-b-10px" id="table-list-barang-${idx}" style="display: ${ko.selectedListBarang.length ? 'block': 'none'}">`
       +   `<table class="table table-striped text-nowrap">`
       +    `<thead>`
       +      `<tr>`
@@ -52,6 +52,7 @@ function drawListKelompokObat() {
       +    `<tbody id="list-selected-barang-${idx}" class="list-selected-barang">${rowSelectedListBarang}</tbody>`
       +  `</table>`
       + `</div>`
+      + `<div class="m-b-10px"><textarea class="remark-kelompok-obat form-control" placeholder="Keterangan" index=${idx} value=${ko.remark}>${ko.remark}</textarea></div>`
       + `</div>`;
       ++no;
   });
@@ -81,6 +82,14 @@ function drawListKelompokObat() {
     const getIdx = parseInt(e.target.getAttribute('index'));
     const value  = parseFloat($(this).val());
     arrayKelompokObat[getIdx].quantity = value;
+
+    validationForm();
+  });
+
+  $('.remark-kelompok-obat').keyup(function (e) {
+    const getIdx = parseInt(e.target.getAttribute('index'));
+    const value  = $(this).val();
+    arrayKelompokObat[getIdx].remark = value;
 
     validationForm();
   });

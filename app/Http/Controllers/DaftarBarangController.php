@@ -619,6 +619,7 @@ class DaftarBarangController extends Controller
             $check_branch = DB::table('list_of_items')
                 ->where('branch_id', '=', $key_result['kode_cabang_barang'])
                 ->where('item_name', '=', $key_result['nama_barang'])
+                ->where('isDeleted', '=', 0)
                 ->count();
 
             if ($check_branch > 0) {
@@ -629,20 +630,20 @@ class DaftarBarangController extends Controller
                 ], 422);
             }
 
-            $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
+            // $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $key_result['tanggal_kedaluwarsa_barang_ddmmyyyy'])->format('Y/m/d'));
 
-            if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
-                return response()->json([
-                    'message' => 'The data was invalid.',
-                    'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
-                ], 422);
+            // if ($key_result['jumlah_barang'] - $key_result['limit_barang'] < 0) {
+            //     return response()->json([
+            //         'message' => 'The data was invalid.',
+            //         'errors' => ['Jumlah Barang kurang dari Limit Barang!'],
+            //     ], 422);
 
-            } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
-                return response()->json([
-                    'message' => 'The data was invalid.',
-                    'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
-                ], 422);
-            }
+            // } elseif (Carbon::parse(now())->diffInDays($exp_date, false) < 0) {
+            //     return response()->json([
+            //         'message' => 'The data was invalid.',
+            //         'errors' => ['Tanggal Kedaluwarsa kurang dari Tanggal Hari ini!'],
+            //     ], 422);
+            // }
         }
 
         $file = $request->file('file');

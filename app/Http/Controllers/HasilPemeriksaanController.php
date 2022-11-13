@@ -22,12 +22,12 @@ class HasilPemeriksaanController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $items_per_page = 50;
 
@@ -343,12 +343,12 @@ class HasilPemeriksaanController extends Controller
 
     public function create(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $check_up_result = CheckUpResult::where('patient_registration_id', '=', $request->patient_registration_id)
             ->where('isdeleted', '=', 1)
@@ -358,9 +358,9 @@ class HasilPemeriksaanController extends Controller
 
             $validate = Validator::make($request->all(), [
                 'patient_registration_id' => 'required|numeric',
-                'anamnesa' => 'required|string|min:10',
-                'sign' => 'required|string|min:10',
-                'diagnosa' => 'required|string|min:10',
+                // 'anamnesa' => 'required|string',
+                // 'sign' => 'required|string',
+                // 'diagnosa' => 'required|string',
                 'status_finish' => 'required|bool',
                 'status_outpatient_inpatient' => 'required|bool',
             ]);
@@ -381,9 +381,9 @@ class HasilPemeriksaanController extends Controller
 
             $validate = Validator::make($request->all(), [
                 'patient_registration_id' => 'required|numeric|unique:check_up_results,patient_registration_id',
-                'anamnesa' => 'required|string|min:1',
-                'sign' => 'required|string|min:1',
-                'diagnosa' => 'required|string|min:1',
+                // 'anamnesa' => 'required|string|min:1',
+                // 'sign' => 'required|string|min:1',
+                // 'diagnosa' => 'required|string|min:1',
                 'status_finish' => 'required|bool',
                 'status_outpatient_inpatient' => 'required|bool',
             ], $message_patient);
@@ -680,12 +680,27 @@ class HasilPemeriksaanController extends Controller
 
         }
 
+        $anamnesa = "";
+        if(!is_null($request->anamnesa)){
+            $anamnesa = $request->anamnesa;
+        }
+
+        $sign = "";
+        if(!is_null($request->sign)){
+            $sign = $request->sign;
+        }
+
+        $diagnosa = "";
+        if(!is_null($request->diagnosa)){
+            $diagnosa = $request->diagnosa;
+        }
+
         //insert data
         $item = CheckUpResult::create([
             'patient_registration_id' => $request->patient_registration_id,
-            'anamnesa' => $request->anamnesa,
-            'sign' => $request->sign,
-            'diagnosa' => $request->diagnosa,
+            'anamnesa' => $anamnesa,
+            'sign' => $sign,
+            'diagnosa' => $diagnosa,
             'status_finish' => $request->status_finish,
             'status_outpatient_inpatient' => $request->status_outpatient_inpatient,
             'status_paid_off' => 0,
@@ -727,6 +742,7 @@ class HasilPemeriksaanController extends Controller
                     'medicine_group_id' => $res_group['medicine_group_id'],
                     'status_paid_off' => 0,
                     'quantity' => $res_group['quantity'],
+                    'remark' => $res_group['remark'],
                     'user_id' => $request->user()->id,
                 ]);
 
@@ -873,6 +889,7 @@ class HasilPemeriksaanController extends Controller
                 DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
                 'detail_medicine_group_check_up_results.medicine_group_id as medicine_group_id',
                 'detail_medicine_group_check_up_results.quantity as quantity',
+                'detail_medicine_group_check_up_results.remark as remark',
                 'medicine_groups.group_name',
                 'branches.id as branch_id',
                 'branches.branch_name')
@@ -922,20 +939,20 @@ class HasilPemeriksaanController extends Controller
     public function update(Request $request)
     {
 
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         //validasi data hasil pemeriksaaan
         $validate = Validator::make($request->all(), [
             'id' => 'required|numeric',
             'patient_registration_id' => 'required|numeric',
-            'anamnesa' => 'required|string|min:10',
-            'sign' => 'required|string|min:10',
-            'diagnosa' => 'required|string|min:10',
+            // 'anamnesa' => 'required|string|min:10',
+            // 'sign' => 'required|string|min:10',
+            // 'diagnosa' => 'required|string|min:10',
             'status_outpatient_inpatient' => 'required|bool',
             'status_finish' => 'required|bool',
         ]);
@@ -1442,10 +1459,25 @@ class HasilPemeriksaanController extends Controller
             ], 404);
         }
 
+        $anamnesa = "";
+        if(!is_null($request->anamnesa)){
+            $anamnesa = $request->anamnesa;
+        }
+
+        $sign = "";
+        if(!is_null($request->sign)){
+            $sign = $request->sign;
+        }
+
+        $diagnosa = "";
+        if(!is_null($request->diagnosa)){
+            $diagnosa = $request->diagnosa;
+        }
+
         $check_up_result->patient_registration_id = $request->patient_registration_id;
-        $check_up_result->anamnesa = $request->anamnesa;
-        $check_up_result->sign = $request->sign;
-        $check_up_result->diagnosa = $request->diagnosa;
+        $check_up_result->anamnesa = $anamnesa;
+        $check_up_result->sign = $sign;
+        $check_up_result->diagnosa = $diagnosa;
         $check_up_result->status_outpatient_inpatient = $request->status_outpatient_inpatient;
         $check_up_result->status_finish = $request->status_finish;
         $check_up_result->user_update_id = $request->user()->id;
@@ -1566,6 +1598,7 @@ class HasilPemeriksaanController extends Controller
 
                     $detail_medicine_group->medicine_group_id = $res_group['medicine_group_id'];
                     $detail_medicine_group->quantity = $res_group['quantity'];
+                    $detail_medicine_group->remark = $res_group['remark'];
                     $detail_medicine_group->user_update_id = $request->user()->id;
                     $detail_medicine_group->updated_at = \Carbon\Carbon::now();
                     $detail_medicine_group->save();
@@ -1957,12 +1990,12 @@ class HasilPemeriksaanController extends Controller
     public function delete(Request $request)
     {
 
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $check_up_result = CheckUpResult::find($request->id);
 
@@ -2119,13 +2152,13 @@ class HasilPemeriksaanController extends Controller
 
     public function upload_images(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
 
-        }
+        // }
 
         $validator = Validator::make($request->all(), [
             'check_up_result_id' => 'required',
@@ -2204,13 +2237,13 @@ class HasilPemeriksaanController extends Controller
 
     public function update_upload_images(Request $request)
     {
-        if ($request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
+        // if ($request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
 
-        }
+        // }
 
         $validator = Validator::make($request->all(), [
             'check_up_result_id' => 'required',
@@ -2350,7 +2383,7 @@ class HasilPemeriksaanController extends Controller
 
         $user = DB::table('check_up_results')
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->select('users.id as user_id', 'users.username as username')
+            ->select('users.id as user_id', 'users.username as username','users.branch_id')
             ->where('users.id', '=', $data->user_id)
             ->first();
 

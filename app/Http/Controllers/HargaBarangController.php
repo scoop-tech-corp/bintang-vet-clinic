@@ -488,7 +488,7 @@ class HargaBarangController extends Controller
             'file' => 'required|mimes:xls,xlsx',
         ]);
 
-        $rows = Excel::toArray(new MultipleSheetImportHargaBarang, $request->file('file'));
+        $rows = Excel::toArray(new MultipleSheetImportHargaBarang($request->user()->id), $request->file('file'));
         $result = $rows[0];
 
         foreach ($result as $key_result) {
@@ -519,7 +519,7 @@ class HargaBarangController extends Controller
 
         $file = $request->file('file');
 
-        Excel::import(new MultipleSheetImportHargaBarang, $file);
+        Excel::import(new MultipleSheetImportHargaBarang($request->user()->id), $file);
 
         return response()->json([
             'message' => 'Berhasil mengupload Barang',

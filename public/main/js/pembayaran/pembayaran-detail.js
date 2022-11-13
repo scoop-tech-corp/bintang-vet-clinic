@@ -7,6 +7,7 @@ $(document).ready(function() {
   let selectedListJasa = [];
   let selectedListBarang = [];
   let listTagihanJasa = [];
+  let listTagihanPetShop = [];
   let listTagihanBarang = [];
   let calculationPay = [];
 
@@ -38,7 +39,9 @@ $(document).ready(function() {
       processAppendListSelectedJasa(); processAppendListSelectedBarang();
 
       listTagihanJasa = data.paid_services; listTagihanBarang = data.paid_item;
+      listTagihanPetShop = data.pet_shop;
       processAppendListTagihanJasa(); processAppendListTagihanBarang();
+      processAppendListTagihanPetShop();
 
       listTagihanJasa.forEach(tj => calculationPay.push(tj));
       listTagihanBarang.forEach(tb => calculationPay.push(tb));
@@ -73,6 +76,29 @@ $(document).ready(function() {
         ++no;
     });
     $('#list-selected-jasa').append(rowSelectedListJasa);
+  }
+
+  function processAppendListTagihanPetShop(){
+    let rowListTagihanPetShop = '';
+    let no = 1;
+    $('#list-tagihan-pet-shop tr').remove();
+
+    if (listTagihanPetShop.length) {
+      listTagihanPetShop.forEach((lj) => {
+        rowListTagihanPetShop += `<tr>`
+          + `<td>${no}</td>`
+          + `<td>${lj.created_at}</td>`
+          + `<td>${lj.created_by}</td>`
+          + `<td>${lj.item_name}</td>`
+          + `<td>${lj.total_item}</td>`
+          + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${lj.payment_method}</td>`
+          + `</tr>`;
+          ++no;
+      });
+    } else { rowListTagihanPetShop += `<tr class="text-center"><td colspan="9">Tidak ada data.</td></tr>` }
+    $('#list-tagihan-pet-shop').append(rowListTagihanPetShop);
   }
 
   function processAppendListTagihanJasa() {

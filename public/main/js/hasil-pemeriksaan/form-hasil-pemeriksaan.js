@@ -31,9 +31,9 @@ $(document).ready(function() {
   const stuff = url.split('/');
   const lastUrl = stuff[stuff.length-1];
 
-  if (role.toLowerCase() == 'resepsionis') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;
-	} else {
+  // if (role.toLowerCase() == 'resepsionis') {
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	// } else {
     formConfigure();
     loadPasien();
     loadJasa();
@@ -48,7 +48,7 @@ $(document).ready(function() {
       $('.box-image-upload').magnificPopup({delegate: 'a', type:'image'});
       loadFormEdit();
     }
-  }
+  // }
 
   $('.btn-back-to-list .text, #btnKembali').click(function() {
     window.location.href = $('.baseUrl').val() + '/hasil-pemeriksaan';
@@ -175,6 +175,7 @@ $(document).ready(function() {
       let newObj = {medicine_group_id: null, quantity: null, list_of_medicine: []};
       newObj.medicine_group_id = ko.kelompokObatId;
       newObj.quantity = ko.quantity;
+      newObj.remark = ko.remark;
 
       ko.selectedListBarang.forEach(lb => {
         newObj.list_of_medicine.push({price_item_id: lb.price_item_id, quantity: lb.quantity, price_overall: lb.price_overall});
@@ -261,6 +262,7 @@ $(document).ready(function() {
       newObj.id = ko.id;
       newObj.medicine_group_id = ko.kelompokObatId;
       newObj.quantity = ko.quantity;
+      newObj.remark = ko.remark;
 
       ko.deletedUpdateListBarang.forEach(dul => {
         newObj.list_of_medicine.push({id: dul.id, price_item_id: dul.price_item_id, quantity: dul.quantity, price_overall: dul.price_overall, status: 'del'});
@@ -500,6 +502,7 @@ $(document).ready(function() {
             newObj.id = item.id; // untuk membedakan data lama dan baru
             newObj.kelompokObatId = item.medicine_group_id;
             newObj.quantity = item.quantity;
+            newObj.remark = item.remark;
             item.list_of_medicine.forEach(lom => {
               newObj.selectDropdownBarang.push(lom.price_item_id);
               newObj.selectedListBarang.push({
@@ -689,20 +692,20 @@ function validationForm() {
   } else { isValidSelectedPasien = true; }
 
   if (!$('#anamnesa').val()) {
-    $('#anamnesaErr1').text('Anamnesa harus di isi'); isValidAnamnesa = false;
-  } else {
+  //   $('#anamnesaErr1').text('Anamnesa harus di isi'); isValidAnamnesa = false;
+  // } else {
     $('#anamnesaErr1').text(''); isValidAnamnesa = true;
   }
 
   if (!$('#sign').val()) {
-    $('#signErr1').text('Sign harus di isi'); isValidSign = false;
-  } else {
+  //   $('#signErr1').text('Sign harus di isi'); isValidSign = false;
+  // } else {
     $('#signErr1').text(''); isValidSign = true;
   }
 
   if (!$('#diagnosa').val()) {
-    $('#diagnosaErr1').text('Diagnosa harus di isi'); isValidDiagnosa = false;
-  } else {
+  //   $('#diagnosaErr1').text('Diagnosa harus di isi'); isValidDiagnosa = false;
+  // } else {
     $('#diagnosaErr1').text(''); isValidDiagnosa = true;
   }
 
