@@ -29,11 +29,6 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
         if ($Temp) {
             $exp_date = DateTime::createFromFormat('d/m/Y', $row['tanggal_kedaluwarsa_barang_ddmmyyyy']);
 
-            // info($exp_date);
-            // // $date = DateTime::createFromFormat('d/m/Y', $exp_date);
-
-            // info($Temp);
-
             $diff_expired = Carbon::parse(now())->diffInDays($exp_date, false);
         } else {
             $exp_date = Carbon::instance(\PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject((int) $row['tanggal_kedaluwarsa_barang_ddmmyyyy']));

@@ -10,6 +10,8 @@ $(document).ready(function () {
   let listTagihanJasa = [];
   let listTagihanBarang = [];
   let calculationPay = [];
+  let listBarang = [];
+  let listSelectedBarangPetShop = [];
 
   let isBeErr = false;
 
@@ -31,6 +33,38 @@ $(document).ready(function () {
     validationForm();
   });
 
+  $('#petShop').on('select2:select', function (e) {
+    const getBarangId = $(this).val();
+    let getObj = listBarang.find(barang => barang.id == getBarangId);
+    listSelectedBarangPetShop.push({
+      id: getObj.id,
+      item_name: getObj.item_name,
+      total_item: 0,
+      selling_price: getObj.selling_price,
+      price_overall: 0
+    });
+    drawTableSelectedBarang();
+
+    // deleted list barang
+    let getIdxBarang = listBarang.findIndex(barang => barang.id == getBarangId);
+    listBarang.splice(getIdxBarang, 1);
+    drawDropdownListBarang();
+
+    validationForm();
+  });
+
+  function drawDropdownListBarang() {
+    optBarang = `<option value=''>Pilih Barang</option>`;
+    $('#selectedBarang option').remove();
+
+    if (listBarang.length) {
+      for (let i = 0 ; i < listBarang.length ; i++) {
+        optBarang += `<option value=${listBarang[i].id}>${listBarang[i].item_name}</option>`;
+      }
+    }
+    $('#selectedBarang').append(optBarang);
+  }
+
   $('#selectedPasien').on('select2:select', function (e) {
     refreshVariableTambahPembayaran();
 
@@ -42,7 +76,6 @@ $(document).ready(function () {
         data: { id: $(this).val() },
         beforeSend: function () { $('#loading-screen').show(); },
         success: function (data) {
-
           $('#nomorPasienTxt').text(data.registration.patient_number); $('#jenisHewanTxt').text(data.registration.pet_category);
           $('#namaHewanTxt').text(data.registration.pet_name); $('#jenisKelaminTxt').text(data.registration.pet_gender);
           $('#usiaHewanTahunTxt').text(`${data.registration.pet_year_age} Tahun`); $('#usiaHewanBulanTxt').text(`${data.registration.pet_month_age} Bulan`);
@@ -54,6 +87,7 @@ $(document).ready(function () {
           data.services.forEach(s => { s.new_price_overall = s.price_overall; }); data.item.forEach(i => { i.new_price_overall = i.price_overall; });
           selectedListJasa = data.services; selectedListBarang = data.item;
           processAppendListSelectedJasa(); processAppendListSelectedBarang();
+          loadPetShop(data.user.branch_id);
 
         }, complete: function () { $('#loading-screen').hide(); },
         error: function (err) {
@@ -64,6 +98,7 @@ $(document).ready(function () {
         }
       });
     }
+
     validationForm();
   });
 
@@ -127,6 +162,7 @@ $(document).ready(function () {
     });
     fd.append('service_payment', JSON.stringify(finalSelectedJasa));
     fd.append('item_payment', JSON.stringify(finalSelectedBarang));
+    fd.append('petshop_payment',JSON.stringify(listSelectedBarangPetShop));
 
     $.ajax({
       url: $('.baseUrl').val() + '/api/pembayaran',
@@ -165,6 +201,7 @@ $(document).ready(function () {
   function formConfigure() {
     $('#selectedPasien').select2();
     $('#metodePembayaran').select2({placeholder: 'Pilih Metode Pembayaran'});
+    $('#petShop').select2({placeholder: 'Pilih Barang'});
     $('#btnSubmitPembayaran').attr('disabled', true);
   }
 
@@ -373,6 +410,92 @@ $(document).ready(function () {
           location.href = $('.baseUrl').val() + '/masuk';
         }
       }
+    });
+  }
+
+  function loadPetShop(getCabangId){
+    optBarang = `<option value=''>Pilih Barang</option>`;
+
+    $.ajax({
+      url: $('.baseUrl').val() + '/api/pembayaranpetshop/filteritem',
+      headers: { 'Authorization': `Bearer ${token}` },
+      type: 'GET',
+      data: { branch_id: getCabangId },
+      beforeSend: function () { $('#loading-screen').show(); },
+      success: function (data) {
+        $('#petShop option').remove();
+
+        if (data.length) {
+          for (let i = 0 ; i < data.length ; i++) {
+            optBarang += `<option value=${data[i].id}>${data[i].item_name}</option>`;
+            listBarang.push(data[i]);
+          }
+        }
+        // $('#petShop').prop('disabled', true);
+        $('#petShop').append(optBarang);
+
+        validationForm();
+      }, complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-shop');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
+  }
+
+  function drawTableSelectedBarang() {
+    let listSelectedBarangTxt = '';
+    $('#list-selected-pet-shop tr').remove();
+
+    if (listSelectedBarangPetShop.length) {
+      listSelectedBarangPetShop.forEach((barang, idx) => {
+        listSelectedBarangTxt += `<tr>`
+          + `<td>${idx + 1}</td>`
+          + `<td>${barang.item_name}</td>`
+          + `<td><input type="number" min="0" class="qty-input-barang" index=${idx} value=${barang.total_item}></td>`
+          + `<td>Rp ${barang.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>`
+          + `<td>Rp <span id="overallPrice-${idx}">
+              ${typeof(barang.price_overall) == 'number' ?
+                barang.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+                : ''}</span>
+            </td>`
+          +`<td>
+              <button type="button" class="btn btn-danger btnDeleteSelectedBarang" value=${idx}>
+                <i class="fa fa-trash-o" aria-hidden="true"></i>
+              </button>
+            </td>`
+          + `</tr>`;
+      });
+    } else {
+      listSelectedBarangTxt += `<tr class="text-center"><td colspan="7">Tidak ada data.</td></tr>`;
+    }
+
+    $('#list-selected-pet-shop').append(listSelectedBarangTxt);
+
+    $('.qty-input-barang').on('input', function(e) {
+      const idx        = $(this).attr('index');
+      const value      = parseFloat($(this).val());
+      const eachItem   = parseFloat(listSelectedBarangPetShop[idx].selling_price);
+      let overallPrice = value * eachItem;
+
+      listSelectedBarangPetShop[idx].total_item = value;
+      listSelectedBarangPetShop[idx].price_overall = overallPrice;
+      validationForm();
+
+      $('#overallPrice-'+idx).text(overallPrice.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+    });
+
+    $('.btnDeleteSelectedBarang').click(function() {
+      const getObj = listSelectedBarangPetShop[$(this).val()];
+      listBarang.push(getObj);
+      
+      drawDropdownListBarang();
+
+      listSelectedBarangPetShop.splice($(this).val(), 1);
+      drawTableSelectedBarang();
+      validationForm();
     });
   }
 

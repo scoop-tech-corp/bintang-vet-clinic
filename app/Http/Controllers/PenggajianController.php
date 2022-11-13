@@ -113,6 +113,11 @@ class PenggajianController extends Controller
                 $data = $data->where('users.branch_id', '=', $request->branch_id);
             }
 
+            if ($request->month && $request->year) {
+                $data = $data->where(DB::raw("MONTH(py.date_payed)"), $request->month)
+                    ->where(DB::raw("YEAR(py.date_payed)"), $request->year);
+            }
+
             if ($request->orderby) {
                 $data = $data->orderBy($request->column, $request->orderby);
             }
@@ -121,7 +126,14 @@ class PenggajianController extends Controller
 
             $data = $data->get();
 
-            return response()->json($data, 200);
+            $amount_overall = 0;
+
+            foreach ($data as $res) {
+                $amount_overall += $res->total_overall;
+            }
+
+            return response()->json(['data' => $data,
+                'amount_sallary' => $amount_overall], 200);
         }
 
     }

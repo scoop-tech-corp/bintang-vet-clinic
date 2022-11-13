@@ -319,11 +319,11 @@ class HargaBarangPetShopController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'ListOfItemsId' => 'required|numeric',
+            'id' => 'required|numeric',
+            'ListOfItemPetShopId' => 'required|numeric',
             'HargaJual' => 'required|numeric|min:0',
             'HargaModal' => 'required|numeric|min:0',
-            'FeeDokter' => 'required|numeric|min:0',
-            'FeePetShop' => 'required|numeric|min:0',
+            'Profit' => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -335,7 +335,7 @@ class HargaBarangPetShopController extends Controller
             ], 422);
         }
 
-        $price_items = PriceItem::find($request->id);
+        $price_items = PriceItemPetShop::find($request->id);
 
         if (is_null($price_items)) {
             return response()->json([
@@ -344,8 +344,8 @@ class HargaBarangPetShopController extends Controller
             ], 404);
         }
 
-        $check_list_item = DB::table('price_items')
-            ->where('list_of_items_id', '=', $request->ListOfItemsId)
+        $check_list_item = DB::table('price_item_pet_shops')
+            ->where('list_of_item_pet_shop_id', '=', $request->ListOfItemPetShopId)
             ->where('id', '!=', $request->id)
             ->count();
 
@@ -357,11 +357,11 @@ class HargaBarangPetShopController extends Controller
             ], 422);
         }
 
-        $price_items->list_of_items_id = $request->ListOfItemsId;
+        $price_items->list_of_item_pet_shop_id = $request->ListOfItemPetShopId;
         $price_items->selling_price = $request->HargaJual;
         $price_items->capital_price = $request->HargaModal;
-        $price_items->doctor_fee = $request->FeeDokter;
-        $price_items->petshop_fee = $request->FeePetShop;
+        $price_items->profit = $request->Profit;
+        $price_items->branch_id = $request->BranchId;
         $price_items->user_update_id = $request->user()->id;
         $price_items->updated_at = \Carbon\Carbon::now();
         $price_items->save();
@@ -380,7 +380,7 @@ class HargaBarangPetShopController extends Controller
             ], 403);
         }
 
-        $price_items = PriceItem::find($request->id);
+        $price_items = PriceItemPetShop::find($request->id);
 
         if (is_null($price_items)) {
             return response()->json([
@@ -410,7 +410,7 @@ class HargaBarangPetShopController extends Controller
         }
 
         $list_of_item_pet_shops = DB::table('list_of_item_pet_shops')
-            ->select('id', 'item_name','total_item')
+            ->select('id', 'item_name', 'total_item')
             ->where('branch_id', '=', $request->branch_id)
             ->where('isDeleted', '=', 0)
             ->distinct('id')
@@ -478,13 +478,13 @@ class HargaBarangPetShopController extends Controller
             'file' => 'required|mimes:xls,xlsx',
         ]);
 
-        $rows = Excel::toArray(new MultipleSheetImportHargaBarangPetShop, $request->file('file'));
+        $rows = Excel::toArray(new MultipleSheetImportHargaBarangPetShop($request->user()->id), $request->file('file'));
         $result = $rows[0];
 
         foreach ($result as $key_result) {
 
-            $check_duplicate = DB::table('price_items')
-                ->where('list_of_items_id', '=', $key_result['kode_daftar_barang'])
+            $check_duplicate = DB::table('price_item_pet_shops')
+                ->where('list_of_item_pet_shop_id', '=', $key_result['kode_daftar_barang'])
                 ->where('isDeleted', '=', 0)
                 ->count();
 
@@ -496,20 +496,21 @@ class HargaBarangPetShopController extends Controller
                 ], 422);
             }
 
-            $count_total = $key_result['harga_modal'] + $key_result['fee_dokter'] + $key_result['fee_petshop'];
+            $modal = floatval($key_result['harga_modal']);
+            $jual = floatval($key_result['harga_jual']);
 
-            if ($count_total != $key_result['harga_jual']) {
+            if ($modal > $jual) {
 
                 return response()->json([
                     'message' => 'The data was invalid.',
-                    'errors' => ['Jumlah Harga Modal, Fee Dokter, dan Fee Petshop harus sama dengan Harga Jual!'],
+                    'errors' => ['Nominal Harga Jual kode barang ' . $key_result['kode_daftar_barang'] . ' harus lebih dari Harga Modal!'],
                 ], 422);
             }
         }
 
         $file = $request->file('file');
 
-        Excel::import(new MultipleSheetImportHargaBarangPetShop, $file);
+        Excel::import(new MultipleSheetImportHargaBarangPetShop($request->user()->id), $file);
 
         return response()->json([
             'message' => 'Berhasil mengupload Barang',
@@ -533,9 +534,9 @@ class HargaBarangPetShopController extends Controller
         $filename = "";
 
         if ($listBranch) {
-            $filename = 'Rekap Harga Barang Cabang ' . $listBranch->branch_name . ' ' . $date . '.xlsx';
+            $filename = 'Rekap Harga Barang Pet Shop Cabang ' . $listBranch->branch_name . ' ' . $date . '.xlsx';
         } else {
-            $filename = 'Rekap Harga Barang ' . $date . '.xlsx';
+            $filename = 'Rekap Harga Barang Pet Shop ' . $date . '.xlsx';
         }
 
         return (new RekapHargaBarangPetShop($request->orderby, $request->column, $request->keyword, $branchId, $request->user()->role))

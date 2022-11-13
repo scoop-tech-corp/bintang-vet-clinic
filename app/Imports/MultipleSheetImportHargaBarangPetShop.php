@@ -2,10 +2,10 @@
 
 namespace App\Imports;
 
-use App\Imports\HargaBarangImport;
+use App\Imports\HargaBarangPetShopImport;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class MultipleSheetImportHargaBarang implements WithMultipleSheets
+class MultipleSheetImportHargaBarangPetShop implements WithMultipleSheets
 {
     protected $id;
 
@@ -17,7 +17,7 @@ class MultipleSheetImportHargaBarang implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            0 => new HargaBarangImport($this->id),
+            0 => new HargaBarangPetShopImport($this->id),
         ];
     }
 }

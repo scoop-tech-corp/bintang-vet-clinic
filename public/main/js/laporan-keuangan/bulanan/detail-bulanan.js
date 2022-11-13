@@ -1,8 +1,8 @@
 $(document).ready(function() {
 
-  if (role.toLowerCase() == 'resepsionis') {
-		window.location.href = $('.baseUrl').val() + `/unauthorized`;
-	} else {
+  // if (role.toLowerCase() == 'resepsionis') {
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
+	// } else {
     const url = window.location.pathname;
     const stuff = url.split('/');
     const lastUrl = stuff[stuff.length-1];
@@ -11,7 +11,7 @@ $(document).ready(function() {
 
     refreshText();
     loadDetailLaporanKeuanganBulanan(lastUrl, {month: getParamMonth, year: getParamYear});
-  }
+  // }
 
   $('.btn-back-to-list .text, #btnKembali').click(function() {
     window.location.href = $('.baseUrl').val() + '/laporan-keuangan-bulanan';

@@ -240,7 +240,7 @@ $(document).ready(function () {
   $("#btnSubmitHargaBarang").click(function () {
     if (modalState == "add") {
       const fd = new FormData();
-      fd.append('branchId', $('#selectedCabang').val());
+      fd.append("branchId", $("#selectedCabangOnBarang").val());
       fd.append("ListOfItemPetShopId", $("#selectedNamaBarang").val());
       fd.append("HargaJual", $("#hargaJualOnBarang").val().replaceAll(".", ""));
       fd.append("HargaModal",$("#hargaModalOnBarang").val().replaceAll(".", "")
@@ -307,11 +307,10 @@ $(document).ready(function () {
 
       const datas = {
         id: getId,
-        ListOfItemsId: $("#selectedNamaBarang").val(),
+        ListOfItemPetShopId: $("#selectedNamaBarang").val(),
         HargaJual: $("#hargaJualOnBarang").val().replaceAll(".", ""),
         HargaModal: $("#hargaModalOnBarang").val().replaceAll(".", ""),
-        FeeDokter: $("#feeDokterOnBarang").val().replaceAll(".", ""),
-        FeePetShop: $("#feePetshopOnBarang").val().replaceAll(".", ""),
+        Profit: $('#label-keuntungan').text().replaceAll('.', ''),
       };
 
       $.ajax({
@@ -547,11 +546,10 @@ $(document).ready(function () {
 
           $(".modal-title").text("Edit Pembagian Harga Barang");
           refreshForm();
-
-          loadKategoriBarang(getObj.branch_id, getObj.item_categories_id);
+          // loadKategoriBarang(getObj.branch_id, getObj.item_categories_id);
           loadBarangPetShop(
             getObj.branch_id,
-            getObj.item_categories_id,
+            getObj.list_of_item_pet_shop_id,
             getObj.item_name_id
           );
           formConfigure();
@@ -572,6 +570,8 @@ $(document).ready(function () {
           $("#selectedCabangOnBarang").trigger("change");
           $("#jumlahBarangTxt").text(getObj.total_item);
           $("#satuanBarangTxt").text(getObj.unit_name);
+
+          validationHargaJual();
         });
 
         $(".openFormDelete").click(function () {
@@ -649,46 +649,46 @@ $(document).ready(function () {
     });
   }
 
-  function loadKategoriBarang(idCabang, itemCategoriesId = null) {
-    $.ajax({
-      url: $(".baseUrl").val() + "/api/pembagian-harga-barang-petshop/kategori-barang",
-      headers: { Authorization: `Bearer ${token}` },
-      type: "GET",
-      data: { branch_id: idCabang },
-      beforeSend: function () {
-        $("#loading-screen").show();
-      },
-      success: function (data) {
-        optKategoriBarang = `<option value=''>Pilih Kategori Barang</option>`;
-        $("#selectedKategoriBarang option").remove();
+  // function loadKategoriBarang(idCabang, itemCategoriesId = null) {
+  //   $.ajax({
+  //     url: $(".baseUrl").val() + "/api/pembagian-harga-barang-petshop/kategori-barang",
+  //     headers: { Authorization: `Bearer ${token}` },
+  //     type: "GET",
+  //     data: { branch_id: idCabang },
+  //     beforeSend: function () {
+  //       $("#loading-screen").show();
+  //     },
+  //     success: function (data) {
+  //       optKategoriBarang = `<option value=''>Pilih Kategori Barang</option>`;
+  //       $("#selectedKategoriBarang option").remove();
 
-        if (data.length) {
-          $("#selectedKategoriBarang").attr("disabled", false);
-          for (let i = 0; i < data.length; i++) {
-            optKategoriBarang += `<option value=${data[i].category_item_id}>${data[i].category_name}</option>`;
-          }
-        } else {
-          $("#selectedKategoriBarang").attr("disabled", true);
-          optKategoriBarang = `<option value='' selected="selected">Data tidak ada</option>`;
-        }
-        $("#selectedKategoriBarang").append(optKategoriBarang);
+  //       if (data.length) {
+  //         $("#selectedKategoriBarang").attr("disabled", false);
+  //         for (let i = 0; i < data.length; i++) {
+  //           optKategoriBarang += `<option value=${data[i].category_item_id}>${data[i].category_name}</option>`;
+  //         }
+  //       } else {
+  //         $("#selectedKategoriBarang").attr("disabled", true);
+  //         optKategoriBarang = `<option value='' selected="selected">Data tidak ada</option>`;
+  //       }
+  //       $("#selectedKategoriBarang").append(optKategoriBarang);
 
-        if (modalState == "edit") {
-          $("#selectedKategoriBarang").val(itemCategoriesId);
-          $("#selectedKategoriBarang").trigger("change");
-        }
-      },
-      complete: function () {
-        $("#loading-screen").hide();
-      },
-      error: function (err) {
-        if (err.status == 401) {
-          localStorage.removeItem("vet-clinic");
-          location.href = $(".baseUrl").val() + "/masuk";
-        }
-      },
-    });
-  }
+  //       if (modalState == "edit") {
+  //         $("#selectedKategoriBarang").val(itemCategoriesId);
+  //         $("#selectedKategoriBarang").trigger("change");
+  //       }
+  //     },
+  //     complete: function () {
+  //       $("#loading-screen").hide();
+  //     },
+  //     error: function (err) {
+  //       if (err.status == 401) {
+  //         localStorage.removeItem("vet-clinic");
+  //         location.href = $(".baseUrl").val() + "/masuk";
+  //       }
+  //     },
+  //   });
+  // }
 
   function loadBarangPetShop(idCabang, itemCategoriesId = null) {
     $.ajax({

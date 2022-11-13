@@ -21,7 +21,9 @@ $(document).ready(function() {
 		orderby: '',
 		column: '',
 		keyword: '',
-		branchId: ''
+		branchId: '',
+		month: '',
+    year: '',
 	};
 
 	if (role.toLowerCase() != 'admin') {
@@ -39,6 +41,22 @@ $(document).ready(function() {
 
     // load cabang
     loadCabang();
+
+		$('#datepicker').datepicker({
+      autoclose: true,
+      clearBtn: true,
+      format: 'mm-yyyy',
+      todayHighlight: true,
+      startView: 'months',
+      minViewMode: 'months'
+    }).on('changeDate', function(e) {
+      const getDate = e.format();
+      const getMonth = getDate.split('-')[0];
+      const getYear = getDate.split('-')[1];
+      paramUrlSetup.month = getMonth;
+      paramUrlSetup.year  = getYear;
+      loadPenggajian();
+    });
 	}
 
 	// load penggajian
@@ -323,14 +341,15 @@ $(document).ready(function() {
 			url     : $('.baseUrl').val() + '/api/penggajian',
 			headers : { 'Authorization': `Bearer ${token}` },
 			type    : 'GET',
-			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId },
+			data	  : { orderby: paramUrlSetup.orderby, column: paramUrlSetup.column, keyword: paramUrlSetup.keyword, branch_id: paramUrlSetup.branchId, month: paramUrlSetup.month, year: paramUrlSetup.year },
 			beforeSend: function() { $('#loading-screen').show(); },
-			success: function(data) {
+			success: function(resp) {
+				const getData = resp.data;
 				let listPenggajian = '';
 				$('#list-penggajian tr').remove();
 
-        if (data.length) {
-          $.each(data, function(idx, v) {
+        if (getData.length) {
+          $.each(getData, function(idx, v) {
             listPenggajian += `<tr>
               <td>${++idx}</td>`
               + ((role.toLowerCase() != 'admin') ? `` : `<td>${v.fullname}</td>`)
@@ -357,6 +376,10 @@ $(document).ready(function() {
           listPenggajian += `<tr class="text-center"><td colspan="12">Tidak ada data.</td></tr>`;
         }
 				$('#list-penggajian').append(listPenggajian);
+
+				const amountSallary = (resp.amount_sallary > -1) ? resp.amount_sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-';
+
+        $('#total-penggajian-txt').text(`Rp. ${amountSallary}`);
 
 				$('.openFormEdit').click(function() {
 					const getObj = data.find(x => x.id == $(this).val());

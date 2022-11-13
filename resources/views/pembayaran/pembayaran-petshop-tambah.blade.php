@@ -11,6 +11,12 @@
       <div class="modal-body">
         <form class="form-pembarayan-tambah">
           <div class="box-body">
+            <div class="form-group showDropdownMetodePembayaran">
+              <label for="selectedMetodePembayaran">Pilih Metode Pembayaran</label>
+              <select id="selectedMetodePembayaran" class="form-control" style="width: 100%">
+              </select>
+              <div id="metodePembayaranErr1" class="validate-error"></div>
+            </div>
             <div class="form-group showDropdownCabang">
               <label for="selectedCabang">Cari Cabang</label>
               <select id="selectedCabang" class="form-control" style="width: 100%">
@@ -31,7 +37,6 @@
                     <tr>
                       <th>No</th>
                       <th>Nama Barang</th>
-                      <th>Kategori Barang</th>
                       <th>Jumlah</th>
                       <th>Harga Satuan</th>
                       <th>Harga Keseluruhan</th>

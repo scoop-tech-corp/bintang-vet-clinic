@@ -7,6 +7,15 @@
     <div class="inner-box-title">
       <div class="section-left-box-title"></div>
       <div class="section-right-box-title">
+
+        <label class="label-date m-r-10px">Pilih Tanggal</label>
+        <div class="input-group date m-r-10px">
+            <div class="input-group-addon">
+                <i class="fa fa-calendar"></i>
+            </div>
+            <input type="text" class="form-control" id="datepicker" placeholder="mm-yyyy" autocomplete="off">
+        </div>  
+
         <div class="input-search-section m-r-10px">
           <input type="text" class="form-control" placeholder="cari..">
           <i class="fa fa-search" aria-hidden="true"></i>
@@ -38,6 +47,10 @@
           <tr class="text-center"><td colspan="12">Tidak ada data.</td></tr>
         </tbody>
       </table>
+    </div>
+    <div class="m-b-10px m-t-10px">
+        <label class="label-support-laporan">Total Penggajian</label>
+        <span id="total-penggajian-txt">Rp. -</span>
     </div>
   </div>
   <!-- /.box-body -->

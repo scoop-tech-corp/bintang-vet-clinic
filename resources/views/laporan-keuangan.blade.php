@@ -1,12 +1,15 @@
 <table>
     <thead>
         <tr>
-            <th style="text-align: center; border: 1px solid black;" width="10"><b>TANGGAL</b></th>
-            <th style="text-align: center; border: 1px solid black;" width="13"><b>NAMA OWNER</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="17"><b>TANGGAL</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="14"><b>NAMA OWNER</b></th>
             <th style="text-align: center; border: 1px solid black;" width="13"><b>NAMA HEWAN</b></th>
-            <th style="text-align: center; border: 1px solid black;" width="27"><b>TINDAKAN</b></th>
-            <th style="text-align: center; border: 1px solid black;" width="18"><b>TOTAL PENDAPATAN</b></th>
-            <th style="text-align: center; border: 1px solid black;" width="8"><b>PETSHOP</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="27"><b>ITEM</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="13"><b>JUMLAH ITEM</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="15"><b>HARGA SATUAN</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="27"><b>HARGA KESELURUHAN</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="20"><b>TOTAL PER NOTA</b></th>
+            <th style="text-align: center; border: 1px solid black;" width="15"><b>PETSHOP</b></th>
             <th style="text-align: center; border: 1px solid black;" width="10"><b>MODAL</b></th>
             <th style="text-align: center; border: 1px solid black;" width="11"><b>DOKTER</b></th>
             <th style="text-align: center; border: 1px solid black;" width="18"><b>PERSENTASE DISKON</b></th>
@@ -19,6 +22,10 @@
     </thead>
     <tbody>
 
+        @php
+            $j = 0;
+        @endphp
+
         @foreach ($data as $datas)
             @php
                 $total_income = 0;
@@ -28,148 +35,330 @@
                 $total_overall_doctor = 0;
                 $total_amount_discount = 0;
                 $total_doctor_after_discount = 0;
+                $price_each_note = 0;
+                $total_note = 0;
+
+                $total_item = 0;
 
                 $temp_date = '';
                 $temp_owner = '';
                 $temp_pet = '';
+                $flag_color = 0;
             @endphp
 
-            @foreach ($datas as $res_data)
-                <tr>
+            @for ($i = 0; $i < $datas->count(); $i++)
+                @if($datas[$i]->data_category == "clinic")
+                    <tr>
+                        @if ($temp_date != '')
+                            @if ($temp_date == $datas[$i]->created_at)
+                                <td style="text-align: center; border: 1px solid black;"></td>
+                            @else
+                                @php
+                                    $temp_date = $datas[$i]->created_at;
+                                @endphp
+                                <td style="text-align: left; border: 1px solid black;">{{ $temp_date }}</td>
+                            @endif
 
-                    @if ($temp_date != '')
-                        @if ($temp_date == $res_data->created_at)
-                            <td style="text-align: center; border: 1px solid black;"></td>
                         @else
                             @php
-                                $temp_date = $res_data->created_at;
+                                $temp_date = $datas[$i]->created_at;
                             @endphp
-                            <td style="text-align: left; border: 1px solid black;">{{ $temp_date }}</td>
+
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->created_at }}</td>
                         @endif
 
-                    @else
-                        @php
-                            $temp_date = $res_data->created_at;
-                        @endphp
+                        {{-- ======================================================= --}}
 
-                        <td style="text-align: left; border: 1px solid black;">{{ $res_data->created_at }}</td>
-                    @endif
+                        @if ($temp_owner != '')
+                            @if ($temp_owner == $datas[$i]->owner_name)
+                                <td style="text-align: center; border: 1px solid black;"></td>
+                            @else
+                                @php
+                                    $temp_owner = $datas[$i]->owner_name;
+                                @endphp
+                                <td style="text-align: left; border: 1px solid black;">{{ $temp_owner }}</td>
+                            @endif
 
-                    {{-- ======================================================= --}}
-
-                    @if ($temp_owner != '')
-                        @if ($temp_owner == $res_data->owner_name)
-                            <td style="text-align: center; border: 1px solid black;"></td>
                         @else
                             @php
-                                $temp_owner = $res_data->owner_name;
+                                $temp_owner = $datas[$i]->owner_name;
                             @endphp
-                            <td style="text-align: left; border: 1px solid black;">{{ $temp_owner }}</td>
+
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->owner_name }}</td>
                         @endif
 
-                    @else
+                        {{-- ======================================================= --}}
+
+                        @if ($temp_pet != '')
+                            @if ($temp_pet == $datas[$i]->pet_name)
+                                <td style="text-align: left; border: 1px solid black;"></td>
+                            @else
+                                @php
+                                    $temp_pet = $datas[$i]->pet_name;
+                                @endphp
+                                <td style="text-align: left; border: 1px solid black;">{{ $temp_pet }}</td>
+                            @endif
+
+                        @else
+                            @php
+                                $temp_pet = $datas[$i]->pet_name;
+                            @endphp
+
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->pet_name }}</td>
+                        @endif
+
+                        <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->item }}</td>
+                        <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->total_item }}</td>
                         @php
-                            $temp_owner = $res_data->owner_name;
+                            $total_item += $datas[$i]->total_item;
                         @endphp
 
-                        <td style="text-align: left; border: 1px solid black;">{{ $res_data->owner_name }}</td>
-                    @endif
+                        <td style="text-align: right; border: 1px solid black;">
 
-                    {{-- ======================================================= --}}
+                            @php
+                                $float = (float) $datas[$i]->each_price;
+                            @endphp
 
-                    @if ($temp_pet != '')
-                        @if ($temp_pet == $res_data->pet_name)
+                            {{ number_format($price_each_note, 2,',','.') }}
+                        </td>
+
+                        <td style="text-align: right; border: 1px solid black;">
+
+                            @php
+                                $float = (float) $datas[$i]->selling_price;
+                            @endphp
+
+                            {{ number_format($datas[$i]->selling_price, 2,',','.') }}
+                        </td>
+
+                        @if($i + 1 < $datas->count())
+
+                            @if ($datas[$i]->pet_name == $datas[$i + 1]->pet_name)
+                                <td style="text-align: right; border: 1px solid black;"></td>
+
+                                @php
+                                    $price_each_note += $datas[$i]->selling_price;
+                                @endphp
+                            @else
+                                @php
+                                    $price_each_note += $datas[$i]->selling_price;
+                                @endphp
+                            <td style="text-align: right; border: 1px solid black;"><b>{{ number_format($price_each_note, 2,',','.') }}</b></td>
+                                @php
+                                    $total_note += $price_each_note;
+                                    $price_each_note = 0;
+                                @endphp
+                            @endif
+
+                        @else
+
+                            @php
+                                $price_each_note += $datas[$i]->selling_price;
+                                $total_note += $price_each_note;
+                            @endphp
+                            <td style="text-align: right; border: 1px solid black;"><b>{{ number_format($price_each_note, 2,',','.') }}</b></td>
+
+                        @endif
+
+                            <td style="text-align: right; border: 1px solid black;">
+                                {{ number_format($datas[$i]->petshop_fee, 2,',','.') }}
+                            </td>
+
+                        <td style="text-align: right; border: 1px solid black;">
+                            {{number_format($datas[$i]->capital_price, 2,',','.')}}
+                        </td>
+                        <td style="text-align: right; border: 1px solid black;">
+                            @php
+                                $float = (float) $datas[$i]->doctor_fee;
+                            @endphp
+                            {{ number_format($datas[$i]->doctor_fee, 2,',','.') }}
+                        </td>
+                        <td style="text-align: right; border: 1px solid black;">
+                            @php
+                                $float = (float) $datas[$i]->discount;
+                            @endphp
+                            {{ $float }} %
+                        </td>
+                        <td style="text-align: right; border: 1px solid black;">
+                            @php
+                                $float = (float) $datas[$i]->amount_discount;
+                            @endphp
+                            {{ number_format($datas[$i]->amount_discount, 2,',','.') }}
+                        </td>
+                        <td style="text-align: right; border: 1px solid black;">
+                            @php
+                                $float = (float) $datas[$i]->after_discount;
+                            @endphp
+                            {{ number_format($datas[$i]->after_discount, 2,',','.') }}
+                        </td>
+                        <td style="text-align: right; border: 1px solid black;"></td>
+
+                        <td style="text-align: right; border: 1px solid black;"></td>
+
+                        <td style="text-align: right; border: 1px solid black;">{{ $datas[$i]->payment_name }}</td>
+                    </tr>
+
+                    @if($i + 1 < $datas->count() && $datas[$i]->pet_name != $datas[$i + 1]->pet_name)
+                        <tr>
                             <td style="text-align: left; border: 1px solid black;"></td>
-                        @else
-                            @php
-                                $temp_pet = $res_data->pet_name;
-                            @endphp
-                            <td style="text-align: left; border: 1px solid black;">{{ $temp_pet }}</td>
-                        @endif
-
-                    @else
-                        @php
-                            $temp_pet = $res_data->pet_name;
-                        @endphp
-
-                        <td style="text-align: left; border: 1px solid black;">{{ $res_data->pet_name }}</td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                        </tr>
                     @endif
 
-                    <td style="text-align: left; border: 1px solid black;">{{ $res_data->action }}</td>
-                    <td style="text-align: right; border: 1px solid black;">
+                @else
+                    @if($flag_color == 0)
+                        <tr>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                            <td style="text-align: left; border: 1px solid black; background-color: #FFFF54;"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->created_at }}</td>
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->owner_name }}</td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->pet_name }}</td>
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->total_item }}</td>
+                            @php
+                                $total_item += $datas[$i]->total_item;
+                            @endphp
+                            <td style="text-align: right; border: 1px solid black;">{{ number_format($datas[$i]->each_price, 2,',','.') }}</td>
+                            <td style="text-align: right; border: 1px solid black;">{{ number_format($datas[$i]->price_overall, 2,',','.') }}</td>
 
-                        @php
-                            $float = (float) $res_data->selling_price;
-                        @endphp
+                            @if($i + 1 < $datas->count())
+                                @if($datas[$i]->owner_name == $datas[$i + 1]->owner_name)
+                                    <td style="text-align: right; border: 1px solid black;"></td>
 
+                                    @php
+                                        $price_each_note += $datas[$i]->price_overall;
+                                    @endphp
+                                @else
+                                    @php
+                                        $price_each_note += $datas[$i]->price_overall;
+                                    @endphp
+                                    <td style="text-align: right; border: 1px solid black;"><b>{{ number_format($price_each_note, 2,',','.') }}</b></td>
+                                    @php
+                                        $total_note += $price_each_note;
+                                        $price_each_note = 0;
+                                    @endphp
+                                @endif
+                            @else
+                                @php
+                                    $price_each_note += $datas[$i]->price_overall;
+                                    $total_note += $price_each_note;
+                                @endphp
+                                <td style="text-align: right; border: 1px solid black;"><b>{{ number_format($price_each_note, 2,',','.') }}</b></td>
+                            @endif
 
-                        {{ $float }}
-                        {{-- {{ number_format($res_data->selling_price, 2, ',', '.') }} --}}
-                    </td>
-                    <td style="text-align: right; border: 1px solid black;">
+                            <td style="text-align: right; border: 1px solid black;">{{number_format(0, 2,',','.')}}</td>
+                            <td style="text-align: right; border: 1px solid black;">{{number_format($datas[$i]->capital_price, 2,',','.')}}</td>
+                            <td style="text-align: right; border: 1px solid black;">{{number_format($datas[$i]->doctor_fee, 2,',','.')}}</td>
+                            <td style="text-align: right; border: 1px solid black;">{{$datas[$i]->discount}}</td> <!--persentase dokter -->
+                            <td style="text-align: right; border: 1px solid black;">{{number_format($datas[$i]->amount_discount, 2,',','.')}}</td> <!--nominal diskon -->
+                            <td style="text-align: right; border: 1px solid black;">{{number_format($datas[$i]->after_discount, 2,',','.')}}</td> <!--fee dokter setelah diskon -->
+                            <td style="text-align: right; border: 1px solid black;"></td>
+                            <td style="text-align: right; border: 1px solid black;"></td>
+                            <td style="text-align: right; border: 1px solid black;">{{$datas[$i]->payment_name}}</td>
+                        </tr>
                         @php
-                            $float = (float) $res_data->petshop_fee;
+                        $flag_color = 1;
                         @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($res_data->petshop_fee, 2, ',', '.') }} --}}
-                    </td>
-                    <td style="text-align: right; border: 1px solid black;">
-                        @php
-                            $float = (float) $res_data->capital_price;
-                        @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($res_data->capital_price, 2, ',', '.') }} --}}
-                    </td>
-                    <td style="text-align: right; border: 1px solid black;">
-                        @php
-                            $float = (float) $res_data->doctor_fee;
-                        @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($res_data->doctor_fee, 2, ',', '.') }} --}}
-                    </td>
-                    <td style="text-align: right; border: 1px solid black;">
-                        @php
-                            $float = (float) $res_data->discount;
-                        @endphp
-                        {{ $float }} %
-                        {{-- {{ number_format($res_data->doctor_fee, 2, ',', '.') }} --}}
-                    </td>
-                    <td style="text-align: right; border: 1px solid black;">
-                        @php
-                            $float = (float) $res_data->amount_discount;
-                        @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($res_data->doctor_fee, 2, ',', '.') }} --}}
-                    </td>
-                    <td style="text-align: right; border: 1px solid black;">
-                        @php
-                            $float = (float) $res_data->after_discount;
-                        @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($res_data->doctor_fee, 2, ',', '.') }} --}}
-                    </td>
-                    <td style="text-align: right; border: 1px solid black;"></td>
+                    @else
+                        <tr>
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->created_at }}</td>
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->owner_name }}</td>
+                            <td style="text-align: left; border: 1px solid black;"></td>
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->pet_name }}</td>
+                            <td style="text-align: left; border: 1px solid black;">{{ $datas[$i]->total_item }}</td>
+                            @php
+                                $total_item += $datas[$i]->total_item;
+                            @endphp
+                            <td style="text-align: right; border: 1px solid black;">{{ number_format($datas[$i]->each_price, 2,',','.') }}</td>
+                            <td style="text-align: right; border: 1px solid black;">{{ number_format($datas[$i]->price_overall, 2,',','.') }}</td>
 
-                    <td style="text-align: right; border: 1px solid black;"></td>
+                            @if($i + 1 < $datas->count())
+                                @if($datas[$i]->owner_name == $datas[$i + 1]->owner_name)
+                                    <td style="text-align: right; border: 1px solid black;"></td>
 
-                    <td style="text-align: right; border: 1px solid black;">{{ $res_data->payment_name }}</td>
-                </tr>
+                                    @php
+                                        $price_each_note += $datas[$i]->price_overall;
+                                    @endphp
+                                @else
+                                    @php
+                                        $price_each_note += $datas[$i]->price_overall;
+                                    @endphp
+                                    <td style="text-align: right; border: 1px solid black;"><b>{{number_format($price_each_note, 2,',','.')}}</b></td>
+                                    @php
+                                        $total_note += $price_each_note;
+                                        $price_each_note = 0;
+                                    @endphp
+                                @endif
+                            @else
+                                @php
+                                    $price_each_note += $datas[$i]->price_overall;
+                                    $total_note += $price_each_note;
+                                @endphp
+                                <td style="text-align: right; border: 1px solid black;"><b>{{ number_format($price_each_note, 2,',','.') }}</b></td>
+                            @endif
+
+                            <td style="text-align: right; border: 1px solid black;">{{0}}</td>
+                            <td style="text-align: right; border: 1px solid black;">{{number_format($datas[$i]->capital_price, 2,',','.')}}</td>
+                            <td style="text-align: right; border: 1px solid black;">{{number_format($datas[$i]->doctor_fee, 2,',','.')}}</td>
+                            <td style="text-align: right; border: 1px solid black;">{{$datas[$i]->discount}}</td> <!--persentase dokter -->
+                            <td style="text-align: right; border: 1px solid black;">{{number_format($datas[$i]->amount_discount, 2,',','.')}}</td> <!--nominal diskon -->
+                            <td style="text-align: right; border: 1px solid black;">{{number_format($datas[$i]->after_discount, 2,',','.')}}</td> <!--fee dokter setelah diskon -->
+                            <td style="text-align: right; border: 1px solid black;"></td>
+                            <td style="text-align: right; border: 1px solid black;"></td>
+                            <td style="text-align: right; border: 1px solid black;">{{$datas[$i]->payment_name}}</td>
+                        </tr>
+                    @endif
+
+                @endif
 
                 @php
-                    $total_income += $res_data->selling_price;
-                    $total_petshop += $res_data->petshop_fee;
-                    $total_capital += $res_data->capital_price;
-                    $total_doctor += $res_data->doctor_fee;
-                    $total_amount_discount += $res_data->amount_discount;
-                    $total_doctor_after_discount += $res_data->after_discount;
+                    $total_income += $datas[$i]->selling_price;
+                    $total_petshop += $datas[$i]->petshop_fee;
+                    $total_capital += $datas[$i]->capital_price;
+                    $total_doctor += $datas[$i]->doctor_fee;
+                    $total_amount_discount += $datas[$i]->amount_discount;
+                    $total_doctor_after_discount += $datas[$i]->after_discount;
                 @endphp
-            @endforeach
+
+            @endfor
             <tr>
                 <td colspan="4" style="text-align: center; border: 1px thick black;"><b>TOTAL</b></td>
                 <td style="text-align: center; border: 1px thick black;">
                     <b>
                         @php
-                            $float = (float) $total_income;
+                            $float = (float) $total_item;
                         @endphp
                         {{ $float }}
                         {{-- {{ number_format($total_income, 2, ',', '.') }} --}}
@@ -177,43 +366,67 @@
                 </td>
                 <td style="text-align: center; border: 1px thick black;">
                     <b>
+                        <!-- @php
+                            $float = (float) $total_petshop;
+                        @endphp
+                        {{ $float }} -->
+                        <!-- {{-- {{ number_format($total_petshop, 2, ',', '.') }} --}} -->
+                    </b>
+                </td>
+                <td style="text-align: center; border: 1px thick black;">
+                    <b>
+                        <!-- @php
+                            $float = (float) $total_capital;
+                        @endphp
+                        {{ $float }} -->
+                        <!-- {{-- {{ number_format($total_capital, 2, ',', '.') }} --}} -->
+                    </b>
+                </td>
+                <td style="text-align: center; border: 1px thick black;">
+                    <b>
+                        @php
+                            $float = (float) number_format($total_note, 2, ',', '.');
+                        @endphp
+                        {{ number_format($total_note, 2,',','.') }}
+                        <!-- {{-- {{ number_format($total_doctor, 2, ',', '.') }} --}} -->
+                    </b>
+                </td>
+
+                <td style="text-align: center; border: 1px thick black;">
+                    <b>
                         @php
                             $float = (float) $total_petshop;
                         @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($total_petshop, 2, ',', '.') }} --}}
+                        {{ number_format($total_petshop, 2,',','.') }}
                     </b>
                 </td>
+
                 <td style="text-align: center; border: 1px thick black;">
                     <b>
                         @php
                             $float = (float) $total_capital;
                         @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($total_capital, 2, ',', '.') }} --}}
+                        {{ number_format($total_capital, 2,',','.') }}
                     </b>
                 </td>
+
                 <td style="text-align: center; border: 1px thick black;">
                     <b>
                         @php
                             $float = (float) $total_doctor;
                         @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($total_doctor, 2, ',', '.') }} --}}
+                        {{ number_format($total_doctor, 2,',','.') }}
                     </b>
                 </td>
 
-                <td style="text-align: center; border: 1px thick black;"> {{-- persentase diskon --}}
+                <td style="text-align: center; border: 1px thick black;"></td>
 
-                </td>
-
-                <td style="text-align: center; border: 1px thick black;"> {{-- nominal diskon --}}
+                <td style="text-align: center; border: 1px thick black;">
                     <b>
                         @php
                             $float = (float) $total_amount_discount;
                         @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($total_petshop, 2, ',', '.') }} --}}
+                        {{ number_format($total_amount_discount, 2,',','.') }}
                     </b>
                 </td>
 
@@ -222,8 +435,7 @@
                         @php
                             $float = (float) $total_doctor_after_discount;
                         @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($total_petshop, 2, ',', '.') }} --}}
+                        {{ number_format($total_doctor_after_discount, 2,',','.') }}
                     </b>
                 </td>
 
@@ -232,23 +444,63 @@
                         @php
                             $float = (float) $total_capital + $total_doctor;
                         @endphp
-                        {{ $float }}
-                        {{-- {{ number_format($total_capital + $total_doctor, 2, ',', '.') }} --}}
+                        {{ number_format($total_capital + $total_doctor, 2,',','.') }}
                     </b>
                 </td>
 
                 <td style="text-align: right; border: 1px thick black;">
                     <b>
-                        {{ $expenses }}
+                        {{ number_format($expenses[$j], 2,',','.') }}
                     </b>
                 </td>
                 <td style="text-align: right; border: 1px thick black;">
                     <b>
-                        {{ $total_doctor_after_discount - $expenses }}
+                        {{ number_format($total_doctor_after_discount - $expenses[$j], 2,',','.') }}
                     </b>
                 </td>
             </tr>
+            @php
+            $j+=1;
+            @endphp
         @endforeach
 
+        <tr>
+        </tr>
+        <tr>
+            <td colspan="3" style="text-align: left;">
+                <b>
+                    Total Pemasukan Berdasarkan Metode Pembayaran:
+                </b>
+            </td>
+        </tr>
+
+        <tr></tr>
+
+        <tr>
+
+            <td style="text-align: left; border: 1px solid black;">
+                <b>
+                    Metode Pembayaran
+                </b>
+            </td>
+
+            <td style="text-align: left; border: 1px solid black;">
+                <b>
+                    Nominal
+                </b>
+            </td>
+        </tr>
+
+        @foreach($data_payment_method as $pay)
+            <tr>
+                <td style="text-align: left; border: 1px solid black;">
+                    {{$pay['payment_name']}}
+                </td>
+
+                <td style="text-align: left; border: 1px solid black;">
+                    {{number_format($pay['amount'], 2,',','.')}}
+                </td>
+            </tr>
+        @endforeach
     </tbody>
 </table>
