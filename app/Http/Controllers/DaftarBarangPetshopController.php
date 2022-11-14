@@ -224,29 +224,6 @@ class DaftarBarangPetshopController extends Controller
             ], 404);
         }
 
-        if ($check_stock->total_item > $request->jumlah_barang) {
-            $qty_item = $check_stock->total_item - $request->jumlah_barang;
-
-            $item_history = HistoryItemMovement::create([
-                'price_item_id' => $request->id,
-                'item_id' => $request->id,
-                'quantity' => $qty_item,
-                'status' => 'tambah',
-                'user_id' => $request->user()->id,
-            ]);
-
-        } elseif ($check_stock->total_item < $request->jumlah_barang) {
-            $qty_item = $request->jumlah_barang - $check_stock->total_item;
-
-            $item_history = HistoryItemMovement::create([
-                'price_item_id' => $request->id,
-                'item_id' => $request->id,
-                'quantity' => $qty_item,
-                'status' => 'kurang',
-                'user_id' => $request->user()->id,
-            ]);
-        }
-
         $exp_date = Carbon::parse(Carbon::createFromFormat('d/m/Y', $request->tanggal_expired)->format('Y/m/d'));
 
         $item->item_name = $request->nama_barang;
