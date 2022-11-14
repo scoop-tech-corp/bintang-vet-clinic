@@ -119,7 +119,7 @@
                                 $float = (float) $datas[$i]->each_price;
                             @endphp
 
-                            {{ number_format($price_each_note, 2,',','.') }}
+                            {{ number_format($datas[$i]->each_price, 2,',','.') }}
                         </td>
 
                         <td style="text-align: right; border: 1px solid black;">
