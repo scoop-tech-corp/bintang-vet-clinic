@@ -691,23 +691,23 @@ function validationForm() {
     }
   } else { isValidSelectedPasien = true; }
 
-  if (!$('#anamnesa').val()) {
-  //   $('#anamnesaErr1').text('Anamnesa harus di isi'); isValidAnamnesa = false;
-  // } else {
-    $('#anamnesaErr1').text(''); isValidAnamnesa = true;
-  }
+  // if (!$('#anamnesa').val()) {
+  // //   $('#anamnesaErr1').text('Anamnesa harus di isi'); isValidAnamnesa = false;
+  // // } else {
+  //   $('#anamnesaErr1').text(''); isValidAnamnesa = true;
+  // }
 
-  if (!$('#sign').val()) {
-  //   $('#signErr1').text('Sign harus di isi'); isValidSign = false;
-  // } else {
-    $('#signErr1').text(''); isValidSign = true;
-  }
+  // if (!$('#sign').val()) {
+  // //   $('#signErr1').text('Sign harus di isi'); isValidSign = false;
+  // // } else {
+  //   $('#signErr1').text(''); isValidSign = true;
+  // }
 
-  if (!$('#diagnosa').val()) {
-  //   $('#diagnosaErr1').text('Diagnosa harus di isi'); isValidDiagnosa = false;
-  // } else {
-    $('#diagnosaErr1').text(''); isValidDiagnosa = true;
-  }
+  // if (!$('#diagnosa').val()) {
+  // //   $('#diagnosaErr1').text('Diagnosa harus di isi'); isValidDiagnosa = false;
+  // // } else {
+  //   $('#diagnosaErr1').text(''); isValidDiagnosa = true;
+  // }
 
   if (!$("input[name='radioRawatInap']:checked").val()) {
     $('#rawatInapErr1').text('Rawat inap harus di isi'); isValidRadioRawatInap = false;
@@ -736,7 +736,7 @@ function validationForm() {
 
   $('#beErr').empty(); isBeErr = false;
 
-  if (!isValidSelectedPasien || !isValidAnamnesa || !isValidSign || !isValidDiagnosa
+  if (!isValidSelectedPasien //|| !isValidAnamnesa || !isValidSign || !isValidDiagnosa
     || !isValidRadioRawatInap || !isValidRadioStatusPemeriksa
     || !isValidFotoKondisiPasien || isBeErr || customErr1) {
     $('#btnSubmitHasilPemeriksaan').attr('disabled', true);
