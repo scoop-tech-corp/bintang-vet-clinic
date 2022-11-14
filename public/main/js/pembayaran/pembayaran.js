@@ -18,14 +18,14 @@ $(document).ready(function() {
 	// if (role.toLowerCase() == 'dokter') {
 	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	// } else {
-		if (role.toLowerCase() != 'admin') {
-      $('#filterCabang').hide();
-      $('#filterCabangPet').hide();
-    } else {
+		// if (role.toLowerCase() != 'admin') {
+    //   $('#filterCabang').hide();
+    //   $('#filterCabangPet').hide();
+    // } else {
       loadCabang();
       $('#filterCabang').select2({ placeholder: 'Cabang', allowClear: true });
       $('#filterCabangPet').select2({ placeholder: 'Cabang', allowClear: true });
-    }
+   //}
 	//}
 
   loadMetodePembayaran();
