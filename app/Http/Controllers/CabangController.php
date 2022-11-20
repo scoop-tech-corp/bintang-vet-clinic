@@ -11,12 +11,12 @@ class CabangController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Akses User tidak diizinkan!'],
-            ], 403);
-        }
+        // if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+        //     return response()->json([
+        //         'message' => 'The user role was invalid.',
+        //         'errors' => ['Akses User tidak diizinkan!'],
+        //     ], 403);
+        // }
 
         $branch = DB::table('branches')
             ->join('users', 'branches.user_id', '=', 'users.id')
@@ -30,6 +30,10 @@ class CabangController extends Controller
                 ->orwhere('branches.branch_name', 'like', '%' . $request->keyword . '%')
                 ->orwhere('branches.address', 'like', '%' . $request->keyword . '%')
                 ->orwhere('users.fullname', 'like', '%' . $request->keyword . '%');
+        }
+
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+            $branch = $branch->where('branches.id', '=', $request->user()->branch_id);
         }
 
         if ($request->orderby) {
