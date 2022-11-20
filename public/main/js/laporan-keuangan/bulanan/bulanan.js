@@ -13,7 +13,7 @@ $(document).ready(function() {
   // if (role.toLowerCase() == 'resepsionis') {
 	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	// } else {
-    if (role.toLowerCase() == 'dokter' || role.toLowerCase('resepsionis')) {
+    if (role.toLowerCase() == 'dokter' || role.toLowerCase() == 'resepsionis') {
       $('#filterCabang').hide();
       $('.section-right-box-title').css('width', 'unset');
       $('.section-right-box-title .btn-download-excel').css('margin-right', 'unset');
@@ -39,7 +39,7 @@ $(document).ready(function() {
     });
   // }
 
-  loadLaporanKeuanganBulanan();
+  // loadLaporanKeuanganBulanan();
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
@@ -105,7 +105,7 @@ $(document).ready(function() {
 
   function onFilterCabang(value) {
     paramUrlSetup.branchId = value;
-		loadLaporanKeuanganBulanan();
+		// loadLaporanKeuanganBulanan();
   }
 
   function loadLaporanKeuanganBulanan() {
