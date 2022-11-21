@@ -21,6 +21,10 @@
   width: 150px; margin-left: 10px
 }
 
+.section-right-box-title-pet{
+  display: flex;
+}
+
 @media (max-width: 768px) {
 
   .rawat-inap .box-tools {

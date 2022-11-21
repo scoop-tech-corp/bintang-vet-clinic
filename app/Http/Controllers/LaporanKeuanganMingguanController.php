@@ -8,14 +8,12 @@ use App\Models\ListofPayments;
 use DB;
 use Excel;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class LaporanKeuanganMingguanController extends Controller
 {
     public function index(Request $request)
     {
-        $page = $request->page;
-        $items_per_page = 50;
-
         // if ($request->user()->role == 'resepsionis') {
         //     return response()->json([
         //         'message' => 'The user role was invalid.',
@@ -23,364 +21,773 @@ class LaporanKeuanganMingguanController extends Controller
         //     ], 403);
         // }
 
-        $item = DB::table('list_of_payments as lop')
-            ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
-            ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
-            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
-            ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
+        $fdate = $request->date_from;
+        $tdate = new Carbon('2022-02-14');
+        $diff = $tdate->diffInDays($fdate, false);
 
-            ->select(
-                'lop.id as list_of_payment_id',
-                'lop.check_up_result_id as check_up_result_id',
-                'reg.id_number as registration_number',
-                'pa.id_member as patient_number',
-                'pa.pet_category',
-                'pa.pet_name',
-                'reg.complaint',
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"),
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price"),
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"),
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee"),
-                DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount"),
-                DB::raw("TRIM(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END - SUM(lopm.amount_discount))+0 as fee_doctor_after_discount"),
-                'users.fullname as created_by',
-                'lop.created_at as created_at',
-                'branches.id as branchId');
-        if ($request->date_from && $request->date_to) {
-            $item = $item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
-        }
+        if ($diff > 0) {
 
-        $item = $item->groupBy('lop.check_up_result_id');
+            $page = $request->page;
+            $items_per_page = 50;
 
-        $service = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
+            $item = DB::table('list_of_payments as lop')
+                ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+                ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+                ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
 
-            ->select(
-                'list_of_payments.id as list_of_payment_id',
-                'list_of_payments.check_up_result_id as check_up_result_id',
-                'registrations.id_number as registration_number',
-                'patients.id_member as patient_number',
-                'patients.pet_category',
-                'patients.pet_name',
-                'registrations.complaint',
-                DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"),
-                DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
-                DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
-                DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount"),
-                DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity) - SUM(list_of_payment_services.amount_discount))+0 as fee_doctor_after_discount"),
-                'users.fullname as created_by',
-                'list_of_payment_services.created_at as created_at',
-                'branches.id as branchId'
-            );
-        if ($request->date_from && $request->date_to) {
-            $service = $service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
-        }
+                ->select(
+                    'lop.id as list_of_payment_id',
+                    'lop.check_up_result_id as check_up_result_id',
+                    'reg.id_number as registration_number',
+                    'pa.id_member as patient_number',
+                    'pa.pet_category',
+                    'pa.pet_name',
+                    'reg.complaint',
+                    DB::raw("TRIM(SUM(pmg.selling_price * lopm.quantity))+0 as price_overall"),
+                    DB::raw("TRIM(SUM(pmg.capital_price * lopm.quantity))+0 as capital_price"),
+                    DB::raw("TRIM(SUM(pmg.doctor_fee * lopm.quantity))+0 as doctor_fee"),
+                    DB::raw("TRIM(SUM(pmg.petshop_fee * lopm.quantity))+0 as petshop_fee"),
+                    DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount"),
+                    DB::raw("TRIM(SUM(pmg.doctor_fee * lopm.quantity) - SUM(lopm.amount_discount))+0 as fee_doctor_after_discount"),
+                    'users.fullname as created_by',
+                    'lop.created_at as created_at',
+                    'branches.id as branchId'
+                );
+            if ($request->date_from && $request->date_to) {
+                $item = $item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
 
-        $service = $service->groupBy('list_of_payments.check_up_result_id')
-            ->union($item);
+            $item = $item->groupBy('lop.check_up_result_id');
 
-        $data = DB::query()->fromSub($service, 'p_pn')
-            ->select('list_of_payment_id', 'check_up_result_id',
-                'registration_number', 'patient_number', 'pet_category', 'pet_name', 'complaint',
-                DB::raw("TRIM(SUM(price_overall))+0 as price_overall"),
-                DB::raw("TRIM(SUM(capital_price))+0 as capital_price"),
-                DB::raw("TRIM(SUM(doctor_fee))+0 as doctor_fee"),
-                DB::raw("TRIM(SUM(petshop_fee))+0 as petshop_fee"),
-                DB::raw("TRIM(SUM(amount_discount))+0 as amount_discount"),
-                DB::raw("TRIM(SUM(fee_doctor_after_discount))+0 as fee_doctor_after_discount"),
-                'created_by',
-                DB::raw("DATE_FORMAT(created_at, '%d %b %Y') as created_at"));
+            $service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
 
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('branchId', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $data = $data->where('branchId', '=', $request->user()->branch_id);
-        }
+                ->select(
+                    'list_of_payments.id as list_of_payment_id',
+                    'list_of_payments.check_up_result_id as check_up_result_id',
+                    'registrations.id_number as registration_number',
+                    'patients.id_member as patient_number',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'registrations.complaint',
+                    DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"),
+                    DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
+                    DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
+                    DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
+                    DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount"),
+                    DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity) - SUM(list_of_payment_services.amount_discount))+0 as fee_doctor_after_discount"),
+                    'users.fullname as created_by',
+                    'list_of_payment_services.created_at as created_at',
+                    'branches.id as branchId'
+                );
+            if ($request->date_from && $request->date_to) {
+                $service = $service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
 
-        if ($request->orderby) {
+            $service = $service->groupBy('list_of_payments.check_up_result_id')
+                ->union($item);
 
-            $data = $data->orderBy($request->column, $request->orderby);
+            $data = DB::query()->fromSub($service, 'p_pn')
+                ->select(
+                    'list_of_payment_id',
+                    'check_up_result_id',
+                    'registration_number',
+                    'patient_number',
+                    'pet_category',
+                    'pet_name',
+                    'complaint',
+                    DB::raw("TRIM(SUM(price_overall))+0 as price_overall"),
+                    DB::raw("TRIM(SUM(capital_price))+0 as capital_price"),
+                    DB::raw("TRIM(SUM(doctor_fee))+0 as doctor_fee"),
+                    DB::raw("TRIM(SUM(petshop_fee))+0 as petshop_fee"),
+                    DB::raw("TRIM(SUM(amount_discount))+0 as amount_discount"),
+                    DB::raw("TRIM(SUM(fee_doctor_after_discount))+0 as fee_doctor_after_discount"),
+                    'created_by',
+                    DB::raw("DATE_FORMAT(created_at, '%d %b %Y') as created_at")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $data = $data->where('branchId', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $data = $data->where('branchId', '=', $request->user()->branch_id);
+            }
+
+            if ($request->orderby) {
+
+                $data = $data->orderBy($request->column, $request->orderby);
+            } else {
+                $data = $data->orderBy('list_of_payment_id', 'desc');
+            }
+
+            $temp_data = $data->groupBy('check_up_result_id')->get();
+
+            $offset = ($page - 1) * $items_per_page;
+
+            $count_data = $temp_data->count();
+
+            $count_result = $count_data - $offset;
+
+            if ($count_result < 0) {
+                $data = $data->groupBy('check_up_result_id')->offset(0)->limit($items_per_page)->get();
+            } else {
+                $data = $data->groupBy('check_up_result_id')->offset($offset)->limit($items_per_page)->get();
+            }
+
+            $total_paging = $count_data / $items_per_page;
+
+            $price_overall_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $price_overall_item = $price_overall_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $price_overall_item = $price_overall_item->first();
+
+            $price_overall_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $price_overall_service = $price_overall_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $price_overall_service = $price_overall_service->first();
+
+            $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall;
+
+            $capital_price_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $capital_price_item = $capital_price_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $capital_price_item = $capital_price_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $capital_price_item = $capital_price_item->first();
+
+            $capital_price_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $capital_price_service = $capital_price_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $capital_price_service = $capital_price_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $capital_price_service = $capital_price_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $capital_price_service = $capital_price_service->first();
+
+            $capital_price = $capital_price_service->capital_price + $capital_price_item->capital_price;
+
+            $doctor_fee_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $doctor_fee_item = $doctor_fee_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $doctor_fee_item = $doctor_fee_item->first();
+
+            $doctor_fee_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $doctor_fee_service = $doctor_fee_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $doctor_fee_service = $doctor_fee_service->first();
+
+            $doctor_fee = $doctor_fee_item->doctor_fee + $doctor_fee_service->doctor_fee;
+
+            $petshop_fee_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $petshop_fee_item = $petshop_fee_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $petshop_fee_item = $petshop_fee_item->first();
+
+            $petshop_fee_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $petshop_fee_service = $petshop_fee_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $petshop_fee_service = $petshop_fee_service->first();
+
+            $petshop_fee = $petshop_fee_item->petshop_fee + $petshop_fee_service->petshop_fee;
+
+            $amount_discount_item = DB::table('list_of_payments as lop')
+                ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+                ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+                ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $amount_discount_item = $amount_discount_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $amount_discount_item = $amount_discount_item->first();
+
+            $amount_discount_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $amount_discount_service = $amount_discount_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $amount_discount_service = $amount_discount_service->first();
+
+            $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
+
+            $expenses = DB::table('expenses as e')
+                ->join('users as u', 'e.user_id_spender', '=', 'u.id')
+                ->join('branches as b', 'u.branch_id', '=', 'b.id')
+                ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $expenses = $expenses->where('b.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $expenses = $expenses->whereBetween(DB::raw('DATE(e.date_spend)'), [$request->date_from, $request->date_to]);
+            }
+
+            $expenses = $expenses->first();
+
+            $total_expenses = 0;
+
+            if (!is_null($expenses->amount_overall)) {
+
+                $total_expenses = $expenses->amount_overall;
+            }
+
+            $net_profit = $doctor_fee - $total_expenses;
+
+            return response()->json([
+                'data' => $data,
+                'price_overall' => $price_overall,
+                'capital_price' => $capital_price,
+                'doctor_fee' => $doctor_fee,
+                'petshop_fee' => $petshop_fee,
+                'amount_discount' => $amount_discount,
+                'expenses' => $total_expenses,
+                'net_profit' => $net_profit,
+                'total_paging' => ceil($total_paging),
+            ], 200);
         } else {
-            $data = $data->orderBy('list_of_payment_id', 'desc');
+
+            $page = $request->page;
+            $items_per_page = 50;
+
+            $item = DB::table('list_of_payments as lop')
+                ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+                ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+                ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+
+                ->select(
+                    'lop.id as list_of_payment_id',
+                    'lop.check_up_result_id as check_up_result_id',
+                    'reg.id_number as registration_number',
+                    'pa.id_member as patient_number',
+                    'pa.pet_category',
+                    'pa.pet_name',
+                    'reg.complaint',
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"),
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price"),
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"),
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee"),
+                    DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount"),
+                    DB::raw("TRIM(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END - SUM(lopm.amount_discount))+0 as fee_doctor_after_discount"),
+                    'users.fullname as created_by',
+                    'lop.created_at as created_at',
+                    'branches.id as branchId'
+                );
+            if ($request->date_from && $request->date_to) {
+                $item = $item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+
+            $item = $item->groupBy('lop.check_up_result_id');
+
+            $service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+                ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+
+                ->select(
+                    'list_of_payments.id as list_of_payment_id',
+                    'list_of_payments.check_up_result_id as check_up_result_id',
+                    'registrations.id_number as registration_number',
+                    'patients.id_member as patient_number',
+                    'patients.pet_category',
+                    'patients.pet_name',
+                    'registrations.complaint',
+                    DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"),
+                    DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"),
+                    DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"),
+                    DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"),
+                    DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount"),
+                    DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity) - SUM(list_of_payment_services.amount_discount))+0 as fee_doctor_after_discount"),
+                    'users.fullname as created_by',
+                    'list_of_payment_services.created_at as created_at',
+                    'branches.id as branchId'
+                );
+            if ($request->date_from && $request->date_to) {
+                $service = $service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+
+            $service = $service->groupBy('list_of_payments.check_up_result_id')
+                ->union($item);
+
+            $data = DB::query()->fromSub($service, 'p_pn')
+                ->select(
+                    'list_of_payment_id',
+                    'check_up_result_id',
+                    'registration_number',
+                    'patient_number',
+                    'pet_category',
+                    'pet_name',
+                    'complaint',
+                    DB::raw("TRIM(SUM(price_overall))+0 as price_overall"),
+                    DB::raw("TRIM(SUM(capital_price))+0 as capital_price"),
+                    DB::raw("TRIM(SUM(doctor_fee))+0 as doctor_fee"),
+                    DB::raw("TRIM(SUM(petshop_fee))+0 as petshop_fee"),
+                    DB::raw("TRIM(SUM(amount_discount))+0 as amount_discount"),
+                    DB::raw("TRIM(SUM(fee_doctor_after_discount))+0 as fee_doctor_after_discount"),
+                    'created_by',
+                    DB::raw("DATE_FORMAT(created_at, '%d %b %Y') as created_at")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $data = $data->where('branchId', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $data = $data->where('branchId', '=', $request->user()->branch_id);
+            }
+
+            if ($request->orderby) {
+
+                $data = $data->orderBy($request->column, $request->orderby);
+            } else {
+                $data = $data->orderBy('list_of_payment_id', 'desc');
+            }
+
+            $temp_data = $data->groupBy('check_up_result_id')->get();
+
+            $offset = ($page - 1) * $items_per_page;
+
+            $count_data = $temp_data->count();
+
+            $count_result = $count_data - $offset;
+
+            if ($count_result < 0) {
+                $data = $data->groupBy('check_up_result_id')->offset(0)->limit($items_per_page)->get();
+            } else {
+                $data = $data->groupBy('check_up_result_id')->offset($offset)->limit($items_per_page)->get();
+            }
+
+            $total_paging = $count_data / $items_per_page;
+
+            $price_overall_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $price_overall_item = $price_overall_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $price_overall_item = $price_overall_item->first();
+
+            $price_overall_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $price_overall_service = $price_overall_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $price_overall_service = $price_overall_service->first();
+
+            $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall;
+
+            $capital_price_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $capital_price_item = $capital_price_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $capital_price_item = $capital_price_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $capital_price_item = $capital_price_item->first();
+
+            $capital_price_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $capital_price_service = $capital_price_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $capital_price_service = $capital_price_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $capital_price_service = $capital_price_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $capital_price_service = $capital_price_service->first();
+
+            $capital_price = $capital_price_service->capital_price + $capital_price_item->capital_price;
+
+            $doctor_fee_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $doctor_fee_item = $doctor_fee_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $doctor_fee_item = $doctor_fee_item->first();
+
+            $doctor_fee_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $doctor_fee_service = $doctor_fee_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $doctor_fee_service = $doctor_fee_service->first();
+
+            $doctor_fee = $doctor_fee_item->doctor_fee + $doctor_fee_service->doctor_fee;
+
+            $petshop_fee_item = DB::table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $petshop_fee_item = $petshop_fee_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $petshop_fee_item = $petshop_fee_item->first();
+
+            $petshop_fee_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $petshop_fee_service = $petshop_fee_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $petshop_fee_service = $petshop_fee_service->first();
+
+            $petshop_fee = $petshop_fee_item->petshop_fee + $petshop_fee_service->petshop_fee;
+
+            $amount_discount_item = DB::table('list_of_payments as lop')
+                ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+                ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+                ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $amount_discount_item = $amount_discount_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $amount_discount_item = $amount_discount_item->first();
+
+            $amount_discount_service = DB::table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount")
+                );
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $amount_discount_service = $amount_discount_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
+            }
+            $amount_discount_service = $amount_discount_service->first();
+
+            $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
+
+            $expenses = DB::table('expenses as e')
+                ->join('users as u', 'e.user_id_spender', '=', 'u.id')
+                ->join('branches as b', 'u.branch_id', '=', 'b.id')
+                ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $expenses = $expenses->where('b.id', '=', $request->branch_id);
+            } elseif ($request->user()->role == 'dokter') {
+                $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->date_from && $request->date_to) {
+                $expenses = $expenses->whereBetween(DB::raw('DATE(e.date_spend)'), [$request->date_from, $request->date_to]);
+            }
+
+            $expenses = $expenses->first();
+
+            $total_expenses = 0;
+
+            if (!is_null($expenses->amount_overall)) {
+
+                $total_expenses = $expenses->amount_overall;
+            }
+
+            $net_profit = $doctor_fee - $total_expenses;
+
+            return response()->json([
+                'data' => $data,
+                'price_overall' => $price_overall,
+                'capital_price' => $capital_price,
+                'doctor_fee' => $doctor_fee,
+                'petshop_fee' => $petshop_fee,
+                'amount_discount' => $amount_discount,
+                'expenses' => $total_expenses,
+                'net_profit' => $net_profit,
+                'total_paging' => ceil($total_paging),
+            ], 200);
         }
-
-        $temp_data = $data->groupBy('check_up_result_id')->get();
-
-        $offset = ($page - 1) * $items_per_page;
-
-        $count_data = $temp_data->count();
-
-        $count_result = $count_data - $offset;
-
-        if ($count_result < 0) {
-            $data = $data->groupBy('check_up_result_id')->offset(0)->limit($items_per_page)->get();
-        } else {
-            $data = $data->groupBy('check_up_result_id')->offset($offset)->limit($items_per_page)->get();
-        }
-
-        $total_paging = $count_data / $items_per_page;
-
-        $price_overall_item = DB::table('list_of_payments as lop')
-            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $price_overall_item = $price_overall_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $price_overall_item = $price_overall_item->first();
-
-        $price_overall_service = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $price_overall_service = $price_overall_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $price_overall_service = $price_overall_service->first();
-
-        $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall;
-
-        $capital_price_item = DB::table('list_of_payments as lop')
-            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.capital_price)) ELSE TRIM(SUM(pmg.capital_price * lopm.quantity)) END)+0 as capital_price"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $capital_price_item = $capital_price_item->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $capital_price_item = $capital_price_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $capital_price_item = $capital_price_item->first();
-
-        $capital_price_service = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("TRIM(SUM(price_services.capital_price * detail_service_patients.quantity))+0 as capital_price"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $capital_price_service = $capital_price_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $capital_price_service = $capital_price_service->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $capital_price_service = $capital_price_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $capital_price_service = $capital_price_service->first();
-
-        $capital_price = $capital_price_service->capital_price + $capital_price_item->capital_price;
-
-        $doctor_fee_item = DB::table('list_of_payments as lop')
-            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.doctor_fee)) ELSE TRIM(SUM(pmg.doctor_fee * lopm.quantity)) END)+0 as doctor_fee"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $doctor_fee_item = $doctor_fee_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $doctor_fee_item = $doctor_fee_item->first();
-
-        $doctor_fee_service = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("TRIM(SUM(price_services.doctor_fee * detail_service_patients.quantity))+0 as doctor_fee"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $doctor_fee_service = $doctor_fee_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $doctor_fee_service = $doctor_fee_service->first();
-
-        $doctor_fee = $doctor_fee_item->doctor_fee + $doctor_fee_service->doctor_fee;
-
-        $petshop_fee_item = DB::table('list_of_payments as lop')
-            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.petshop_fee)) ELSE TRIM(SUM(pmg.petshop_fee * lopm.quantity)) END)+0 as petshop_fee"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $petshop_fee_item = $petshop_fee_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $petshop_fee_item = $petshop_fee_item->first();
-
-        $petshop_fee_service = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("TRIM(SUM(price_services.petshop_fee * detail_service_patients.quantity))+0 as petshop_fee"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $petshop_fee_service = $petshop_fee_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $petshop_fee_service = $petshop_fee_service->first();
-
-        $petshop_fee = $petshop_fee_item->petshop_fee + $petshop_fee_service->petshop_fee;
-
-        $amount_discount_item = DB::table('list_of_payments as lop')
-            ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
-            ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
-            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
-            ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $amount_discount_item = $amount_discount_item->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $amount_discount_item = $amount_discount_item->first();
-
-        $amount_discount_service = DB::table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-                DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $amount_discount_service = $amount_discount_service->whereBetween(DB::raw('DATE(list_of_payment_services.updated_at)'), [$request->date_from, $request->date_to]);
-        }
-        $amount_discount_service = $amount_discount_service->first();
-
-        $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
-
-        $expenses = DB::table('expenses as e')
-            ->join('users as u', 'e.user_id_spender', '=', 'u.id')
-            ->join('branches as b', 'u.branch_id', '=', 'b.id')
-            ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $expenses = $expenses->where('b.id', '=', $request->branch_id);
-        } elseif ($request->user()->role == 'dokter') {
-            $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->date_from && $request->date_to) {
-            $expenses = $expenses->whereBetween(DB::raw('DATE(e.date_spend)'), [$request->date_from, $request->date_to]);
-        }
-
-        $expenses = $expenses->first();
-
-        $total_expenses = 0;
-
-        if (!is_null($expenses->amount_overall)) {
-
-            $total_expenses = $expenses->amount_overall;
-        }
-
-        $net_profit = $doctor_fee - $total_expenses;
-
-        return response()->json([
-            'data' => $data,
-            'price_overall' => $price_overall,
-            'capital_price' => $capital_price,
-            'doctor_fee' => $doctor_fee,
-            'petshop_fee' => $petshop_fee,
-            'amount_discount' => $amount_discount,
-            'expenses' => $total_expenses,
-            'net_profit' => $net_profit,
-            'total_paging' => ceil($total_paging),
-        ], 200);
     }
 
     public function detail(Request $request)
@@ -432,7 +839,8 @@ class LaporanKeuanganMingguanController extends Controller
                 DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
                 DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                 'registrations.complaint',
-                'registrations.registrant')
+                'registrations.registrant'
+            )
             ->where('registrations.id', '=', $check_up_result->patient_registration_id)
             ->first();
 
@@ -444,8 +852,11 @@ class LaporanKeuanganMingguanController extends Controller
             ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
             ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
             ->join('users', 'detail_service_patients.user_id', '=', 'users.id')
-            ->select('detail_service_patients.id as detail_service_patient_id', 'price_services.id as price_service_id',
-                'list_of_services.id as list_of_service_id', 'list_of_services.service_name',
+            ->select(
+                'detail_service_patients.id as detail_service_patient_id',
+                'price_services.id as price_service_id',
+                'list_of_services.id as list_of_service_id',
+                'list_of_services.service_name',
                 'detail_service_patients.quantity',
                 'service_categories.category_name',
                 DB::raw("TRIM(detail_service_patients.price_overall )+0 as price_overall"),
@@ -456,7 +867,9 @@ class LaporanKeuanganMingguanController extends Controller
                 DB::raw("TRIM(list_of_payment_services.discount)+0 as discount"),
                 DB::raw("TRIM(list_of_payment_services.amount_discount)+0 as amount_discount"),
                 DB::raw("TRIM((price_services.doctor_fee * detail_service_patients.quantity) - list_of_payment_services.amount_discount)+0 as fee_doctor_after_discount"),
-                'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at"))
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at")
+            )
             ->where('list_of_payment_services.check_up_result_id', '=', $data->check_up_result_id);
 
         if ($request->date_from && $request->date_to) {
@@ -474,7 +887,8 @@ class LaporanKeuanganMingguanController extends Controller
             ->join('medicine_groups', 'pmg.medicine_group_id', '=', 'medicine_groups.id')
             ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
             ->join('users', 'lopm.user_id', '=', 'users.id')
-            ->select('lopm.id as id',
+            ->select(
+                'lopm.id as id',
                 'pmg.id as price_medicine_group_id',
                 DB::raw("TRIM(pmg.selling_price)+0 as selling_price"),
                 'lopm.medicine_group_id as medicine_group_id',
@@ -490,7 +904,8 @@ class LaporanKeuanganMingguanController extends Controller
                 'branches.id as branch_id',
                 'branches.branch_name',
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(lopm.created_at, '%d %b %Y') as created_at"))
+                DB::raw("DATE_FORMAT(lopm.created_at, '%d %b %Y') as created_at")
+            )
             ->where('lopm.list_of_payment_id', '=', $data->id);
 
         if ($request->date_from && $request->date_to) {
@@ -508,7 +923,8 @@ class LaporanKeuanganMingguanController extends Controller
                 ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
                 ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
                 ->join('users', 'lopi.user_id', '=', 'users.id')
-                ->select('lopi.id as detail_item_patients_id',
+                ->select(
+                    'lopi.id as detail_item_patients_id',
                     'list_of_items.id as list_of_item_id',
                     'price_items.id as price_item_id',
                     'list_of_items.item_name',
@@ -521,7 +937,8 @@ class LaporanKeuanganMingguanController extends Controller
                     DB::raw("TRIM(price_items.doctor_fee)+0 as doctor_fee"),
                     DB::raw("TRIM(price_items.petshop_fee)+0 as petshop_fee"),
                     'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(lopi.created_at, '%d %b %Y') as created_at"))
+                    DB::raw("DATE_FORMAT(lopi.created_at, '%d %b %Y') as created_at")
+                )
                 ->where('lopi.list_of_payment_medicine_group_id', '=', $value->id)
                 ->orderBy('lopi.id', 'asc')
                 ->get();
@@ -533,8 +950,11 @@ class LaporanKeuanganMingguanController extends Controller
 
         $inpatient = DB::table('in_patients')
             ->join('users', 'in_patients.user_id', '=', 'users.id')
-            ->select('in_patients.description', DB::raw("DATE_FORMAT(in_patients.created_at, '%d %b %Y') as created_at"),
-                'users.fullname as created_by')
+            ->select(
+                'in_patients.description',
+                DB::raw("DATE_FORMAT(in_patients.created_at, '%d %b %Y') as created_at"),
+                'users.fullname as created_by'
+            )
             ->where('in_patients.check_up_result_id', '=', $data->check_up_result_id)
             ->get();
 
@@ -581,6 +1001,9 @@ class LaporanKeuanganMingguanController extends Controller
                 $request->date_from,
                 $request->date_to,
                 $branch,
-                'Laporan Keuangan Mingguan'), $filename);
+                'Laporan Keuangan Mingguan'
+            ),
+            $filename
+        );
     }
 }
