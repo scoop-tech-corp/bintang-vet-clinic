@@ -163,29 +163,57 @@ $(document).ready(function () {
     if (role != "admin") {
       $(".section-right-box-title").append(`
         <div class="input-search-section m-r-10px">
-          <input type="text" class="form-control" placeholder="cari..">
+          <input type="text" class="form-control" placeholder="cari.." id="btnFindClinic">
+          <i class="fa fa-search" aria-hidden="true"></i>
+        </div>
+      `);
+
+      $(".section-right-box-title-pet").append(`
+        <div class="input-search-section m-r-10px">
+          <input type="text" class="form-control" placeholder="cari.." id="btnFindPet">
           <i class="fa fa-search" aria-hidden="true"></i>
         </div>
       `);
     } else {
+      
       $(".section-right-box-title").append(`
         <div class="input-search-section m-r-10px">
-          <input type="text" class="form-control" placeholder="cari..">
+          <input type="text" class="form-control" placeholder="cari.." id="btnFindClinic">
           <i class="fa fa-search" aria-hidden="true"></i>
         </div>
         <select id="filterCabangDaftarBarangLimit" style="width: 50%"></select>
       `);
+
+      $(".section-right-box-title-pet").append(`
+        <div class="input-search-section m-r-10px">
+          <input type="text" class="form-control" placeholder="cari.." id="btnFindPet">
+          <i class="fa fa-search" aria-hidden="true"></i>
+        </div>
+        <select id="filterCabangDaftarBarangLimitPet" style="width: 50%"></select>
+      `);
     }
 
-    $(".input-search-section .fa").click(function () {
-      paramUrlSetup.keyword = $(".input-search-section input").val();
-      loadDaftarBarangLimit(paramUrlSetup);
-    });
+    // $("#btnFindClinic").click(function () {
+    //   paramUrlSetup.keyword = $("#btnFindClinic").val();
+    //   loadDaftarBarangLimit(paramUrlSetup);
+    // });
 
-    $(".input-search-section input").keypress(function (e) {
+    // $("#btnFindPet").click(function () {
+    //   paramUrlSetup.keyword = $("#btnFindPet").val();
+    //   loadDaftarBarangLimitPet(paramUrlSetup);
+    // });
+
+    $("#btnFindClinic").keypress(function (e) {
       if (e.which == 13) {
         paramUrlSetup.keyword = $(this).val();
         loadDaftarBarangLimit(paramUrlSetup);
+      }
+    });
+
+    $("#btnFindPet").keypress(function (e) {
+      if (e.which == 13) {
+        paramUrlSetup.keyword = $(this).val();
+        loadDaftarBarangLimitPet(paramUrlSetup);
       }
     });
 
@@ -210,7 +238,33 @@ $(document).ready(function () {
       loadDaftarBarangLimit(paramUrlSetup);
     });
 
+    $(".onOrderingPet").click(function () {
+      const column = $(this).attr("data");
+      const orderBy = $(this).attr("orderby");
+      $('.onOrderingPet[data="' + column + '"]')
+        .children()
+        .remove();
+
+      if (orderBy == "none" || orderBy == "asc") {
+        $(this).attr("orderby", "desc");
+        $(this).append('<span class="fa fa-sort-desc"></span>');
+      } else if (orderBy == "desc") {
+        $(this).attr("orderby", "asc");
+        $(this).append('<span class="fa fa-sort-asc"></span>');
+      }
+
+      paramUrlSetup.orderby = $(this).attr("orderby");
+      paramUrlSetup.column = column;
+
+      loadDaftarBarangLimitPet(paramUrlSetup);
+    });
+
     $("#filterCabangDaftarBarangLimit").select2({
+      placeholder: "Cabang",
+      allowClear: true,
+    });
+
+    $("#filterCabangDaftarBarangLimitPet").select2({
       placeholder: "Cabang",
       allowClear: true,
     });
@@ -219,12 +273,22 @@ $(document).ready(function () {
       paramUrlSetup.branchId = $(this).val();
       loadDaftarBarangLimit(paramUrlSetup);
     });
+    $("#filterCabangDaftarBarangLimitPet").on("select2:select", function () {
+      paramUrlSetup.branchId = $(this).val();
+      loadDaftarBarangLimitPet(paramUrlSetup);
+    });
+
     $("#filterCabangDaftarBarangLimit").on("select2:unselect", function () {
       paramUrlSetup.branchId = $(this).val();
       loadDaftarBarangLimit(paramUrlSetup);
     });
+    $("#filterCabangDaftarBarangLimitPet").on("select2:unselect", function () {
+      paramUrlSetup.branchId = $(this).val();
+      loadDaftarBarangLimitPet(paramUrlSetup);
+    });
 
     loadDaftarBarangLimit(paramUrlSetup);
+    loadDaftarBarangLimitPet(paramUrlSetup);
   }
 
   function loadDaftarBarangLimit(paramUrlSetupDaftar) {
@@ -309,6 +373,86 @@ $(document).ready(function () {
     });
   }
 
+  function loadDaftarBarangLimitPet(paramUrlSetupDaftar) {
+    let getCurrentPage = 1;
+    $.ajax({
+      url: $(".baseUrl").val() + "/api/daftar-barang-batas-pet-shop",
+      headers: { Authorization: `Bearer ${token}` },
+      type: "GET",
+      data: {
+        orderby: paramUrlSetupDaftar.orderby,
+        column: paramUrlSetupDaftar.column,
+        keyword: paramUrlSetupDaftar.keyword,
+        branch_id: paramUrlSetupDaftar.branchId,
+        page: getCurrentPage,
+      },
+      beforeSend: function () {
+        $("#loading-screen").show();
+      },
+      success: function (resp) {
+        const getData = resp.data;
+        let listDaftarBarangLimitPetShop = "";
+        $("#list-daftar-barang-limit-pet-shop tr").remove();
+
+        if (getData.length) {
+          $.each(getData, function (idx, v) {
+            listDaftarBarangLimitPetShop +=
+              `<tr>` +
+              `<td class="${
+                v.diff_expired_days < 60 ? "expired-date" : ""
+              }">${++idx}</td>` +
+              `<td class="${v.diff_item < 0 ? "item-outstock" : ""}">${
+                v.item_name
+              }</td>` +
+              `<td>${v.total_item}</td>` +
+              `<td>${v.branch_name}</td>` +
+              `<td>${v.created_by}</td>` +
+              `<td>${v.created_at}</td>` +
+              `<td>${v.expired_date}</td>` +
+              `</tr>`;
+          });
+        } else {
+          listDaftarBarangLimitPetShop += `<tr class="text-center"><td colspan="12">Tidak ada data.</td></tr>`;
+        }
+        $("#list-daftar-barang-limit-pet-shop").append(listDaftarBarangLimitPetShop);
+
+        generatePagination(getCurrentPage, resp.total_paging);
+
+        $(".pagination > li > a").click(function () {
+          const getClassName = this.className;
+          const getNumber = parseFloat($(this).text());
+
+          if (
+            (getCurrentPage === 1 && getClassName.includes("arrow-left")) ||
+            (getCurrentPage === resp.total_paging &&
+              getClassName.includes("arrow-right"))
+          ) {
+            return;
+          }
+
+          if (getClassName.includes("arrow-left")) {
+            getCurrentPage = getCurrentPage - 1;
+          } else if (getClassName.includes("arrow-right")) {
+            getCurrentPage = getCurrentPage + 1;
+          } else {
+            getCurrentPage = getNumber;
+          }
+
+          loadHasilPemeriksaan();
+        });
+      },
+      complete: function () {
+        $("#loading-screen").hide();
+      },
+      error: function (err) {
+        if (err.status == 401) {
+          localStorage.removeItem("vet-clinic");
+          location.href = $(".baseUrl").val() + "/masuk";
+        }
+      },
+    });
+  }
+
   function loadCabang() {
     $.ajax({
       url: $(".baseUrl").val() + "/api/cabang",
@@ -327,6 +471,7 @@ $(document).ready(function () {
         }
         $("#filterCabangRawatInap").append(optCabang);
         $("#filterCabangDaftarBarangLimit").append(optCabang);
+        $("#filterCabangDaftarBarangLimitPet").append(optCabang);
       },
       complete: function () {
         $("#loading-screen").hide();

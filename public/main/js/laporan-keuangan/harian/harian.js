@@ -32,7 +32,7 @@ $(document).ready(function() {
     });
 	// }
 
-  loadLaporanKeuanganHarian();
+  // loadLaporanKeuanganHarian();
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
@@ -97,7 +97,7 @@ $(document).ready(function() {
 
   function onFilterCabang(value) {
     paramUrlSetup.branchId = value;
-		loadLaporanKeuanganHarian();
+		// loadLaporanKeuanganHarian();
   }
 
   function loadLaporanKeuanganHarian() {
