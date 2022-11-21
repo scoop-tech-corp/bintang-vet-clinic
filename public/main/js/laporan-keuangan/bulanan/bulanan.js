@@ -39,7 +39,7 @@ $(document).ready(function() {
     });
   // }
 
-  loadLaporanKeuanganBulanan();
+  // loadLaporanKeuanganBulanan();
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
@@ -105,7 +105,7 @@ $(document).ready(function() {
 
   function onFilterCabang(value) {
     paramUrlSetup.branchId = value;
-		loadLaporanKeuanganBulanan();
+		// loadLaporanKeuanganBulanan();
   }
 
   function loadLaporanKeuanganBulanan() {

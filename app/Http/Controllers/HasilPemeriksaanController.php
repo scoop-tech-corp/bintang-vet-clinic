@@ -358,9 +358,9 @@ class HasilPemeriksaanController extends Controller
 
             $validate = Validator::make($request->all(), [
                 'patient_registration_id' => 'required|numeric',
-                // 'anamnesa' => 'required|string',
-                // 'sign' => 'required|string',
-                // 'diagnosa' => 'required|string',
+                'anamnesa' => 'nullable|string',
+                'sign' => 'nullable|string',
+                'diagnosa' => 'nullable|string',
                 'status_finish' => 'required|bool',
                 'status_outpatient_inpatient' => 'required|bool',
             ]);
@@ -957,9 +957,9 @@ class HasilPemeriksaanController extends Controller
         $validate = Validator::make($request->all(), [
             'id' => 'required|numeric',
             'patient_registration_id' => 'required|numeric',
-            // 'anamnesa' => 'required|string|min:10',
-            // 'sign' => 'required|string|min:10',
-            // 'diagnosa' => 'required|string|min:10',
+            'anamnesa' => 'nullable|string',
+            'sign' => 'nullable|string',
+            'diagnosa' => 'nullable|string',
             'status_outpatient_inpatient' => 'required|bool',
             'status_finish' => 'required|bool',
         ]);
