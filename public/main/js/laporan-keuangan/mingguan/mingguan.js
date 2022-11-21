@@ -32,10 +32,11 @@ $(document).ready(function() {
       dateLimit: { days: 7 },
       drops: 'auto',
       locale: {format: 'YYYY-MM-DD', cancelLabel: 'Clear'}
+			
     });
   // }
 
-  loadLaporanKeuanganMingguan();
+  // loadLaporanKeuanganMingguan();
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
@@ -116,7 +117,7 @@ $(document).ready(function() {
 
   function onFilterCabang(value) {
     paramUrlSetup.branchId = value;
-		loadLaporanKeuanganMingguan();
+		// loadLaporanKeuanganMingguan();
   }
 
   function loadLaporanKeuanganMingguan() {

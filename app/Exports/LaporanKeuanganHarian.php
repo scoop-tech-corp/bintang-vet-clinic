@@ -287,7 +287,7 @@ class LaporanKeuanganHarian implements FromView, WithTitle
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
                 ->join('payment_methods as pm', 'lopm.payment_method_id', '=', 'pm.id')
                 ->select(
-                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall"));
+                    DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END - SUM(lopm.amount_discount))+0 as price_overall"));
 
             $count_item = $count_item->where('lopm.payment_method_id', '=', $data_pay->id);
 
@@ -312,7 +312,7 @@ class LaporanKeuanganHarian implements FromView, WithTitle
                 ->join('branches', 'users.branch_id', '=', 'branches.id')
                 ->join('payment_methods as pm', 'list_of_payment_services.payment_method_id', '=', 'pm.id')
                 ->select(
-                    DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall"));
+                    DB::raw("TRIM(SUM(detail_service_patients.price_overall) - SUM(list_of_payment_services.amount_discount))+0 as price_overall"));
 
             $count_service = $count_service->where('list_of_payment_services.payment_method_id', '=', $data_pay->id);
 
