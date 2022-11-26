@@ -350,6 +350,7 @@ class DaftarBarangPetshopController extends Controller
             ->download($filename);
     }
 
+    //untuk barang pet shop
     public function index_limit(Request $request)
     {
         $items_per_page = 50;
