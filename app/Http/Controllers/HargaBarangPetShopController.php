@@ -24,7 +24,8 @@ class HargaBarangPetShopController extends Controller
             ->join('users', 'pi.user_id', '=', 'users.id')
             ->join('list_of_item_pet_shops as ls', 'pi.list_of_item_pet_shop_id', '=', 'ls.id')
             ->join('branches', 'ls.branch_id', '=', 'branches.id')
-            ->select('pi.id',
+            ->select(
+                'pi.id',
                 'ls.id as list_of_item_pet_shop_id',
                 'ls.item_name',
                 'ls.total_item',
@@ -36,7 +37,8 @@ class HargaBarangPetShopController extends Controller
                 DB::raw("TRIM(pi.capital_price)+0 as capital_price"),
                 DB::raw("TRIM(pi.profit)+0 as profit"),
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(pi.created_at, '%d %b %Y') as created_at"))
+                DB::raw("DATE_FORMAT(pi.created_at, '%d %b %Y') as created_at")
+            )
             ->where('pi.isDeleted', '=', 0);
 
         if ($request->keyword) {
@@ -47,8 +49,10 @@ class HargaBarangPetShopController extends Controller
                 $pi = $pi->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json(['total_paging' => 0,
-                    'data' => $data], 200);
+                return response()->json([
+                    'total_paging' => 0,
+                    'data' => $data
+                ], 200);
             }
         }
 
@@ -79,9 +83,10 @@ class HargaBarangPetShopController extends Controller
 
         $total_paging = $count_data / $items_per_page;
 
-        return response()->json(['total_paging' => ceil($total_paging),
-            'data' => $pi], 200);
-
+        return response()->json([
+            'total_paging' => ceil($total_paging),
+            'data' => $pi
+        ], 200);
     }
 
     private function Search($request)
@@ -91,45 +96,12 @@ class HargaBarangPetShopController extends Controller
         $pi = DB::table('price_item_pet_shops as pi')
             ->join('users', 'pi.user_id', '=', 'users.id')
             ->join('list_of_item_pet_shops as ls', 'pi.list_of_item_pet_shop_id', '=', 'ls.id')
-            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-            ->select(
-                'list_of_items.item_name',
-                'branches.branch_name',
-                'users.fullname')
-            ->where('pi.isDeleted', '=', 0);
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $pi = $pi->where('branches.id', '=', $request->branch_id);
-        }
-
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $pi = $pi->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->keyword) {
-            $pi = $pi->where('list_of_items.item_name', 'like', '%' . $request->keyword . '%');
-        }
-
-        $pi = $pi->get();
-
-        if (count($pi)) {
-            $temp_column = 'list_of_items.item_name';
-            return $temp_column;
-        }
-        //=======================================================
-
-        $pi = DB::table('price_item_pet_shops as pi')
-            ->join('users', 'pi.user_id', '=', 'users.id')
-            ->join('list_of_item_pet_shops as ls', 'pi.list_of_items_id', '=', 'ls.id')
-            ->join('unit_item', 'ls.unit_item_id', '=', 'unit_item.id')
-            ->join('category_item', 'ls.category_item_id', '=', 'category_item.id')
             ->join('branches', 'ls.branch_id', '=', 'branches.id')
             ->select(
-                'list_of_items.item_name',
-                'category_item.category_name',
-                'unit_item.unit_name',
+                'ls.item_name',
                 'branches.branch_name',
-                'users.fullname')
+                'users.fullname'
+            )
             ->where('pi.isDeleted', '=', 0);
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -141,118 +113,15 @@ class HargaBarangPetShopController extends Controller
         }
 
         if ($request->keyword) {
-            $pi = $pi->where('category_item.category_name', 'like', '%' . $request->keyword . '%');
+            $pi = $pi->where('ls.item_name', 'like', '%' . $request->keyword . '%');
         }
 
         $pi = $pi->get();
 
         if (count($pi)) {
-            $temp_column = 'category_item.category_name';
+            $temp_column = 'ls.item_name';
             return $temp_column;
         }
-        //=======================================================
-
-        $pi = DB::table('price_item_pet_shops as pi')
-            ->join('users', 'pi.user_id', '=', 'users.id')
-            ->join('list_of_items', 'pi.list_of_items_id', '=', 'list_of_items.id')
-            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-            ->select(
-                'list_of_items.item_name',
-                'category_item.category_name',
-                'unit_item.unit_name',
-                'branches.branch_name',
-                'users.fullname')
-            ->where('pi.isDeleted', '=', 0);
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $pi = $pi->where('branches.id', '=', $request->branch_id);
-        }
-
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $pi = $pi->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->keyword) {
-            $pi = $pi->where('unit_item.unit_name', 'like', '%' . $request->keyword . '%');
-        }
-
-        $pi = $pi->get();
-
-        if (count($pi)) {
-            $temp_column = 'unit_item.unit_name';
-            return $temp_column;
-        }
-        //=======================================================
-
-        $pi = DB::table('pi')
-            ->join('users', 'pi.user_id', '=', 'users.id')
-            ->join('list_of_items', 'pi.list_of_items_id', '=', 'list_of_items.id')
-            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-            ->select(
-                'list_of_items.item_name',
-                'category_item.category_name',
-                'unit_item.unit_name',
-                'branches.branch_name',
-                'users.fullname')
-            ->where('pi.isDeleted', '=', 0);
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $pi = $pi->where('branches.id', '=', $request->branch_id);
-        }
-
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $pi = $pi->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->keyword) {
-            $pi = $pi->where('branches.branch_name', 'like', '%' . $request->keyword . '%');
-        }
-
-        $pi = $pi->get();
-
-        if (count($pi)) {
-            $temp_column = 'branches.branch_name';
-            return $temp_column;
-        }
-        //=======================================================
-
-        $pi = DB::table('price_item_pet_shops as pi')
-            ->join('users', 'pi.user_id', '=', 'users.id')
-            ->join('list_of_items', 'pi.list_of_items_id', '=', 'list_of_items.id')
-            ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-            ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-            ->select(
-                'list_of_items.item_name',
-                'category_item.category_name',
-                'unit_item.unit_name',
-                'branches.branch_name',
-                'users.fullname')
-            ->where('pi.isDeleted', '=', 0);
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $pi = $pi->where('branches.id', '=', $request->branch_id);
-        }
-
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-            $pi = $pi->where('branches.id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->keyword) {
-            $pi = $pi->where('users.fullname', 'like', '%' . $request->keyword . '%');
-        }
-
-        $pi = $pi->get();
-
-        if (count($pi)) {
-            $temp_column = 'users.fullname';
-            return $temp_column;
-        }
-        //=======================================================
     }
 
     public function create(Request $request)
@@ -305,7 +174,8 @@ class HargaBarangPetShopController extends Controller
         return response()->json(
             [
                 'message' => 'Tambah Data Berhasil!',
-            ], 200
+            ],
+            200
         );
     }
 
@@ -426,33 +296,6 @@ class HargaBarangPetShopController extends Controller
         return response()->json($list_of_item_pet_shops, 200);
     }
 
-    // public function item_name(Request $request)
-    // {
-    //     if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
-    //         return response()->json([
-    //             'message' => 'The user role was invalid.',
-    //             'errors' => ['Akses User tidak diizinkan!'],
-    //         ], 403);
-    //     }
-
-    //     $list_of_items = DB::table('list_of_items')
-    //         ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-    //         ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
-    //         ->select('list_of_items.id', 'list_of_items.item_name', 'total_item', 'unit_item_id', 'unit_item.unit_name')
-    //         ->where('branch_id', '=', $request->branch_id)
-    //         ->where('category_item_id', '=', $request->category_item_id)
-    //         ->get();
-
-    //     if (is_null($list_of_items)) {
-    //         return response()->json([
-    //             'message' => 'The data was invalid.',
-    //             'errors' => ['Data tidak ditemukan!'],
-    //         ], 404);
-    //     }
-
-    //     return response()->json($list_of_items, 200);
-    // }
-
     public function download_template(Request $request)
     {
         if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
@@ -551,7 +394,8 @@ class HargaBarangPetShopController extends Controller
             ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
             ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
             ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
-            ->select('price_items.id',
+            ->select(
+                'price_items.id',
                 'list_of_items.id as item_name_id',
                 'list_of_items.item_name',
                 'category_item.id as item_categories_id',
@@ -566,7 +410,8 @@ class HargaBarangPetShopController extends Controller
                 DB::raw("TRIM(price_items.doctor_fee)+0 as doctor_fee"),
                 DB::raw("TRIM(price_items.petshop_fee)+0 as petshop_fee"),
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(price_items.created_at, '%d %b %Y') as created_at"))
+                DB::raw("DATE_FORMAT(price_items.created_at, '%d %b %Y') as created_at")
+            )
             ->where('price_items.isDeleted', '=', 0);
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -587,5 +432,4 @@ class HargaBarangPetShopController extends Controller
 
         return response()->json($price_items, 200);
     }
-
 }
