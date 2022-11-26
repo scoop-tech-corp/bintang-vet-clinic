@@ -133,7 +133,7 @@ class PembayaranPetShopController extends Controller
                 ], 422);
             }
 
-            $find_qty_item = ListofItemsPetShop::find($find_item->id);
+            $find_qty_item = ListofItemsPetShop::find($find_item->list_of_item_pet_shop_id);
 
             $res_value = $find_qty_item->total_item - $value['total_item'];
 
