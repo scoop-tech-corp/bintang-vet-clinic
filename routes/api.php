@@ -67,7 +67,7 @@ Route::group(['middleware' => ['api']], function () {
 
         //daftar barang
         Route::get('daftar-barang-batas', 'DaftarBarangController@index_limit');
-        Route::get('daftar-barang-batas-pet-shop', 'DaftarBarangPetShopController@index_limit');
+        Route::get('daftar-barang-batas-pet-shop', 'DaftarBarangPetshopController@index_limit');
 
         Route::get('daftar-barang', 'DaftarBarangController@index');
         Route::post('daftar-barang', 'DaftarBarangController@create');
