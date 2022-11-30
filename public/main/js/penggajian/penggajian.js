@@ -42,7 +42,7 @@ $(document).ready(function() {
     // load cabang
     loadCabang();
 
-		$('#datepicker').datepicker({
+		$('#datepickerindex').datepicker({
       autoclose: true,
       clearBtn: true,
       format: 'mm-yyyy',
@@ -382,7 +382,7 @@ $(document).ready(function() {
         $('#total-penggajian-txt').text(`Rp. ${amountSallary}`);
 
 				$('.openFormEdit').click(function() {
-					const getObj = data.find(x => x.id == $(this).val());
+					const getObj = getData.find(x => x.id == $(this).val());
 					modalState = 'edit';
 					refreshForm();
 					$('.modal-title').text('Edit Penggajian');
@@ -429,7 +429,7 @@ $(document).ready(function() {
 				});
         
         $('.openFormDetail').click(function() {
-          const getObj = data.find(x => x.id == $(this).val());
+          const getObj = getData.find(x => x.id == $(this).val());
 					modalState = 'detail';
           $('#modal-detail-penggajian').modal('show');
           $('.modal-title').text('Detail Penggajian');
