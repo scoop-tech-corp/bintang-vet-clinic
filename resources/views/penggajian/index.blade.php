@@ -13,7 +13,7 @@
             <div class="input-group-addon">
                 <i class="fa fa-calendar"></i>
             </div>
-            <input type="text" class="form-control" id="datepicker" placeholder="mm-yyyy" autocomplete="off">
+            <input type="text" class="form-control" id="datepickerindex" placeholder="mm-yyyy" autocomplete="off">
         </div>  
 
         <div class="input-search-section m-r-10px">
