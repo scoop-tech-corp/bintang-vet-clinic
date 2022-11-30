@@ -124,7 +124,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $data = $data->where('branchId', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $data = $data->where('branchId', '=', $request->user()->branch_id);
             }
 
@@ -162,7 +162,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -185,7 +185,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -195,7 +195,46 @@ class LaporanKeuanganBulananController extends Controller
             }
             $price_overall_service = $price_overall_service->first();
 
-            $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall;
+            $price_overall_shop_clinic = DB::table('payment_petshop_with_clinics as ppwc')
+                ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', 'pip.id')
+                ->join('users', 'ppwc.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(DB::raw("TRIM(SUM(pip.selling_price * ppwc.total_item))+0 as price_overall"));
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $price_overall_shop_clinic = $price_overall_shop_clinic->where('branches.id', '=', $request->branch_id);
+            } else {
+                $price_overall_shop_clinic = $price_overall_shop_clinic->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->month && $request->year) {
+
+                $price_overall_shop_clinic = $price_overall_shop_clinic->where(DB::raw('MONTH(ppwc.created_at)'), '=', $request->month)
+                    ->where(DB::raw('YEAR(ppwc.created_at)'), '=', $request->year);
+            }
+            $price_overall_shop_clinic = $price_overall_shop_clinic->first();
+
+            //=============================
+            $price_overall_shop = DB::table('payment_petshops as pp')
+                ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', 'pip.id')
+                ->join('users', 'pp.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(DB::raw("TRIM(SUM(pip.selling_price * pp.total_item))+0 as price_overall"));
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $price_overall_shop = $price_overall_shop->where('branches.id', '=', $request->branch_id);
+            } else {
+                $price_overall_shop = $price_overall_shop->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->month && $request->year) {
+                $price_overall_shop = $price_overall_shop->where(DB::raw('MONTH(pp.created_at)'), '=', $request->month)
+                    ->where(DB::raw('YEAR(pp.created_at)'), '=', $request->year);
+            }
+            $price_overall_shop = $price_overall_shop->first();
+
+            $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall
+                + $price_overall_shop_clinic->price_overall + $price_overall_shop->price_overall;
 
             $capital_price_item = DB::table('list_of_payments as lop')
                 ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
@@ -208,7 +247,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $capital_price_item = $capital_price_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -231,7 +270,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $capital_price_service = $capital_price_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $capital_price_service = $capital_price_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -241,7 +280,46 @@ class LaporanKeuanganBulananController extends Controller
             }
             $capital_price_service = $capital_price_service->first();
 
-            $capital_price = $capital_price_service->capital_price + $capital_price_item->capital_price;
+            $capital_price_pet_clinic = DB::table('payment_petshop_with_clinics as ppwc')
+                ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', 'pip.id')
+                ->join('users', 'ppwc.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(DB::raw("TRIM(SUM(pip.capital_price * ppwc.total_item))+0 as capital_price"));
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $capital_price_pet_clinic = $capital_price_pet_clinic->where('branches.id', '=', $request->branch_id);
+            } else {
+                $capital_price_pet_clinic = $capital_price_pet_clinic->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->month && $request->year) {
+                $capital_price_pet_clinic = $capital_price_pet_clinic->where(DB::raw('MONTH(ppwc.created_at)'), '=', $request->month)
+                    ->where(DB::raw('YEAR(ppwc.created_at)'), '=', $request->year);
+            }
+            $capital_price_pet_clinic = $capital_price_pet_clinic->first();
+
+            //=============================
+
+            $capital_overall_pet_shop = DB::table('payment_petshops as pp')
+                ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', 'pip.id')
+                ->join('users', 'pp.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(DB::raw("TRIM(SUM(pip.capital_price * pp.total_item))+0 as capital_price"));
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $capital_overall_pet_shop = $capital_overall_pet_shop->where('branches.id', '=', $request->branch_id);
+            } else {
+                $capital_overall_pet_shop = $capital_overall_pet_shop->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->month && $request->year) {
+                $capital_overall_pet_shop = $capital_overall_pet_shop->where(DB::raw('MONTH(pp.created_at)'), '=', $request->month)
+                    ->where(DB::raw('YEAR(pp.created_at)'), '=', $request->year);
+            }
+            $capital_overall_pet_shop = $capital_overall_pet_shop->first();
+
+            $capital_price = $capital_price_service->capital_price + $capital_price_item->capital_price +
+                $capital_price_pet_clinic->capital_price + $capital_overall_pet_shop->capital_price;
 
             $doctor_fee_item = DB::table('list_of_payments as lop')
                 ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
@@ -254,7 +332,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -277,7 +355,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -300,7 +378,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -323,7 +401,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -349,7 +427,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -372,7 +450,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -391,7 +469,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $expenses = $expenses->where('b.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
             }
 
@@ -409,7 +487,45 @@ class LaporanKeuanganBulananController extends Controller
                 $total_expenses = $expenses->amount_overall;
             }
 
-            $net_profit = $doctor_fee - $total_expenses;
+            $profit_pet_clinic = DB::table('payment_petshop_with_clinics as ppwc')
+                ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', 'pip.id')
+                ->join('users', 'ppwc.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(DB::raw("TRIM(SUM(pip.profit * ppwc.total_item))+0 as profit"));
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $profit_pet_clinic = $profit_pet_clinic->where('branches.id', '=', $request->branch_id);
+            } else {
+                $profit_pet_clinic = $profit_pet_clinic->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->month && $request->year) {
+                $profit_pet_clinic = $profit_pet_clinic->where(DB::raw('MONTH(ppwc.created_at)'), '=', $request->month)
+                    ->where(DB::raw('YEAR(ppwc.created_at)'), '=', $request->year);
+            }
+            $profit_pet_clinic = $profit_pet_clinic->first();
+
+            //=============================
+
+            $profit_pet_shop = DB::table('payment_petshops as pp')
+                ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', 'pip.id')
+                ->join('users', 'pp.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(DB::raw("TRIM(SUM(pip.profit * pp.total_item))+0 as profit"));
+
+            if ($request->branch_id && $request->user()->role == 'admin') {
+                $profit_pet_shop = $profit_pet_shop->where('branches.id', '=', $request->branch_id);
+            } else {
+                $profit_pet_shop = $profit_pet_shop->where('branches.id', '=', $request->user()->branch_id);
+            }
+
+            if ($request->month && $request->year) {
+                $profit_pet_shop = $profit_pet_shop->where(DB::raw('MONTH(pp.created_at)'), '=', $request->month)
+                    ->where(DB::raw('YEAR(pp.created_at)'), '=', $request->year);
+            }
+            $profit_pet_shop = $profit_pet_shop->first();
+
+            $net_profit = $doctor_fee - $total_expenses + $profit_pet_clinic->profit + $profit_pet_shop->profit;
 
             return response()->json([
                 'data' => $data,
@@ -520,7 +636,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $data = $data->where('branchId', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $data = $data->where('branchId', '=', $request->user()->branch_id);
             }
 
@@ -558,7 +674,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -581,7 +697,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -604,7 +720,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $capital_price_item = $capital_price_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $capital_price_item = $capital_price_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -627,7 +743,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $capital_price_service = $capital_price_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $capital_price_service = $capital_price_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -650,7 +766,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $doctor_fee_item = $doctor_fee_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -673,7 +789,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $doctor_fee_service = $doctor_fee_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -696,7 +812,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $petshop_fee_item = $petshop_fee_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -719,7 +835,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $petshop_fee_service = $petshop_fee_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -745,7 +861,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -768,7 +884,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
             }
 
@@ -787,7 +903,7 @@ class LaporanKeuanganBulananController extends Controller
 
             if ($request->branch_id && $request->user()->role == 'admin') {
                 $expenses = $expenses->where('b.id', '=', $request->branch_id);
-            } elseif ($request->user()->role == 'dokter') {
+            } else {
                 $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
             }
 
