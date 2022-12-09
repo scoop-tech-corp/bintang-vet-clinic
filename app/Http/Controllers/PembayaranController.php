@@ -800,8 +800,9 @@ class PembayaranController extends Controller
 
                 $detail_medicine_group = DB::table('detail_medicine_group_check_up_results as dmg')
                     ->select('id', 'quantity')
-                    ->where('dmg.check_up_result_id', '=', $request->check_up_result_id)
-                    ->where('dmg.medicine_group_id', '=', $value_item['medicine_group_id'])
+                    ->where('dmg.id', '=', $value_item['id'])
+                    // ->where('dmg.check_up_result_id', '=', $request->check_up_result_id)
+                    // ->where('dmg.medicine_group_id', '=', $value_item['medicine_group_id'])
                     ->get();
 
                 foreach ($detail_medicine_group as $mdc_group) {
