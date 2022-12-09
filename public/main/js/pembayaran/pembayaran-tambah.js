@@ -157,7 +157,7 @@ $(document).ready(function () {
       if (dt.type == 'jasa') {
         finalSelectedJasa.push({ detail_service_patient_id: dt.id, discount: dt.discount, amount_discount: dt.amount_discount });
       } else {
-        finalSelectedBarang.push({ medicine_group_id: dt.medicineGroupId, quantity: dt.quantity, discount: dt.discount, amount_discount: dt.amount_discount });
+        finalSelectedBarang.push({ id: dt.id, medicine_group_id: dt.medicineGroupId, quantity: dt.quantity, discount: dt.discount, amount_discount: dt.amount_discount });
       }
     });
     fd.append('service_payment', JSON.stringify(finalSelectedJasa));
