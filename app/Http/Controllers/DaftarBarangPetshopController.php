@@ -228,7 +228,6 @@ class DaftarBarangPetshopController extends Controller
 
         $item->item_name = $request->nama_barang;
         $item->total_item = $request->jumlah_barang;
-        $item->branch_id = $request->cabang_id;
         $item->user_update_id = $request->user()->id;
         $item->updated_at = Carbon::now();
         $item->limit_item = $request->limit_barang;
