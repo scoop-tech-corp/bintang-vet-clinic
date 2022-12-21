@@ -231,7 +231,7 @@ class HargaBarangPetShopController extends Controller
         $price_items->selling_price = $request->HargaJual;
         $price_items->capital_price = $request->HargaModal;
         $price_items->profit = $request->Profit;
-        $price_items->branch_id = $request->BranchId;
+        // $price_items->branch_id = $request->BranchId;
         $price_items->user_update_id = $request->user()->id;
         $price_items->updated_at = \Carbon\Carbon::now();
         $price_items->save();
