@@ -41,8 +41,16 @@ $(document).ready(function() {
 		onSearch($('.input-search-section input').val());
 	});
 
+  $('.input-search-section-petshop .fa').click(function() {
+		onSearchPetShop($('.input-search-section-petshop input').val());
+	});
+
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
+	});
+
+  $('.input-search-section-petshop input').keypress(function(e) {
+		if (e.which == 13) { onSearchPetShop($(this).val()); }
 	});
 
   $('.onOrdering').click(function() {
@@ -153,6 +161,11 @@ $(document).ready(function() {
   function onSearch(keyword) {
 		paramUrlSetup.keyword = keyword;
 		loadPembayaran();
+	}
+
+  function onSearchPetShop(keyword) {
+		paramUrlSetup.keyword = keyword;
+		loadPembayaranPetshop();
 	}
 
   function loadPembayaran() {
