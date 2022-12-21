@@ -37,7 +37,8 @@ class PembayaranPetShopController extends Controller
                 'branches.branch_name',
                 'users.id as user_id',
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(mp.created_at, '%d/%m/%Y') as created_at"))
+                DB::raw("DATE_FORMAT(mp.created_at, '%d/%m/%Y') as created_at")
+            )
             ->where('mp.isDeleted', '=', 0);
 
         if ($request->keyword) {
@@ -48,10 +49,11 @@ class PembayaranPetShopController extends Controller
                 $data = $data->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json(['total_paging' => 0,
-                    'data' => $data], 200);
+                return response()->json([
+                    'total_paging' => 0,
+                    'data' => $data
+                ], 200);
             }
-
         }
 
         if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
@@ -81,9 +83,109 @@ class PembayaranPetShopController extends Controller
 
         $total_paging = $count_data / $items_per_page;
 
-        return response()->json(['total_paging' => ceil($total_paging),
-            'data' => $data], 200);
+        return response()->json([
+            'total_paging' => ceil($total_paging),
+            'data' => $data
+        ], 200);
+    }
 
+    private function Search($request)
+    {
+        $data = DB::table('payment_petshops as pp')
+            ->join('master_payment_petshops as mp', 'pp.master_payment_petshop_id', '=', 'mp.id')
+            ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', '=', 'pip.id')
+            ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', '=', 'loi.id')
+            ->join('users', 'mp.user_id', '=', 'users.id')
+            ->join('branches', 'mp.branch_id', '=', 'branches.id')
+            ->select(
+                'mp.payment_number',
+                'loi.item_name',
+                'users.fullname as created_by'
+            )
+            ->where('mp.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('mp.payment_number', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'mp.payment_number';
+            return $temp_column;
+        }
+
+        $data = DB::table('payment_petshops as pp')
+            ->join('master_payment_petshops as mp', 'pp.master_payment_petshop_id', '=', 'mp.id')
+            ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', '=', 'pip.id')
+            ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', '=', 'loi.id')
+            ->join('users', 'mp.user_id', '=', 'users.id')
+            ->join('branches', 'mp.branch_id', '=', 'branches.id')
+            ->select(
+                'mp.payment_number',
+                'loi.item_name',
+                'users.fullname as created_by'
+            )
+            ->where('mp.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('loi.item_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'loi.item_name';
+            return $temp_column;
+        }
+
+        $data = DB::table('payment_petshops as pp')
+            ->join('master_payment_petshops as mp', 'pp.master_payment_petshop_id', '=', 'mp.id')
+            ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', '=', 'pip.id')
+            ->join('list_of_item_pet_shops as loi', 'pip.list_of_item_pet_shop_id', '=', 'loi.id')
+            ->join('users', 'mp.user_id', '=', 'users.id')
+            ->join('branches', 'mp.branch_id', '=', 'branches.id')
+            ->select(
+                'mp.payment_number',
+                'loi.item_name',
+                'users.fullname as created_by'
+            )
+            ->where('mp.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'users.fullname';
+            return $temp_column;
+        }
     }
 
     public function create(Request $request)
@@ -155,14 +257,14 @@ class PembayaranPetShopController extends Controller
                 'master_payment_petshop_id' => $master_payment->id,
                 'user_id' => $request->user()->id,
             ]);
-
         }
 
         return response()->json(
             [
                 'message' => 'Tambah Data Berhasil!',
                 'master_payment_petshop_id' => $master_payment->id,
-            ], 200
+            ],
+            200
         );
     }
 
@@ -231,7 +333,8 @@ class PembayaranPetShopController extends Controller
                 'branches.address',
                 'mp.payment_number',
                 'users.fullname as cashier_name',
-                DB::raw("DATE_FORMAT(mp.created_at, '%d %b %Y %H:%i:%s') as paid_time"))
+                DB::raw("DATE_FORMAT(mp.created_at, '%d %b %Y %H:%i:%s') as paid_time")
+            )
             ->where('mp.id', '=', $request->master_payment_id)
             ->get();
 
@@ -242,7 +345,8 @@ class PembayaranPetShopController extends Controller
                 'loi.item_name',
                 'py.total_item',
                 DB::raw("TRIM(pi.selling_price)+0 as each_price"),
-                DB::raw("TRIM(py.total_item * pi.selling_price)+0 as total_price"))
+                DB::raw("TRIM(py.total_item * pi.selling_price)+0 as total_price")
+            )
             ->where('py.master_payment_petshop_id', '=', $request->master_payment_id)
             ->get();
 
@@ -250,7 +354,8 @@ class PembayaranPetShopController extends Controller
             ->join('price_item_pet_shops as pi', 'py.price_item_pet_shop_id', '=', 'pi.id')
             ->join('list_of_item_pet_shops as loi', 'pi.list_of_item_pet_shop_id', '=', 'loi.id')
             ->select(
-                DB::raw("TRIM(SUM(py.total_item * pi.selling_price))+0 as price_overall"))
+                DB::raw("TRIM(SUM(py.total_item * pi.selling_price))+0 as price_overall")
+            )
             ->where('py.master_payment_petshop_id', '=', $request->master_payment_id)
             ->first();
 
