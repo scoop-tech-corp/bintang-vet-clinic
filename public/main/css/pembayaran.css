@@ -4,6 +4,22 @@
   margin-bottom: 10px;
 }
 
+.input-search-section-petshop {
+  width: 200px;
+  position: relative;
+}
+
+.input-search-section-petshop > i {
+  position: absolute;
+  top: 10px;
+  left: 15px;
+  cursor: pointer;
+}
+
+.input-search-section-petshop > input{
+  padding: 6px 12px 6px 40px;
+}
+
 @media (max-width: 768px) {
   .label-detail-div {
     width: 27%;
