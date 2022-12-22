@@ -72,14 +72,14 @@
                             <thead>
                               <tr>
                                 <th>No</th>
-                                <th class="onOrdering" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='branch_name' orderby="none">Cabang <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='payment_number' orderby="none">No.Pembayaran <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='item_name' orderby="none">Nama Barang <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='quantity' orderby="none">Jumlah <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='each_price' orderby="none">Harga Satuan <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='overall_price' orderby="none">Harga Keseluruhan <span class="fa fa-sort"></span></th>
-                                <th class="onOrdering" data='created_by' orderby="none">Dibuat Oleh <span class="fa fa-sort"></span></th>
+                                <th class="onOrderingPetShop" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
+                                <th class="onOrderingPetShop" data='branch_name' orderby="none">Cabang <span class="fa fa-sort"></span></th>
+                                <th class="onOrderingPetShop" data='payment_number' orderby="none">No.Pembayaran <span class="fa fa-sort"></span></th>
+                                <th class="onOrderingPetShop" data='item_name' orderby="none">Nama Barang <span class="fa fa-sort"></span></th>
+                                <th class="onOrderingPetShop" data='total_item' orderby="none">Jumlah <span class="fa fa-sort"></span></th>
+                                <th class="onOrderingPetShop" data='each_price' orderby="none">Harga Satuan <span class="fa fa-sort"></span></th>
+                                <th class="onOrderingPetShop" data='overall_price' orderby="none">Harga Keseluruhan <span class="fa fa-sort"></span></th>
+                                <th class="onOrderingPetShop" data='created_by' orderby="none">Dibuat Oleh <span class="fa fa-sort"></span></th>
                                 <th>Aksi</th>
                               </tr>
                             </thead>

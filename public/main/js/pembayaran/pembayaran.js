@@ -73,6 +73,26 @@ $(document).ready(function() {
 		loadPembayaran();
 	});
 
+  $('.onOrderingPetShop').click(function() {
+		const column = $(this).attr('data');
+		const orderBy = $(this).attr('orderby');
+		$('.onOrderingPetShop[data="'+column+'"]').children().remove();
+
+		if (orderBy == 'none' || orderBy == 'asc') {
+			$(this).attr('orderby', 'desc');
+			$(this).append('<span class="fa fa-sort-desc"></span>');
+
+		} else if(orderBy == 'desc') {
+			$(this).attr('orderby', 'asc');
+			$(this).append('<span class="fa fa-sort-asc"></span>');
+		}
+
+		paramUrlSetup.orderby = $(this).attr('orderby');
+		paramUrlSetup.column = column;
+
+		loadPembayaranPetshop();
+	});
+
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
   
