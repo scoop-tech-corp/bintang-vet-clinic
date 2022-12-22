@@ -22,12 +22,6 @@ class HasilPemeriksaanController extends Controller
 {
     public function index(Request $request)
     {
-        // if ($request->user()->role == 'resepsionis') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
 
         $items_per_page = 50;
 
@@ -50,17 +44,26 @@ class HasilPemeriksaanController extends Controller
                 'check_up_results.status_finish',
                 'check_up_results.status_outpatient_inpatient',
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at"))
+                DB::raw("DATE_FORMAT(check_up_results.created_at, '%d %b %Y') as created_at")
+            )
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->keyword) {
             $res = $this->Search($request);
             if ($res) {
-                $data = $data->where($res, 'like', '%' . $request->keyword . '%');
+                $data = $data->Where($res[0], 'like', '%' . $request->keyword . '%');
+
+                for ($i = 1; $i < count($res); $i++) {
+
+                    $data = $data->orWhere($res[$i], 'like', '%' . $request->keyword . '%');
+                }
+
             } else {
                 $data = [];
-                return response()->json(['total_paging' => 0,
-                    'data' => $data], 200);
+                return response()->json([
+                    'total_paging' => 0,
+                    'data' => $data
+                ], 200);
             }
         }
 
@@ -91,13 +94,15 @@ class HasilPemeriksaanController extends Controller
 
         $total_paging = $count_data / $items_per_page;
 
-        return response()->json(['total_paging' => ceil($total_paging),
-            'data' => $data], 200);
+        return response()->json([
+            'total_paging' => ceil($total_paging),
+            'data' => $data
+        ], 200);
     }
 
     private function Search($request)
     {
-        $temp_column = '';
+        // $temp_column = '';
 
         $data = DB::table('check_up_results')
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
@@ -110,7 +115,8 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_name',
                 'patients.owner_name',
                 'registrations.complaint',
-                'users.fullname')
+                'users.fullname'
+            )
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
@@ -128,8 +134,8 @@ class HasilPemeriksaanController extends Controller
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'registrations.id_number';
-            return $temp_column;
+            $temp_column[] = 'registrations.id_number';
+            // return $temp_column;
         }
         //============================================
 
@@ -144,7 +150,8 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_name',
                 'patients.owner_name',
                 'registrations.complaint',
-                'users.fullname')
+                'users.fullname'
+            )
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
@@ -162,8 +169,8 @@ class HasilPemeriksaanController extends Controller
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'patients.id_member';
-            return $temp_column;
+            $temp_column[] = 'patients.id_member';
+            // return $temp_column;
         }
         //============================================
 
@@ -178,7 +185,8 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_name',
                 'patients.owner_name',
                 'registrations.complaint',
-                'users.fullname')
+                'users.fullname'
+            )
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
@@ -196,8 +204,8 @@ class HasilPemeriksaanController extends Controller
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'patients.pet_category';
-            return $temp_column;
+            $temp_column[] = 'patients.pet_category';
+            // return $temp_column;
         }
         //============================================
 
@@ -212,7 +220,8 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_name',
                 'patients.owner_name',
                 'registrations.complaint',
-                'users.fullname')
+                'users.fullname'
+            )
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
@@ -230,8 +239,8 @@ class HasilPemeriksaanController extends Controller
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'patients.pet_name';
-            return $temp_column;
+            $temp_column[] = 'patients.pet_name';
+            // return $temp_column;
         }
         //============================================
 
@@ -245,9 +254,11 @@ class HasilPemeriksaanController extends Controller
                 'patients.id_member',
                 'patients.pet_category',
                 'patients.pet_name',
-                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                'patients.owner_name',
+                //DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                 'registrations.complaint',
-                'users.fullname')
+                'users.fullname'
+            )
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
@@ -259,15 +270,53 @@ class HasilPemeriksaanController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
+            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%');
+            //->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
         }
 
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'owner_name';
-            return $temp_column;
+            $temp_column[] = 'patients.owner_name';
+            // return $temp_column;
+        }
+        //============================================
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'owners.owner_name',
+                //DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                'registrations.complaint',
+                'users.fullname'
+            )
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('owners.owner_name', 'like', '%' . $request->keyword . '%');
+            //->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column[] = 'owners.owner_name';
+            // return $temp_column;
         }
         //============================================
 
@@ -282,7 +331,8 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_name',
                 'patients.owner_name',
                 'registrations.complaint',
-                'users.fullname')
+                'users.fullname'
+            )
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
@@ -300,8 +350,8 @@ class HasilPemeriksaanController extends Controller
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'registrations.complaint';
-            return $temp_column;
+            $temp_column[] = 'registrations.complaint';
+            // return $temp_column;
         }
         //============================================
 
@@ -316,7 +366,8 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_name',
                 'patients.owner_name',
                 'registrations.complaint',
-                'users.fullname')
+                'users.fullname'
+            )
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->user()->role == 'dokter') {
@@ -334,11 +385,12 @@ class HasilPemeriksaanController extends Controller
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'users.fullname';
-            return $temp_column;
+            $temp_column[] = 'users.fullname';
+            // return $temp_column;
         }
         //============================================
 
+        return $temp_column;
     }
 
     public function create(Request $request)
@@ -373,7 +425,6 @@ class HasilPemeriksaanController extends Controller
                     'errors' => $errors,
                 ], 422);
             }
-
         } else {
             $message_patient = [
                 'patient_registration_id.unique' => 'Registrasi Pasien ini sudah pernah di input sebelumnya',
@@ -578,7 +629,6 @@ class HasilPemeriksaanController extends Controller
                             'quantity' => $value_item['quantity'],
                             'user_id' => $request->user()->id,
                         ]);
-
                     } else {
 
                         $adding_value = $check_temp_count_items;
@@ -595,7 +645,6 @@ class HasilPemeriksaanController extends Controller
                         $find_price_item->quantity = $res_adding;
                         $find_price_item->save();
                     }
-
                 }
             }
 
@@ -626,7 +675,6 @@ class HasilPemeriksaanController extends Controller
                         'errors' => ['Jumlah stok ' . $list_of_items->item_name . ' kurang atau habis!'],
                     ], 422);
                 }
-
             }
         }
 
@@ -671,9 +719,7 @@ class HasilPemeriksaanController extends Controller
 
                         array_push($data_item, 'Foto ' . $oldname . ' lebih dari 5mb! Harap upload gambar dengan ukuran lebih kecil!');
                     }
-
                 }
-
             }
 
             if ($data_item) {
@@ -682,23 +728,21 @@ class HasilPemeriksaanController extends Controller
                     'message' => 'Foto yang dimasukkan tidak valid!',
                     'errors' => $data_item,
                 ], 422);
-
             }
-
         }
 
         $anamnesa = "";
-        if(!is_null($request->anamnesa)){
+        if (!is_null($request->anamnesa)) {
             $anamnesa = $request->anamnesa;
         }
 
         $sign = "";
-        if(!is_null($request->sign)){
+        if (!is_null($request->sign)) {
             $sign = $request->sign;
         }
 
         $diagnosa = "";
-        if(!is_null($request->diagnosa)){
+        if (!is_null($request->diagnosa)) {
             $diagnosa = $request->diagnosa;
         }
 
@@ -825,7 +869,8 @@ class HasilPemeriksaanController extends Controller
         return response()->json(
             [
                 'message' => 'Tambah Data Berhasil!',
-            ], 200
+            ],
+            200
         );
     }
 
@@ -857,7 +902,8 @@ class HasilPemeriksaanController extends Controller
                 DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
                 DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                 'registrations.complaint',
-                'registrations.registrant')
+                'registrations.registrant'
+            )
             ->where('registrations.id', '=', $data->patient_registration_id)
             ->first();
 
@@ -876,11 +922,19 @@ class HasilPemeriksaanController extends Controller
             ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
             ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
             ->join('users', 'detail_service_patients.user_id', '=', 'users.id')
-            ->select('detail_service_patients.id as detail_service_patient_id', 'price_services.id as price_service_id',
-                'list_of_services.id as list_of_service_id', 'list_of_services.service_name',
-                'detail_service_patients.quantity', DB::raw("TRIM(detail_service_patients.price_overall)+0 as price_overall"),
-                'service_categories.category_name', DB::raw("TRIM(price_services.selling_price)+0 as selling_price"),
-                'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at"), 'detail_service_patients.status_paid_off')
+            ->select(
+                'detail_service_patients.id as detail_service_patient_id',
+                'price_services.id as price_service_id',
+                'list_of_services.id as list_of_service_id',
+                'list_of_services.service_name',
+                'detail_service_patients.quantity',
+                DB::raw("TRIM(detail_service_patients.price_overall)+0 as price_overall"),
+                'service_categories.category_name',
+                DB::raw("TRIM(price_services.selling_price)+0 as selling_price"),
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at"),
+                'detail_service_patients.status_paid_off'
+            )
             ->where('detail_service_patients.check_up_result_id', '=', $data->id)
             ->orderBy('detail_service_patients.id', 'desc')
             ->get();
@@ -891,7 +945,8 @@ class HasilPemeriksaanController extends Controller
             ->join('price_medicine_groups', 'detail_medicine_group_check_up_results.medicine_group_id', '=', 'price_medicine_groups.id')
             ->join('medicine_groups', 'price_medicine_groups.medicine_group_id', '=', 'medicine_groups.id')
             ->join('branches', 'medicine_groups.branch_id', '=', 'branches.id')
-            ->select('detail_medicine_group_check_up_results.id as id',
+            ->select(
+                'detail_medicine_group_check_up_results.id as id',
                 'price_medicine_groups.id as price_medicine_group_id',
                 DB::raw("TRIM(price_medicine_groups.selling_price)+0 as selling_price"),
                 'detail_medicine_group_check_up_results.medicine_group_id as medicine_group_id',
@@ -899,7 +954,8 @@ class HasilPemeriksaanController extends Controller
                 'detail_medicine_group_check_up_results.remark as remark',
                 'medicine_groups.group_name',
                 'branches.id as branch_id',
-                'branches.branch_name')
+                'branches.branch_name'
+            )
             ->where('detail_medicine_group_check_up_results.check_up_result_id', '=', $data->id)
             ->get();
 
@@ -911,10 +967,19 @@ class HasilPemeriksaanController extends Controller
                 ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
                 ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
                 ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
-                ->select('detail_item_patients.id as detail_item_patients_id', 'list_of_items.id as list_of_item_id', 'price_items.id as price_item_id', 'list_of_items.item_name', 'detail_item_patients.quantity',
-                    DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"), 'unit_item.unit_name',
-                    'category_item.category_name', DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
-                    'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at"))
+                ->select(
+                    'detail_item_patients.id as detail_item_patients_id',
+                    'list_of_items.id as list_of_item_id',
+                    'price_items.id as price_item_id',
+                    'list_of_items.item_name',
+                    'detail_item_patients.quantity',
+                    DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"),
+                    'unit_item.unit_name',
+                    'category_item.category_name',
+                    DB::raw("TRIM(price_items.selling_price)+0 as selling_price"),
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at")
+                )
                 ->where('detail_item_patients.detail_medicine_group_id', '=', $value->id)
                 ->orderBy('detail_item_patients.id', 'asc')
                 ->get();
@@ -926,8 +991,11 @@ class HasilPemeriksaanController extends Controller
 
         $inpatient = DB::table('in_patients')
             ->join('users', 'in_patients.user_id', '=', 'users.id')
-            ->select('in_patients.description', DB::raw("DATE_FORMAT(in_patients.created_at, '%d %b %Y') as created_at"),
-                'users.fullname as created_by')
+            ->select(
+                'in_patients.description',
+                DB::raw("DATE_FORMAT(in_patients.created_at, '%d %b %Y') as created_at"),
+                'users.fullname as created_by'
+            )
             ->where('in_patients.check_up_result_id', '=', $data->id)
             ->get();
 
@@ -1116,7 +1184,6 @@ class HasilPemeriksaanController extends Controller
                             'errors' => ['Data Kelompok Obat tidak ditemukan!'],
                         ], 404);
                     }
-
                 }
 
                 $check_price_medicine_group = DB::table('price_medicine_groups')
@@ -1195,7 +1262,6 @@ class HasilPemeriksaanController extends Controller
                                 'errors' => ['Jumlah barang ' . $check_storage_name->item_name . ' belum diisi!'],
                             ], 422);
                         }
-
                     } else {
 
                         $detail_item = DetailItemPatient::find($value_item['id']);
@@ -1301,7 +1367,6 @@ class HasilPemeriksaanController extends Controller
                                     'errors' => ['Data tidak ditemukan!'],
                                 ], 404);
                             }
-
                         } elseif ($value_item['quantity'] < $check_item_result->quantity) {
 
                             $res_value_item = $check_item_result->quantity - $value_item['quantity'];
@@ -1369,11 +1434,8 @@ class HasilPemeriksaanController extends Controller
                                 ], 404);
                             }
                         }
-
                     }
-
                 }
-
             }
 
             foreach ($result_item as $value_data) {
@@ -1401,7 +1463,6 @@ class HasilPemeriksaanController extends Controller
                                     'quantity' => $value_item['quantity'],
                                     'user_id' => $request->user()->id,
                                 ]);
-
                             } else {
 
                                 $adding_value = $check_temp_count_items;
@@ -1418,9 +1479,7 @@ class HasilPemeriksaanController extends Controller
                                 $find_price_item->quantity = $res_adding;
                                 $find_price_item->save();
                             }
-
                         }
-
                     }
                 }
             }
@@ -1467,17 +1526,17 @@ class HasilPemeriksaanController extends Controller
         }
 
         $anamnesa = "";
-        if(!is_null($request->anamnesa)){
+        if (!is_null($request->anamnesa)) {
             $anamnesa = $request->anamnesa;
         }
 
         $sign = "";
-        if(!is_null($request->sign)){
+        if (!is_null($request->sign)) {
             $sign = $request->sign;
         }
 
         $diagnosa = "";
-        if(!is_null($request->diagnosa)){
+        if (!is_null($request->diagnosa)) {
             $diagnosa = $request->diagnosa;
         }
 
@@ -1514,7 +1573,6 @@ class HasilPemeriksaanController extends Controller
                     'status_paid_off' => 0,
                     'user_id' => $request->user()->id,
                 ]);
-
             } elseif ($key_service['status'] == 'del' || $key_service['quantity'] == 0) {
 
                 if (!is_null($key_service['id'])) {
@@ -1522,7 +1580,6 @@ class HasilPemeriksaanController extends Controller
                     $detail_service_patient = DetailServicePatient::find($key_service['id']);
                     $detail_service_patient->delete();
                 }
-
             } else {
 
                 $detail_service_patient = DetailServicePatient::find($key_service['id']);
@@ -1534,7 +1591,6 @@ class HasilPemeriksaanController extends Controller
                 $detail_service_patient->user_update_id = $request->user()->id;
                 $detail_service_patient->updated_at = \Carbon\Carbon::now();
                 $detail_service_patient->save();
-
             }
         }
 
@@ -1599,7 +1655,6 @@ class HasilPemeriksaanController extends Controller
 
                     $detail_medicine_group = DB::table('detail_medicine_group_check_up_results')
                         ->where('id', $res_group['id'])->delete();
-
                 } else if (is_null($res_group['status']) && $res_group['id']) {
                     $detail_medicine_group = Detail_medicine_group_check_up_result::find($res_group['id']);
 
@@ -1646,7 +1701,6 @@ class HasilPemeriksaanController extends Controller
                                 'status' => 'kurang',
                                 'user_id' => $request->user()->id,
                             ]);
-
                         } elseif ($value_item['status'] == 'del' || $value_item['quantity'] == 0) {
 
                             $check_price_item = DB::table('detail_item_patients')
@@ -1685,7 +1739,6 @@ class HasilPemeriksaanController extends Controller
 
                             $detail_item = DB::table('detail_item_patients')
                                 ->where('id', $value_item['id'])->delete();
-
                         } else {
 
                             //untuk cek quantity yang sudah ada untuk mencari selisih penambahan
@@ -1730,7 +1783,6 @@ class HasilPemeriksaanController extends Controller
                                     'status' => 'kurang',
                                     'user_id' => $request->user()->id,
                                 ]);
-
                             } elseif ($value_item['quantity'] < $check_item_result->quantity) {
 
                                 $res_value_item = $check_item_result->quantity - $value_item['quantity'];
@@ -1766,7 +1818,6 @@ class HasilPemeriksaanController extends Controller
                                     'status' => 'tambah',
                                     'user_id' => $request->user()->id,
                                 ]);
-
                             } else {
 
                                 $detail_item_patient = DetailItemPatient::find($value_item['id']);
@@ -1779,7 +1830,6 @@ class HasilPemeriksaanController extends Controller
                                 $detail_item_patient->detail_medicine_group_id = $res_group['id'];
                                 $detail_item_patient->save();
                             }
-
                         }
                     }
                 } elseif (is_null($res_group['status']) && is_null($res_group['id'])) {
@@ -1792,9 +1842,7 @@ class HasilPemeriksaanController extends Controller
                     ]);
 
                     $this->update_item($res_group['list_of_medicine'], $add_parent, $check_up_result, $request);
-
                 }
-
             }
         }
 
@@ -1813,9 +1861,9 @@ class HasilPemeriksaanController extends Controller
         return response()->json(
             [
                 'message' => 'Ubah Data Berhasil!',
-            ], 200
+            ],
+            200
         );
-
     }
 
     private function update_item($list_of_medicine, $add_parent, $check_up_result, $request)
@@ -1856,7 +1904,6 @@ class HasilPemeriksaanController extends Controller
                     'status' => 'kurang',
                     'user_id' => $request->user()->id,
                 ]);
-
             } elseif ($value_item['status'] == 'del' || $value_item['quantity'] == 0) {
 
                 $check_price_item = DB::table('detail_item_patients')
@@ -1895,7 +1942,6 @@ class HasilPemeriksaanController extends Controller
 
                 $detail_item = DB::table('detail_item_patients')
                     ->where('id', $value_item['id'])->delete();
-
             } else {
 
                 //untuk cek quantity yang sudah ada untuk mencari selisih penambahan
@@ -1940,7 +1986,6 @@ class HasilPemeriksaanController extends Controller
                         'status' => 'kurang',
                         'user_id' => $request->user()->id,
                     ]);
-
                 } elseif ($value_item['quantity'] < $check_item_result->quantity) {
 
                     $res_value_item = $check_item_result->quantity - $value_item['quantity'];
@@ -1976,7 +2021,6 @@ class HasilPemeriksaanController extends Controller
                         'status' => 'tambah',
                         'user_id' => $request->user()->id,
                     ]);
-
                 } else {
 
                     $detail_item_patient = DetailItemPatient::find($value_item['id']);
@@ -1989,7 +2033,6 @@ class HasilPemeriksaanController extends Controller
                     $detail_item_patient->medicine_group_id = $res_group['medicine_group_id'];
                     $detail_item_patient->save();
                 }
-
             }
         }
     }
@@ -2089,7 +2132,6 @@ class HasilPemeriksaanController extends Controller
                     $values = DetailItemPatient::where('id', '=', $datas->id)
                         ->delete();
                 }
-
             }
 
             $val_medicine_group = Detail_medicine_group_check_up_result::where('id', '=', $resdata->id)
@@ -2137,7 +2179,6 @@ class HasilPemeriksaanController extends Controller
                         ->delete();
                 }
             }
-
         }
 
         if ($check_up_result->status_finish == true) {
@@ -2202,9 +2243,7 @@ class HasilPemeriksaanController extends Controller
 
                         array_push($data_item, 'Foto ' . $oldname . ' lebih dari 5mb! Harap cek ulang!');
                     }
-
                 }
-
             }
 
             if ($data_item) {
@@ -2213,7 +2252,6 @@ class HasilPemeriksaanController extends Controller
                     'message' => 'Foto yang dimasukkan tidak valid!',
                     'errors' => $data_item,
                 ], 422);
-
             } else {
 
                 foreach ($files as $file) {
@@ -2234,7 +2272,6 @@ class HasilPemeriksaanController extends Controller
                     }
                 }
             }
-
         }
 
         return response()->json([
@@ -2289,7 +2326,6 @@ class HasilPemeriksaanController extends Controller
                     }
                 }
             }
-
         }
 
         if ($request->hasfile('filenames')) {
@@ -2312,9 +2348,7 @@ class HasilPemeriksaanController extends Controller
 
                         array_push($data_item, 'Foto ' . $oldname . ' lebih dari 5mb! Harap cek ulang!');
                     }
-
                 }
-
             }
 
             if ($data_item) {
@@ -2323,7 +2357,6 @@ class HasilPemeriksaanController extends Controller
                     'message' => 'Foto yang dimasukkan tidak valid!',
                     'errors' => $data_item,
                 ], 422);
-
             } else {
 
                 foreach ($files as $file) {
@@ -2344,13 +2377,11 @@ class HasilPemeriksaanController extends Controller
                     }
                 }
             }
-
         }
 
         return response()->json([
             'message' => 'Berhasil update',
         ], 200);
-
     }
 
     public function payment(Request $request)
@@ -2382,7 +2413,8 @@ class HasilPemeriksaanController extends Controller
                 DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
                 DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                 'registrations.complaint',
-                'registrations.registrant')
+                'registrations.registrant'
+            )
             ->where('registrations.id', '=', $data->patient_registration_id)
             ->first();
 
@@ -2390,7 +2422,7 @@ class HasilPemeriksaanController extends Controller
 
         $user = DB::table('check_up_results')
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->select('users.id as user_id', 'users.username as username','users.branch_id')
+            ->select('users.id as user_id', 'users.username as username', 'users.branch_id')
             ->where('users.id', '=', $data->user_id)
             ->first();
 
@@ -2401,11 +2433,18 @@ class HasilPemeriksaanController extends Controller
             ->join('list_of_services', 'price_services.list_of_services_id', '=', 'list_of_services.id')
             ->join('service_categories', 'list_of_services.service_category_id', '=', 'service_categories.id')
             ->join('users', 'detail_service_patients.user_id', '=', 'users.id')
-            ->select('detail_service_patients.id as detail_service_patient_id', 'price_services.id as price_service_id',
-                'list_of_services.id as list_of_service_id', 'list_of_services.service_name',
-                'detail_service_patients.quantity', DB::raw("TRIM(detail_service_patients.price_overall)+0 as price_overall"),
-                'service_categories.category_name', DB::raw("TRIM(price_services.selling_price)+0 as selling_price"),
-                'users.fullname as created_by', DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at"))
+            ->select(
+                'detail_service_patients.id as detail_service_patient_id',
+                'price_services.id as price_service_id',
+                'list_of_services.id as list_of_service_id',
+                'list_of_services.service_name',
+                'detail_service_patients.quantity',
+                DB::raw("TRIM(detail_service_patients.price_overall)+0 as price_overall"),
+                'service_categories.category_name',
+                DB::raw("TRIM(price_services.selling_price)+0 as selling_price"),
+                'users.fullname as created_by',
+                DB::raw("DATE_FORMAT(detail_service_patients.created_at, '%d %b %Y') as created_at")
+            )
             ->where('detail_service_patients.check_up_result_id', '=', $data->id)
             ->orderBy('detail_service_patients.id', 'desc')
             ->get();
@@ -2426,7 +2465,6 @@ class HasilPemeriksaanController extends Controller
             } else {
                 $valid = true;
             }
-
         }
 
         if ($valid == true) {
@@ -2446,12 +2484,12 @@ class HasilPemeriksaanController extends Controller
                     //DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
                     DB::raw("TRIM(pmg.selling_price * dmg.quantity)+0 as price_overall"),
                     'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+                    DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at")
+                )
                 ->where('dmg.check_up_result_id', '=', $data->id)
-            //->groupby('dmg.medicine_group_id')
+                //->groupby('dmg.medicine_group_id')
                 ->orderBy('dmg.id', 'asc')
                 ->get();
-
         } else {
             $item = DB::table('detail_medicine_group_check_up_results as dmg')
                 ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
@@ -2466,7 +2504,8 @@ class HasilPemeriksaanController extends Controller
                     DB::raw("COUNT(dmg.check_up_result_id) as quantity"),
                     DB::raw("TRIM(SUM(pmg.selling_price))+0 as price_overall"),
                     'users.fullname as created_by',
-                    DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at"))
+                    DB::raw("DATE_FORMAT(dmg.created_at, '%d %b %Y') as created_at")
+                )
                 ->where('dmg.check_up_result_id', '=', $data->id)
                 ->groupby('dmg.medicine_group_id')
                 ->orderBy('dmg.id', 'asc')
@@ -2477,8 +2516,11 @@ class HasilPemeriksaanController extends Controller
 
         $inpatient = DB::table('in_patients')
             ->join('users', 'in_patients.user_id', '=', 'users.id')
-            ->select('in_patients.description', DB::raw("DATE_FORMAT(in_patients.created_at, '%d %b %Y') as created_at"),
-                'users.fullname as created_by')
+            ->select(
+                'in_patients.description',
+                DB::raw("DATE_FORMAT(in_patients.created_at, '%d %b %Y') as created_at"),
+                'users.fullname as created_by'
+            )
             ->where('in_patients.check_up_result_id', '=', $data->id)
             ->get();
 
