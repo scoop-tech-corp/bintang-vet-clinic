@@ -245,7 +245,8 @@ class HasilPemeriksaanController extends Controller
                 'patients.id_member',
                 'patients.pet_category',
                 'patients.pet_name',
-                DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                'patients.owner_name',
+                //DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                 'registrations.complaint',
                 'users.fullname')
             ->where('check_up_results.isDeleted', '=', 0);
@@ -259,14 +260,51 @@ class HasilPemeriksaanController extends Controller
         }
 
         if ($request->keyword) {
-            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%')
-                ->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
+            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%');
+                //->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
         }
 
         $data = $data->get();
 
         if (count($data)) {
-            $temp_column = 'owner_name';
+            $temp_column = 'patients.owner_name';
+            return $temp_column;
+        }
+        //============================================
+
+        $data = DB::table('check_up_results')
+            ->join('users', 'check_up_results.user_id', '=', 'users.id')
+            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_category',
+                'patients.pet_name',
+                'owners.owner_name',
+                //DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
+                'registrations.complaint',
+                'users.fullname')
+            ->where('check_up_results.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('users.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('owners.owner_name', 'like', '%' . $request->keyword . '%');
+                //->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'owners.owner_name';
             return $temp_column;
         }
         //============================================
