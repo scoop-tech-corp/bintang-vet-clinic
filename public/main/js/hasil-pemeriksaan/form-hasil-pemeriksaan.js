@@ -723,7 +723,7 @@ function validationForm() {
 
   let isValidKelompokObat = true;
   for (let i = 0; i < arrayKelompokObat.length; i++) {
-    if (!arrayKelompokObat[i].kelompokObatId || !arrayKelompokObat[i].selectedListBarang.length) {
+    if (!arrayKelompokObat[i].kelompokObatId || !arrayKelompokObat[i].quantity || !arrayKelompokObat[i].selectedListBarang.length) {
       $('#customErr1').text('Terdapat Kelompok Obat atau Daftar Barang yang belum diisi, harap dicek kembali!');
       customErr1 = true; isValidKelompokObat = false;
       break;
