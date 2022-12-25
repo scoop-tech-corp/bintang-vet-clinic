@@ -33,7 +33,7 @@
             <th class="onOrdering columnNamaUser" data='fullname' orderby="none">Nama User <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='date_payed' orderby="none">Tanggal Penggajian <span class="fa fa-sort"></span></th>
             <th class="onOrdering columnCabang" data='branch_name' orderby="none">Cabang <span class="fa fa-sort"></span></th>
-            <th class="onOrdering" data='basic_salary' orderby="none">Pokok <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='basic_sallary' orderby="none">Pokok <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='accomodation' orderby="none">Akomodasi <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='total_turnover' orderby="none">Omzet <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='total_inpatient' orderby="none">Inap <span class="fa fa-sort"></span></th>
