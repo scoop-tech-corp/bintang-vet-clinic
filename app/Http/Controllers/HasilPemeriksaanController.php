@@ -102,7 +102,7 @@ class HasilPemeriksaanController extends Controller
 
     private function Search($request)
     {
-        // $temp_column = '';
+        $temp_column = null;
 
         $data = DB::table('check_up_results')
             ->join('users', 'check_up_results.user_id', '=', 'users.id')
