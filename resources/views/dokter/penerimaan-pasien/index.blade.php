@@ -18,7 +18,7 @@
         <thead>
           <tr>
             <th>No</th>
-            <th class="onOrdering" data='id_register' orderby="none">No. Registrasi <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='id_number' orderby="none">No. Registrasi <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='created_at' orderby="none">Tanggal dibuat <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='id_member' orderby="none">No. Pasien <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='pet_category' orderby="none">Jenis Hewan <span class="fa fa-sort"></span></th>
