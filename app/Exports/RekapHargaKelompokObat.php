@@ -8,39 +8,39 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class RekapHargaKelompokObat implements WithMultipleSheets
 {
-  use Exportable;
+    use Exportable;
 
-  protected $sheets;
+    protected $sheets;
 
-  protected $orderby;
-  protected $column;
-  protected $date;
-  protected $branch_id;
-  protected $role;
+    protected $orderby;
+    protected $column;
+    protected $keyword;
+    protected $date;
+    protected $branch_id;
+    protected $role;
 
-  public function __construct($orderby, $column, $keyword, $role, $branch_id)
-  {
-      $this->orderby = $orderby;
-      $this->column = $column;
-      $this->keyword = $keyword;
-      $this->branch_id = $branch_id;
-      $this->role = $role;
+    public function __construct($orderby, $column, $keyword, $role, $branch_id)
+    {
+        $this->orderby = $orderby;
+        $this->column = $column;
+        $this->keyword = $keyword;
+        $this->branch_id = $branch_id;
+        $this->role = $role;
+    }
 
-  }
+    function array(): array
+    {
+        return $this->sheets;
+    }
 
-  function array(): array
-  {
-      return $this->sheets;
-  }
+    public function sheets(): array
+    {
+        $sheets = [];
 
-  public function sheets(): array
-  {
-      $sheets = [];
+        $sheets = [
+            new DataRekapHargaKelompokObat($this->orderby, $this->column, $this->keyword, $this->branch_id, $this->role),
+        ];
 
-      $sheets = [
-          new DataRekapHargaKelompokObat($this->orderby, $this->column, $this->keyword, $this->branch_id, $this->role),
-      ];
-
-      return $sheets;
-  }
+        return $sheets;
+    }
 }

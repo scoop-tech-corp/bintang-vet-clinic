@@ -11,6 +11,7 @@ use DB;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Validator;
+use App\Models\Branch;
 
 class DaftarBarangPetshopController extends Controller
 {

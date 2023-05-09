@@ -28,7 +28,8 @@ class DaftarBarangController extends Controller
             ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
             ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
             ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->select('list_of_items.id',
+            ->select(
+                'list_of_items.id',
                 'list_of_items.item_name',
                 DB::raw("TRIM(list_of_items.total_item)+0 as total_item"),
                 DB::raw("TRIM(list_of_items.limit_item)+0 as limit_item"),
@@ -43,7 +44,8 @@ class DaftarBarangController extends Controller
                 'branches.branch_name',
                 'users.id as user_id',
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
+                DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at")
+            )
             ->where('list_of_items.isDeleted', '=', 0);
 
         if ($request->keyword) {
@@ -53,8 +55,10 @@ class DaftarBarangController extends Controller
                 $item = $item->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json(['total_paging' => 0,
-                    'data' => $data], 200);
+                return response()->json([
+                    'total_paging' => 0,
+                    'data' => $data
+                ], 200);
             }
         }
 
@@ -87,9 +91,10 @@ class DaftarBarangController extends Controller
 
         $total_paging = $count_data / $items_per_page;
 
-        return response()->json(['total_paging' => ceil($total_paging),
-            'data' => $item], 200);
-
+        return response()->json([
+            'total_paging' => ceil($total_paging),
+            'data' => $item
+        ], 200);
     }
 
     public function index_limit(Request $request)
@@ -103,7 +108,8 @@ class DaftarBarangController extends Controller
             ->join('branches', 'list_of_items.branch_id', '=', 'branches.id')
             ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
             ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
-            ->select('list_of_items.id',
+            ->select(
+                'list_of_items.id',
                 'list_of_items.item_name',
                 DB::raw("TRIM(list_of_items.total_item)+0 as total_item"),
                 DB::raw("TRIM(list_of_items.limit_item)+0 as limit_item"),
@@ -118,7 +124,8 @@ class DaftarBarangController extends Controller
                 'branches.branch_name',
                 'users.id as user_id',
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at"))
+                DB::raw("DATE_FORMAT(list_of_items.created_at, '%d %b %Y') as created_at")
+            )
             ->where('list_of_items.isDeleted', '=', 0)
             ->where('list_of_items.diff_item', '<', 0);
 
@@ -136,8 +143,10 @@ class DaftarBarangController extends Controller
                 $item = $item->where($res, 'like', '%' . $request->keyword . '%');
             } else {
                 $data = [];
-                return response()->json(['total_paging' => 0,
-                    'data' => $data], 200);
+                return response()->json([
+                    'total_paging' => 0,
+                    'data' => $data
+                ], 200);
             }
         }
 
@@ -171,8 +180,10 @@ class DaftarBarangController extends Controller
 
         $total_paging = $count_data / $items_per_page;
 
-        return response()->json(['total_paging' => ceil($total_paging),
-            'data' => $item], 200);
+        return response()->json([
+            'total_paging' => ceil($total_paging),
+            'data' => $item
+        ], 200);
     }
 
     private function Search($request)
@@ -189,7 +200,8 @@ class DaftarBarangController extends Controller
                 'unit_item.unit_name',
                 'category_item.category_name',
                 'branches.branch_name',
-                'users.fullname as created_by')
+                'users.fullname as created_by'
+            )
             ->where('list_of_items.isDeleted', '=', 0);
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -222,7 +234,8 @@ class DaftarBarangController extends Controller
                 'unit_item.unit_name',
                 'category_item.category_name',
                 'branches.branch_name',
-                'users.fullname as created_by')
+                'users.fullname as created_by'
+            )
             ->where('list_of_items.isDeleted', '=', 0);
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -255,7 +268,8 @@ class DaftarBarangController extends Controller
                 'unit_item.unit_name',
                 'category_item.category_name',
                 'branches.branch_name',
-                'users.fullname as created_by')
+                'users.fullname as created_by'
+            )
             ->where('list_of_items.isDeleted', '=', 0);
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -288,7 +302,8 @@ class DaftarBarangController extends Controller
                 'unit_item.unit_name',
                 'category_item.category_name',
                 'branches.branch_name',
-                'users.fullname as created_by')
+                'users.fullname as created_by'
+            )
             ->where('list_of_items.isDeleted', '=', 0);
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -321,7 +336,8 @@ class DaftarBarangController extends Controller
                 'unit_item.unit_name',
                 'category_item.category_name',
                 'branches.branch_name',
-                'users.fullname as created_by')
+                'users.fullname as created_by'
+            )
             ->where('list_of_items.isDeleted', '=', 0);
 
         if ($request->branch_id && $request->user()->role == 'admin') {
@@ -433,7 +449,8 @@ class DaftarBarangController extends Controller
         return response()->json(
             [
                 'message' => 'Tambah Daftar Barang Berhasil!',
-            ], 200
+            ],
+            200
         );
     }
 
@@ -478,6 +495,7 @@ class DaftarBarangController extends Controller
             ->where('branch_id', '=', $request->cabang_id)
             ->where('item_name', '=', $request->nama_barang)
             ->where('id', '!=', $request->id)
+            ->where('isDeleted', '=', 0)
             ->count();
 
         if ($find_duplicate != 0) {
@@ -486,7 +504,6 @@ class DaftarBarangController extends Controller
                 'message' => 'The data was invalid.',
                 'errors' => ['Data sudah ada!'],
             ], 422);
-
         }
 
         $check_stock = DB::table('list_of_items')
@@ -511,7 +528,6 @@ class DaftarBarangController extends Controller
                 'status' => 'tambah',
                 'user_id' => $request->user()->id,
             ]);
-
         } elseif ($check_stock->total_item < $request->jumlah_barang) {
             $qty_item = $request->jumlah_barang - $check_stock->total_item;
 
