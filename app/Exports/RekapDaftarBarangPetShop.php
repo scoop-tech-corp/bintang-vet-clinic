@@ -2,15 +2,45 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use App\Exports\DataRekapDaftarBarangPetShop;
+use Maatwebsite\Excel\Concerns\Exportable;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class RekapDaftarBarangPetShop implements FromCollection
+class RekapDaftarBarangPetShop implements WithMultipleSheets
 {
-    /**
-    * @return \Illuminate\Support\Collection
-    */
-    public function collection()
+    use Exportable;
+
+    protected $sheets;
+
+    protected $orderby;
+    protected $column;
+    protected $keyword;
+    protected $date;
+    protected $branch_id;
+    protected $role;
+
+    public function __construct($orderby, $column, $keyword, $role, $branch_id)
     {
-        //
+        $this->orderby = $orderby;
+        $this->column = $column;
+        $this->keyword = $keyword;
+        $this->branch_id = $branch_id;
+        $this->role = $role;
+    }
+
+    function array(): array
+    {
+        return $this->sheets;
+    }
+
+    public function sheets(): array
+    {
+        $sheets = [];
+
+        $sheets = [
+            new DataRekapDaftarBarangPetShop($this->orderby, $this->column, $this->keyword, $this->branch_id, $this->role),
+        ];
+
+        return $sheets;
     }
 }

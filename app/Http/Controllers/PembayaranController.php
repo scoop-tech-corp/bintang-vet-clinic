@@ -1026,7 +1026,7 @@ class PembayaranController extends Controller
 
                     $check_item_name = DB::table('detail_medicine_group_check_up_results as dmg')
                         ->join('price_medicine_groups as pmg', 'dmg.medicine_group_id', '=', 'pmg.id')
-                        ->join('medicine_groups as mg', 'dmg.medicine_group_id', '=', 'mg.id')
+                        ->join('medicine_groups as mg', 'pmg.medicine_group_id', '=', 'mg.id')
                         ->select('mg.group_name as group_name')
                         ->where('dmg.medicine_group_id', '=', $value_item['medicine_group_id'])
                         ->where('dmg.check_up_result_id', '=', $request->check_up_result_id)

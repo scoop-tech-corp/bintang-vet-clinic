@@ -14,6 +14,7 @@ class RekapHargaBarang implements WithMultipleSheets
 
     protected $orderby;
     protected $column;
+    protected $keyword;
     protected $date;
     protected $branch_id;
     protected $role;
@@ -25,7 +26,6 @@ class RekapHargaBarang implements WithMultipleSheets
         $this->keyword = $keyword;
         $this->branch_id = $branch_id;
         $this->role = $role;
-
     }
 
     function array(): array
