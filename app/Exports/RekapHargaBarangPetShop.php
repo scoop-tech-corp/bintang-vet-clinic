@@ -14,6 +14,7 @@ class RekapHargaBarangPetShop implements WithMultipleSheets
 
     protected $orderby;
     protected $column;
+    protected $keyword;
     protected $date;
     protected $branch_id;
     protected $role;
