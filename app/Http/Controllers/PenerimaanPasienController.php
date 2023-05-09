@@ -52,7 +52,8 @@ class PenerimaanPasienController extends Controller
                 'registrations.acceptance_status',
                 DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"),
                 'users.branch_id as user_branch_id')
-            ->where('registrations.acceptance_status', '=', '0');
+            ->where('registrations.acceptance_status', '=', '0')
+            ->where('registrations.isDeleted', '=', '0');
 
         if ($request->keyword) {
             $res = $this->Search($request);

@@ -371,8 +371,8 @@ $(document).ready(function() {
         if (getData.length) {
           $.each(getData, function(idx, v) {
             listDaftarBarang += `<tr>
-              <td class="${v.diff_expired_days < 60 ? 'expired-date' : ''}">${++idx}</td>
-              <td class="${v.diff_item < 0 ? 'item-outstock' : ''}">${v.item_name}</td>
+              <td class="${v.diff_expired_days <= 60 ? 'expired-date' : ''}">${++idx}</td>
+              <td class="${v.diff_item <= 0 ? 'item-outstock' : ''}">${v.item_name}</td>
               <td>${v.total_item}</td>
               <td>${v.unit_name}</td>
               <td>${v.category_name}</td>
