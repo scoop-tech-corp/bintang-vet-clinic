@@ -21,7 +21,7 @@ class PembayaranController extends Controller
     {
         $data_check = DB::table('list_of_payments')
             ->select('list_of_payments.check_up_result_id')
-            ->whereNotBetween(DB::raw('DATE(list_of_payments.updated_at)'), ['2021-07-01', '2023-08-31'])
+            ->whereNotBetween(DB::raw('DATE(list_of_payments.created_at)'), ['2021-07-01', '2023-08-31'])
             ->get();
 
         $res = "";
