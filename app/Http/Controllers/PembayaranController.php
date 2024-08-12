@@ -42,7 +42,7 @@ class PembayaranController extends Controller
             ->select('check_up_results.id as check_up_result_id', 'registrations.id_number as registration_number', 'patients.pet_name');
 
         $data = $data->whereNotIn('check_up_results.id', $myArray)
-        ->whereNotBetween(DB::raw('DATE(check_up_results.created_at)'), ['2021-07-01', '2023-08-31']);
+        ->whereNotBetween(DB::raw('DATE(check_up_results.created_at)'), ['2021-07-01', '2023-12-31']);
 
         if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
             $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
