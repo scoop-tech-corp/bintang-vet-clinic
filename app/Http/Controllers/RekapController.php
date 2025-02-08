@@ -847,6 +847,7 @@ class RekapController extends Controller
 
       $row = 5;
       $letter = "";
+      $last_cell = "";
 
       if ($sallaryUser) {
         $letter = chr(70 + $col);
@@ -885,12 +886,12 @@ class RekapController extends Controller
         // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
         $sheet->getStyle("{$letter}{$row}")->getFont()->setBold(true);
         $col++;
+
+        $last_cell = "{$letter}{$row}";
       }
     }
 
-    $cell = "{$letter}{$row}";
-
-    $sheet->getStyle("F6:{$cell}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+    $sheet->getStyle("F6:{$last_cell}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
     Carbon::setLocale('id');
 
