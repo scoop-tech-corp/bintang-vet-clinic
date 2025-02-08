@@ -846,6 +846,7 @@ class RekapController extends Controller
         ->first();
 
       $row = 5;
+      $letter = "";
 
       if ($sallaryUser) {
         $letter = chr(70 + $col);
