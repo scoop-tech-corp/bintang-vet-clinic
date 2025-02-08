@@ -127,7 +127,7 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('pembagian-harga-barang/upload', 'HargaBarangController@upload_template');
 
         Route::get('pembagian-harga-barang/dropdown', 'HargaBarangController@dropdown');
-        
+
         //pembagian harga barang pet shop
         Route::get('pembagian-harga-barang-petshop', 'HargaBarangPetShopController@index');
         Route::post('pembagian-harga-barang-petshop', 'HargaBarangPetShopController@create');
@@ -183,7 +183,7 @@ Route::group(['middleware' => ['api']], function () {
         // Route::get('pembayaran/print', 'PembayaranController@print_pdf');
         //Route::post('pembayaran/printpdf', 'PembayaranController@print_pdf');
 
-        
+
 
         //Metode Pembayaran
         Route::get('metode-pembayaran', 'DaftarMetodePembayaranController@index');
@@ -239,6 +239,13 @@ Route::group(['middleware' => ['api']], function () {
         Route::get('laporan-keuangan/bulanan/download', 'LaporanKeuanganBulananController@download_excel');
 
         Route::get('laporan-keuangan/bulanan/detail', 'LaporanKeuanganBulananController@detail');
+
+        //rekap
+        Route::get('laporan-keuangan/rekap/table', 'RekapController@index');
+        Route::get('laporan-keuangan/rekap/chart', 'RekapController@chart');
+
+        Route::get('laporan-keuangan/rekap/listperiode', 'RekapController@listperiode');
+        Route::get('laporan-keuangan/rekap/download', 'RekapController@export');
 
         //dashboard
         Route::get('dashboard/barchart', 'DashboardController@BarChartPatient');
