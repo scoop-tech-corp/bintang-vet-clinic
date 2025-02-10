@@ -778,81 +778,82 @@ class RekapController extends Controller
 
     $sheet->getStyle("A1:B{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-    $listStaff = DB::table('users as u')
+    // $listStaff = DB::table('users as u')
+    //   ->join('branches', 'u.branch_id', '=', 'branches.id')
+    //   ->select(
+    //     'u.id',
+    //     'u.fullname as fullname',
+    //   )
+    //   ->where('branches.id', '=', $request->branch_id)
+    //   ->where('u.status', '=', 1)
+    //   ->orderBy('u.id', 'asc')->get();
+    // $listStaff = DB::table('payrolls as py')
+    // ->get();
+
+    $sallaryUser = DB::table('payrolls as py')
+      ->join('users as u', 'py.user_employee_id', '=', 'u.id')
       ->join('branches', 'u.branch_id', '=', 'branches.id')
       ->select(
-        'u.id',
         'u.fullname as fullname',
+        DB::raw("TRIM(py.total_overall)+0 as total_overall"),
+        DB::raw("TRIM(py.basic_sallary)+0 as basic_sallary"),
+        DB::raw("TRIM(py.accomodation)+0 as accomodation"),
+        DB::raw("TRIM(py.total_turnover)+0 as total_turnover"), //bonus omset
+        DB::raw("TRIM(py.total_inpatient)+0 as total_inpatient"),
+        DB::raw("TRIM(py.total_surgery)+0 as total_surgery"),
+        DB::raw("TRIM(py.total_grooming)+0 as total_grooming"),
       )
+      ->where('py.isDeleted', '=', 0)
       ->where('branches.id', '=', $request->branch_id)
-      ->where('u.status', '=', 1)
-      ->orderBy('u.id', 'asc')->get();
+      ->where(DB::raw("YEAR(py.date_payed)"), $request->year)
+      ->where(DB::raw("MONTH(py.date_payed)"), $request->month)
+      ->get();
+
 
     $col = 0;
 
     $letter = "";
 
-    foreach ($listStaff as $value) {
-
-      $sallaryUser = DB::table('payrolls as py')
-        ->join('users as u', 'py.user_employee_id', '=', 'u.id')
-        ->join('branches', 'u.branch_id', '=', 'branches.id')
-        ->select(
-          'u.fullname as fullname',
-          DB::raw("TRIM(py.total_overall)+0 as total_overall"),
-          DB::raw("TRIM(py.basic_sallary)+0 as basic_sallary"),
-          DB::raw("TRIM(py.accomodation)+0 as accomodation"),
-          DB::raw("TRIM(py.total_turnover)+0 as total_turnover"), //bonus omset
-          DB::raw("TRIM(py.total_inpatient)+0 as total_inpatient"),
-          DB::raw("TRIM(py.total_surgery)+0 as total_surgery"),
-          DB::raw("TRIM(py.total_grooming)+0 as total_grooming"),
-        )
-        ->where('py.isDeleted', '=', 0)
-        ->whereYear('py.date_payed', $request->year)
-        ->whereMonth('py.date_payed', $request->month)
-        ->where('u.id', '=', $value->id)
-        ->first();
+    foreach ($sallaryUser as $value) {
 
       $row = 5;
 
-      if ($sallaryUser) {
-        $letter = chr(70 + $col);
+      $letter = chr(70 + $col);
 
-        $sheet->getColumnDimension("{$letter}")->setWidth(13);
+      $sheet->getColumnDimension("{$letter}")->setWidth(13);
 
-        $sheet->setCellValue("{$letter}{$row}", $sallaryUser->fullname);
-        $sheet->getStyle("{$letter}{$row}")->getFont()->setBold(true);
-        $row++;
+      $sheet->setCellValue("{$letter}{$row}", $value->fullname);
+      $sheet->getStyle("{$letter}{$row}")->getFont()->setBold(true);
+      $row++;
 
-        $sheet->setCellValue("{$letter}{$row}", $sallaryUser->basic_sallary);
-        //$sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
-        $row++;
+      $sheet->setCellValue("{$letter}{$row}", $value->basic_sallary);
+      //$sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
+      $row++;
 
-        $sheet->setCellValue("{$letter}{$row}", $sallaryUser->accomodation);
-        // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
-        $row++;
+      $sheet->setCellValue("{$letter}{$row}", $value->accomodation);
+      // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
+      $row++;
 
-        $sheet->setCellValue("{$letter}{$row}", $sallaryUser->total_turnover);
-        // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
-        $row++;
+      $sheet->setCellValue("{$letter}{$row}", $value->total_turnover);
+      // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
+      $row++;
 
-        $sheet->setCellValue("{$letter}{$row}", $sallaryUser->total_inpatient);
-        // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
-        $row++;
+      $sheet->setCellValue("{$letter}{$row}", $value->total_inpatient);
+      // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
+      $row++;
 
-        $sheet->setCellValue("{$letter}{$row}", $sallaryUser->total_surgery);
-        // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
-        $row++;
+      $sheet->setCellValue("{$letter}{$row}", $value->total_surgery);
+      // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
+      $row++;
 
-        $sheet->setCellValue("{$letter}{$row}", $sallaryUser->total_grooming);
-        // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
-        $row += 2;
+      $sheet->setCellValue("{$letter}{$row}", $value->total_grooming);
+      // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
+      $row += 2;
 
-        $sheet->setCellValue("{$letter}{$row}", $sallaryUser->total_overall);
-        // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
-        $sheet->getStyle("{$letter}{$row}")->getFont()->setBold(true);
-        $col++;
-      }
+      $sheet->setCellValue("{$letter}{$row}", $value->total_overall);
+      // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
+      $sheet->getStyle("{$letter}{$row}")->getFont()->setBold(true);
+      $col++;
     }
 
     $sheet->getStyle("F6:{$letter}13")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
