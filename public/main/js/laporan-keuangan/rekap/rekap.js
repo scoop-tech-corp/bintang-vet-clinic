@@ -45,7 +45,6 @@ $(document).ready(function () {
     const getYear = getDate.split('-')[1];
     paramUrlSetup.month = getMonth;
     paramUrlSetup.year  = getYear;
-    loadLaporanKeuanganBulanan();
   });
 
   loadLaporanKeuanganRekap();

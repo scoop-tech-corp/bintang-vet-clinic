@@ -89,8 +89,6 @@ class RekapController extends Controller
 
     $i = 0;
 
-    //return $lastPeriods;
-
     foreach ($lastPeriods as $val) {
       //total omset
       $price_overall_item = DB::table('list_of_payments as lop')
@@ -102,10 +100,8 @@ class RekapController extends Controller
           DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall")
         );
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
-      } else {
-        $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -127,10 +123,8 @@ class RekapController extends Controller
           DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall")
         );
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
-      } else {
-        $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -147,10 +141,8 @@ class RekapController extends Controller
         ->join('branches', 'users.branch_id', '=', 'branches.id')
         ->select(DB::raw("TRIM(SUM(pip.selling_price * ppwc.total_item))+0 as price_overall"));
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $price_overall_shop_clinic = $price_overall_shop_clinic->where('branches.id', '=', $request->branch_id);
-      } else {
-        $price_overall_shop_clinic = $price_overall_shop_clinic->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -169,10 +161,8 @@ class RekapController extends Controller
         ->join('branches', 'users.branch_id', '=', 'branches.id')
         ->select(DB::raw("TRIM(SUM(pip.selling_price * pp.total_item))+0 as price_overall"));
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $price_overall_shop = $price_overall_shop->where('branches.id', '=', $request->branch_id);
-      } else {
-        $price_overall_shop = $price_overall_shop->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -200,10 +190,8 @@ class RekapController extends Controller
           DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount")
         );
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
-      } else {
-        $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -225,10 +213,8 @@ class RekapController extends Controller
           DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount")
         );
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
-      } else {
-        $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -248,10 +234,8 @@ class RekapController extends Controller
         ->join('branches as b', 'u.branch_id', '=', 'b.id')
         ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $expenses = $expenses->where('b.id', '=', $request->branch_id);
-      } else {
-        $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -295,10 +279,8 @@ class RekapController extends Controller
       //     ->whereMonth('py.date_payed', $val['month']);
       // }
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $payrolls = $payrolls->where('branches.id', '=', $request->branch_id);
-      } else {
-        $payrolls = $payrolls->where('branches.id', '=', $request->user()->branch_id);
       }
 
       $firstPayroll = $payrolls->sum('total_overall');
@@ -403,10 +385,8 @@ class RekapController extends Controller
           DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall")
         );
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $price_overall_item = $price_overall_item->where('branches.id', '=', $request->branch_id);
-      } else {
-        $price_overall_item = $price_overall_item->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -428,10 +408,8 @@ class RekapController extends Controller
           DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall")
         );
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $price_overall_service = $price_overall_service->where('branches.id', '=', $request->branch_id);
-      } else {
-        $price_overall_service = $price_overall_service->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -448,10 +426,8 @@ class RekapController extends Controller
         ->join('branches', 'users.branch_id', '=', 'branches.id')
         ->select(DB::raw("TRIM(SUM(pip.selling_price * ppwc.total_item))+0 as price_overall"));
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $price_overall_shop_clinic = $price_overall_shop_clinic->where('branches.id', '=', $request->branch_id);
-      } else {
-        $price_overall_shop_clinic = $price_overall_shop_clinic->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -470,10 +446,8 @@ class RekapController extends Controller
         ->join('branches', 'users.branch_id', '=', 'branches.id')
         ->select(DB::raw("TRIM(SUM(pip.selling_price * pp.total_item))+0 as price_overall"));
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $price_overall_shop = $price_overall_shop->where('branches.id', '=', $request->branch_id);
-      } else {
-        $price_overall_shop = $price_overall_shop->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -501,10 +475,8 @@ class RekapController extends Controller
           DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount")
         );
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->branch_id);
-      } else {
-        $amount_discount_item = $amount_discount_item->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -526,10 +498,8 @@ class RekapController extends Controller
           DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount")
         );
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->branch_id);
-      } else {
-        $amount_discount_service = $amount_discount_service->where('branches.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -549,10 +519,8 @@ class RekapController extends Controller
         ->join('branches as b', 'u.branch_id', '=', 'b.id')
         ->select(DB::raw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall"));
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $expenses = $expenses->where('b.id', '=', $request->branch_id);
-      } else {
-        $expenses = $expenses->where('b.id', '=', $request->user()->branch_id);
       }
 
       if ($request->periode == 2) {
@@ -596,10 +564,8 @@ class RekapController extends Controller
       //     ->whereMonth('py.date_payed', $val['month']);
       // }
 
-      if ($request->branch_id && $request->user()->role == 'admin') {
+      if ($request->branch_id) {
         $payrolls = $payrolls->where('branches.id', '=', $request->branch_id);
-      } else {
-        $payrolls = $payrolls->where('branches.id', '=', $request->user()->branch_id);
       }
 
       $firstPayroll = $payrolls->sum('total_overall');
@@ -824,6 +790,8 @@ class RekapController extends Controller
 
     $col = 0;
 
+    $letter = "";
+
     foreach ($listStaff as $value) {
 
       $sallaryUser = DB::table('payrolls as py')
@@ -846,8 +814,6 @@ class RekapController extends Controller
         ->first();
 
       $row = 5;
-      $letter = "";
-      //$last_cell = "";
 
       if ($sallaryUser) {
         $letter = chr(70 + $col);
@@ -886,12 +852,10 @@ class RekapController extends Controller
         // $sheet->getStyle("{$letter}{$row}")->getNumberFormat()->setFormatCode('#.##0');
         $sheet->getStyle("{$letter}{$row}")->getFont()->setBold(true);
         $col++;
-
-        //$last_cell = "{$letter}{$row}";
       }
     }
 
-    //$sheet->getStyle("F6:{$last_cell}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+    $sheet->getStyle("F6:{$letter}13")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
     Carbon::setLocale('id');
 
