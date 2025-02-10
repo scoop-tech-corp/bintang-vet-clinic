@@ -778,18 +778,6 @@ class RekapController extends Controller
 
     $sheet->getStyle("A1:B{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
 
-    // $listStaff = DB::table('users as u')
-    //   ->join('branches', 'u.branch_id', '=', 'branches.id')
-    //   ->select(
-    //     'u.id',
-    //     'u.fullname as fullname',
-    //   )
-    //   ->where('branches.id', '=', $request->branch_id)
-    //   ->where('u.status', '=', 1)
-    //   ->orderBy('u.id', 'asc')->get();
-    // $listStaff = DB::table('payrolls as py')
-    // ->get();
-
     $sallaryUser = DB::table('payrolls as py')
       ->join('users as u', 'py.user_employee_id', '=', 'u.id')
       ->join('branches', 'u.branch_id', '=', 'branches.id')
@@ -807,6 +795,7 @@ class RekapController extends Controller
       ->where('branches.id', '=', $request->branch_id)
       ->where(DB::raw("YEAR(py.date_payed)"), $request->year)
       ->where(DB::raw("MONTH(py.date_payed)"), $request->month)
+      ->orderBy('u.id', 'asc')
       ->get();
 
 
