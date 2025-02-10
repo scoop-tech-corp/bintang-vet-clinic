@@ -46,20 +46,21 @@ $(document).ready(function() {
       $('.menuKeuangan').show(); $('.menuKunjungan').show();
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
-      $('.menuPengeluaran').show();
+      $('.menuPengeluaran').show(); $('.menuRekap').show();
     } else if (role === 'resepsionis') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();
       $('.menuKunjungan').show(); $('.menuGudang').show();
       $('.menuPenggajian').show(); $('.menuPeriksa').show();
       $('.menuPengeluaran').show(); $('.menuKeuangan').show();
+      $('.menuRekap').hide();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
       $('.menuKunjungan').show(); $('.menuPeriksa').show();
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
-      $('.menuPengeluaran').show();
+      $('.menuPengeluaran').show(); $('.menuRekap').hide();
     }
   }
 
@@ -68,7 +69,6 @@ $(document).ready(function() {
   const pathName = window.location.pathname;
   const fullPath = origin + pathName;
   $('.sidebar-menu a').each(function(Key, Value) {
-
     if ( Value['href'] === fullPath) {
       $(Value).parent().addClass('active');
 
@@ -81,7 +81,7 @@ $(document).ready(function() {
         $('.menuPendaftaran').addClass('active');
       } else if (pathName === '/dokter-rawat-jalan' || pathName === '/dokter-rawat-inap') {
         $('.menuDokter').addClass('active');
-      } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan') {
+      } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan' || pathName === '/laporan-keuangan-rekap') {
         $('.menuKeuangan').addClass('active');
       }
     } else {
@@ -96,7 +96,8 @@ $(document).ready(function() {
         $(Value).parent().addClass('active');
       } else if ((Value['href'] ==  origin + '/laporan-keuangan-harian' && (pathName.includes('/laporan-keuangan-harian/detail')))
         || (Value['href'] ==  origin + '/laporan-keuangan-mingguan' && (pathName.includes('/laporan-keuangan-mingguan/detail')))
-        || (Value['href'] ==  origin + '/laporan-keuangan-bulanan' && (pathName.includes('/laporan-keuangan-bulanan/detail'))) ) {
+        || (Value['href'] ==  origin + '/laporan-keuangan-bulanan' && (pathName.includes('/laporan-keuangan-bulanan/detail')))
+        || (Value['href'] ==  origin + '/rekap-keuangan-bulanan') ) {
         $('.menuKeuangan').addClass('active'); $(Value).parent().addClass('active');
       }
     }
@@ -170,7 +171,7 @@ $(document).ready(function() {
 
 function generatePagination(currentPage, totalPage) {
 
-  let showPage = 5; // Links per page 
+  let showPage = 5; // Links per page
   let rangeMiddle = 3;
   let min = null;
   let max = null;
@@ -184,7 +185,7 @@ function generatePagination(currentPage, totalPage) {
     max = (etPage <= totalPage) ? etPage : totalPage;
     min = max - (showPage - 1);
   }
-  
+
   $('.pagination li').remove();
 
   if(totalPage > 0) {
