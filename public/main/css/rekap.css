@@ -1,0 +1,57 @@
+.label-support-laporan {
+  width: 10%;
+}
+.section-left-box-title {
+  display: flex;
+}
+.section-right-box-title {
+  width: 400px;
+}
+.section-right-box-title .btn-download-excel {
+  margin-right: 10px;
+}
+
+.section-right-box-title #filterCabang {
+  width: 70%;
+  margin-right: 20px;
+}
+
+.section-right-box-title #filterPeriode {
+  width: 50%;
+  margin-left: 20px;
+}
+
+.label-date {
+  align-self: center;
+  margin-right: 20px;
+}
+.section-daterangepicker {
+  width: 223px;
+}
+
+@media (max-width: 768px) {
+  .label-support-laporan {
+    width: 40%;
+  }
+  .section-right-box-title .select2-container {
+    margin-top: 0px;
+  }
+
+  .inner-box-title {
+    display: block;
+  }
+  .section-left-box-title {
+    margin-bottom: 10px;
+  }
+  .section-left-box-title .label-date {
+    width: 30%;
+    margin-right: unset;
+  }
+  .section-left-box-title .date {
+    width: 70%;
+  }
+  .section-right-box-title {
+    width: 100%;
+    display: flex;
+  }
+}
