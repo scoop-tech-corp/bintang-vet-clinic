@@ -707,8 +707,8 @@ class PasienController extends Controller
         'branches.id as branch_id',
         'branches.branch_name as branch_name'
       )
-      ->where('registrations.acceptance_status', '=', '1')
-      ->where('registrations.is_hide_from_drop_down', '=', 0);
+      ->where('registrations.acceptance_status', '=', '1');
+      //->where('registrations.is_hide_from_drop_down', '=', 0)
 
     if ($request->user()->role == 'dokter') {
       $data = $data
