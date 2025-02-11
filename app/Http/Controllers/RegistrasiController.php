@@ -474,7 +474,7 @@ class RegistrasiController extends Controller
             'registrant' => $request->nama_pendaftar,
             'user_id' => $request->user()->id,
             'acceptance_status' => 0,
-            'is_hide_from_drop_down' => 0,
+            //'is_hide_from_drop_down' => 0,
         ]);
 
         return response()->json(
