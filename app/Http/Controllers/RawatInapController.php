@@ -97,7 +97,7 @@ class RawatInapController extends Controller
             ->where('id', '=', $request->user()->branch_id)
             ->first();
 
-        $in_patient_number = 'BVC-RI-' . $getbranchuser->branch_code . '-' . str_pad($lasttransaction + 1, 4, 0, STR_PAD_LEFT);
+        $in_patient_number = 'NV-RI-' . $getbranchuser->branch_code . '-' . str_pad($lasttransaction + 1, 4, 0, STR_PAD_LEFT);
 
         $patient = InPatient::create([
             'id_number' => $in_patient_number,
