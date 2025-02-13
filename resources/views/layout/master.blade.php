@@ -54,7 +54,7 @@
 				<!-- mini logo for sidebar mini 50x50 pixels -->
 				<span class="logo-mini"><b>NV</b></span>
 				<!-- logo for regular state and mobile devices -->
-				<span class="logo-lg"><b>NUSANTARA</b><b>VET</b></span>
+				<span class="logo-lg"><b>NUSANTARA</b> <b>VET</b></span>
 			</a>
 
 			<!-- Header Navbar: style can be found in header.less -->
