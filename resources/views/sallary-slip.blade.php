@@ -410,7 +410,7 @@
                 <label>&nbsp;</label>
             </td>
             <td style="text-align: center; width: 35%">
-                <label>Pribadi M.Y</label>
+                <label>drh Sulthon Ridho Nugroho</label>
             </td>
         </tr>
     </table>
