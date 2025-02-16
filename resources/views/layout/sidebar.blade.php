@@ -90,7 +90,7 @@
 					<li><a href="{{ url('/laporan-keuangan-mingguan') }}"><i class="fa fa-circle-o"></i> Mingguan</a></li>
 					<li><a href="{{ url('/laporan-keuangan-bulanan') }}"><i class="fa fa-circle-o"></i> Bulanan</a></li>
           <li class="menuRekap"><a href="{{ url('/laporan-keuangan-rekap') }}"><i class="fa fa-circle-o"></i> Rekapitulasi</a></li>
-          <!-- <li><a href="{{ url('/laporan-keuangan-omset') }}"><i class="fa fa-circle-o"></i> Rekapitulasi Omset</a></li> -->
+          <li class="menuOmset"><a href="{{ url('/laporan-keuangan-omset') }}"><i class="fa fa-circle-o"></i> Rekapitulasi Omset</a></li>
 				</ul>
 			</li>
 			{{-- <li class="menuKunjungan"><a href="{{ url('/kunjungan') }}"><i class="fa fa-wheelchair" aria-hidden="true"></i> <span>Kunjungan</span></a></li> --}}

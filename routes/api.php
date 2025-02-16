@@ -26,6 +26,7 @@ Route::group(['middleware' => ['api']], function () {
 
         //cabang
         Route::get('cabang', 'CabangController@index');
+        Route::get('cabang/all', 'CabangController@listCabangAll');
         Route::post('cabang', 'CabangController@create');
         Route::put('cabang', 'CabangController@update');
         Route::delete('cabang', 'CabangController@delete');
@@ -246,6 +247,9 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::get('laporan-keuangan/rekap/listperiode', 'RekapController@listperiode');
         Route::get('laporan-keuangan/rekap/download', 'RekapController@export');
+
+        Route::get('laporan-keuangan/rekap-all', 'RekapKeseluruhanController@index');
+        Route::get('laporan-keuangan/rekap-all-chart', 'RekapKeseluruhanController@chart');
 
         //dashboard
         Route::get('dashboard/barchart', 'DashboardController@BarChartPatient');
