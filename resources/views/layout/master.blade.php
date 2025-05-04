@@ -7,7 +7,7 @@
   <title>Vet Clinic | Dashboard</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-	<link rel="shortcut icon" type="image/jpg" href="{{ asset('assets/image/logo-vet-clinic.jpg') }}">
+	<link rel="shortcut icon" type="image/jpg" href="{{ asset('assets/image/logo-govet.jpg') }}">
   <!-- Bootstrap 3.3.7 -->
   <link rel="stylesheet" href="{{ asset('bootstrap/dist/css/bootstrap.min.css') }}">
   <!-- Font Awesome -->
@@ -52,9 +52,9 @@
 			<!-- Logo -->
 			<a href="{{ url('/') }}" class="logo">
 				<!-- mini logo for sidebar mini 50x50 pixels -->
-				<span class="logo-mini"><b>B</b>VC</span>
+				<span class="logo-mini"><b></b>VC</span>
 				<!-- logo for regular state and mobile devices -->
-				<span class="logo-lg"><b>BINTANG</b> <b>VET</b> CLINIC</span>
+				<span class="logo-lg"><b>GO</b> <b>VET</b> CLINIC</span>
 			</a>
 
 			<!-- Header Navbar: style can be found in header.less -->
@@ -141,7 +141,7 @@
 			<div class="pull-right hidden-xs">
 				<b>Version</b> 1.0
 			</div>
-			<strong>Copyright &copy; <script>document.write(new Date().getFullYear())</script> <a href="/">Bintang Vet Clinic</a></strong> | Powered by Scoop Tech
+			<strong>Copyright &copy; <script>document.write(new Date().getFullYear())</script> <a href="/">Go Vet Clinic</a></strong> | Powered by Scoop Tech
 		</footer>
 
 		<!-- Control Sidebar -->
