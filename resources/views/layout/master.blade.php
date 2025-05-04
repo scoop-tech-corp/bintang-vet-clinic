@@ -52,7 +52,7 @@
 			<!-- Logo -->
 			<a href="{{ url('/') }}" class="logo">
 				<!-- mini logo for sidebar mini 50x50 pixels -->
-				<span class="logo-mini"><b></b>VC</span>
+				<span class="logo-mini"><b>G</b>VC</span>
 				<!-- logo for regular state and mobile devices -->
 				<span class="logo-lg"><b>GO</b> <b>VET</b> CLINIC</span>
 			</a>
