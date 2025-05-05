@@ -32,7 +32,7 @@ $(document).ready(function() {
       dateLimit: { days: 7 },
       drops: 'auto',
       locale: {format: 'YYYY-MM-DD', cancelLabel: 'Clear'}
-			
+
     });
   // }
 
@@ -145,12 +145,36 @@ $(document).ready(function() {
 							+ `<td>${v.pet_name}</td>`
 							+ `<td>${v.complaint}</td>`
 							+ `<td>${(v.status_outpatient_inpatient == 1) ? 'Rawat Inap' : 'Rawat Jalan'}</td>`
-							+ `<td>${typeof(v.price_overall) == 'number' ? v.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-							+ `<td>${typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-							+ `<td>${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-							+ `<td>${typeof(v.petshop_fee)== 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>${typeof(v.amount_discount)== 'number' ? v.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-							+ `<td>${typeof(v.fee_doctor_after_discount)== 'number' ? v.fee_doctor_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+							+ `<td>${
+                Number(v.price_overall || 0).toLocaleString('id-ID')
+                // typeof(v.price_overall) == 'number' ? v.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+              }</td>`
+							+ `<td>${
+                Number(v.capital_price || 0).toLocaleString('id-ID')
+                // typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+              }</td>`
+							+ `<td>${
+                Number(v.doctor_fee || 0).toLocaleString('id-ID')
+                // typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+              }</td>`
+							+ `<td>${
+                Number(v.petshop_fee || 0).toLocaleString('id-ID')
+                // typeof(v.petshop_fee)== 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+              }</td>`
+							+ `<td>${
+                Number(v.amount_discount || 0).toLocaleString('id-ID')
+                // typeof(v.amount_discount)== 'number' ? v.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+              }</td>`
+							+ `<td>${
+                Number(v.fee_doctor_after_discount || 0).toLocaleString('id-ID')
+                // typeof(v.fee_doctor_after_discount)== 'number' ? v.fee_doctor_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+              }</td>`
 							+ `<td>${v.created_by}</td>`
 							+ `<td>
 									<button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
