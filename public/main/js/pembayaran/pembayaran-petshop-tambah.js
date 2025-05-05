@@ -140,8 +140,14 @@ $(document).ready(function () {
         + `<td>${lj.category_name}</td>`
         + `<td>${lj.service_name}</td>`
         + `<td>${lj.quantity}</td>`
-        + `<td>${typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td>${typeof (lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${
+          // typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          Number(lj.selling_price || 0).toLocaleString('id-ID')
+        }</td>`
+        + `<td>${
+          // typeof (lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          Number(lj.price_overall || 0).toLocaleString('id-ID')
+        }</td>`
         + `<td><input type="checkbox" index=${idx} class="isBayarJasa"/></td>`
         + `</tr>`;
       ++no;
@@ -183,8 +189,14 @@ $(document).ready(function () {
           + `<td>${lj.category_name}</td>`
           + `<td>${lj.service_name}</td>`
           + `<td>${lj.quantity}</td>`
-          + `<td>${typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof (lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            // typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            Number(lj.selling_price || 0).toLocaleString('id-ID')
+          }</td>`
+          + `<td>${
+            // typeof (lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            Number(lj.price_overall || 0).toLocaleString('id-ID')
+          }</td>`
           + `</tr>`;
         ++no;
       });
@@ -207,8 +219,14 @@ $(document).ready(function () {
         + `<td>${lb.category_name}</td>`
         + `<td>${lb.unit_name}</td>`
         + `<td>${lb.quantity}</td>`
-        + `<td>${typeof (lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td>${typeof (lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${
+          // typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          Number(lb.selling_price || 0).toLocaleString('id-ID')
+        }</td>`
+        + `<td>${
+          // typeof (lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          Number(lb.price_overall || 0).toLocaleString('id-ID')
+        }</td>`
         + `<td><input type="checkbox" index=${idx} class="isBayarBarang"/></td>`
         + `</tr>`;
       ++no;
@@ -253,8 +271,14 @@ $(document).ready(function () {
           + `<td>${lb.category_name}</td>`
           + `<td>${lb.unit_name}</td>`
           + `<td>${lb.quantity}</td>`
-          + `<td>${typeof (lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof (lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            // typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            Number(lb.selling_price || 0).toLocaleString('id-ID')
+          }</td>`
+          + `<td>${
+            // typeof (lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            Number(lb.price_overall || 0).toLocaleString('id-ID')
+          }</td>`
           + `</tr>`;
         ++no;
       });

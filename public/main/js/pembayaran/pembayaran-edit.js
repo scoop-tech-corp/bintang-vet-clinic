@@ -127,14 +127,20 @@ $(document).ready(function() {
         + `<td>${lj.category_name}</td>`
         + `<td>${lj.service_name}</td>`
         + `<td>${lj.quantity}</td>`
-        + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${
+          Number(lj.selling_price || 0).toLocaleString('id-ID')
+          // typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+        }</td>`
         + `<td class="d-flex align-item-c">
             <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px"
             class="form-control diskon-list-jasa ${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
             <span class="${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">%</span>
           </td>`
         + `<td>
-            <span id="totalJasa-${idx}">${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
+            <span id="totalJasa-${idx}">${
+              Number(lj.price_overall || 0).toLocaleString('id-ID')
+              // typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            }</span>
           </td>`
         + `<td>${ lj.status_paid_off && lj.isRevert ? '<span style="text-decoration: line-through;">Lunas</span>'
               : lj.status_paid_off && !lj.isRevert ? 'Lunas'
@@ -221,9 +227,15 @@ $(document).ready(function() {
             + `<td>${lj.category_name}</td>`
             + `<td>${lj.service_name}</td>`
             + `<td>${lj.quantity}</td>`
-            + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${
+              Number(lj.selling_price || 0).toLocaleString('id-ID')
+              // typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            }</td>`
             + `<td>${lj.discount}&nbsp;%</td>`
-            + `<td>${typeof(lj.new_price_overall) == 'number' ? lj.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${
+              Number(lj.new_price_overall || 0).toLocaleString('id-ID')
+              // typeof(lj.new_price_overall) == 'number' ? lj.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            }</td>`
             + `<td>${lj.payment_method ? lj.payment_method : ''}</td>`
             + `</tr>`;
             ++no;
@@ -245,14 +257,20 @@ $(document).ready(function() {
         + `<td>${lb.created_by}</td>`
         + `<td>${lb.group_name}</td>`
         + `<td>${lb.quantity}</td>`
-        + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${
+          Number(lb.each_price || 0).toLocaleString('id-ID')
+          // typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+        }</td>`
         + `<td class="d-flex align-item-c">
             <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px"
             class="form-control diskon-list-barang ${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
             <span class="${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">%</span>
           </td>`
         + `<td>
-            <span id="totalBarang-${idx}">${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
+            <span id="totalBarang-${idx}">${
+              Number(lb.price_overall || 0).toLocaleString('id-ID')
+              // typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            }</span>
           </td>`
         + `<td>${ lb.status_paid_off && lb.isRevert ? '<span style="text-decoration: line-through;">Lunas</span>'
               : lb.status_paid_off && !lb.isRevert ? 'Lunas'
@@ -339,9 +357,15 @@ $(document).ready(function() {
             + `<td>${lb.created_by}</td>`
             + `<td>${lb.group_name}</td>`
             + `<td>${lb.quantity}</td>`
-            + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${
+              Number(lb.each_price || 0).toLocaleString('id-ID')
+              // typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            }</td>`
             + `<td>${lb.discount}&nbsp;%</td>`
-            + `<td>${typeof(lb.new_price_overall) == 'number' ? lb.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+            + `<td>${
+              Number(lb.new_price_overall || 0).toLocaleString('id-ID')
+              // typeof(lb.new_price_overall) == 'number' ? lb.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            }</td>`
             + `<td>${lb.payment_method ? lb.payment_method : ''}</td>`
             + `</tr>`;
             ++no;

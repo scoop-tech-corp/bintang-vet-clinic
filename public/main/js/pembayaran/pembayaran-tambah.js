@@ -218,12 +218,18 @@ $(document).ready(function () {
         + `<td>${lj.category_name}</td>`
         + `<td>${lj.service_name}</td>`
         + `<td>${lj.quantity}</td>`
-        + `<td>${typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${
+          Number(lj.selling_price || 0).toLocaleString('id-ID')
+          // typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+        }</td>`
         + `<td class="d-flex align-item-c">
             <input type="number" min="0" max="100" maxlength="3" class="form-control diskon-list-jasa" index=${idx} value=${lj.discount} style="width:65px">&nbsp;%
           </td>`
         + `<td>
-              <span id="totalJasa-${idx}">${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
+              <span id="totalJasa-${idx}">${
+                Number(lj.price_overall || 0).toLocaleString('id-ID')
+                // typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</span>
           </td>`
         + `<td><input type="checkbox" index=${idx} class="isBayarJasa"/></td>`
         + `</tr>`;
@@ -267,8 +273,14 @@ $(document).ready(function () {
           + `<td>${lj.category_name}</td>`
           + `<td>${lj.service_name}</td>`
           + `<td>${lj.quantity}</td>`
-          + `<td>${typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof (lj.new_price_overall) == 'number' ? lj.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            // typeof (lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            Number(lj.selling_price || 0).toLocaleString('id-ID')
+          }</td>`
+          + `<td>${
+            // typeof (lj.new_price_overall) == 'number' ? lj.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            Number(lj.new_price_overall || 0).toLocaleString('id-ID')
+          }</td>`
           + `</tr>`;
         ++no;
       });
@@ -288,12 +300,18 @@ $(document).ready(function () {
         + `<td>${lb.created_by}</td>`
         + `<td>${lb.group_name}</td>`
         + `<td>${lb.quantity}</td>`
-        + `<td>${typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${
+          // typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          Number(lb.each_price || 0).toLocaleString('id-ID')
+        }</td>`
         + `<td class="d-flex align-item-c">
             <input type="number" min="0" max="100" maxlength="3" class="form-control diskon-list-barang" index=${idx} value=${lb.discount} style="width:65px">&nbsp;%
           </td>`
         + `<td>
-              <span id="totalBarang-${idx}">${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span>
+              <span id="totalBarang-${idx}">${
+                Number(lb.price_overall || 0).toLocaleString('id-ID')
+                // typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</span>
           </td>`
         + `<td><input type="checkbox" index=${idx} class="isBayarBarang"/></td>`
         + `</tr>`;
@@ -337,8 +355,16 @@ $(document).ready(function () {
           + `<td>${lb.created_by}</td>`
           + `<td>${lb.group_name}</td>`
           + `<td>${lb.quantity}</td>`
-          + `<td>${typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof (lb.new_price_overall) == 'number' ? lb.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+
+            // typeof (lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            Number(lb.each_price || 0).toLocaleString('id-ID')
+          }</td>`
+          + `<td>${
+
+            // typeof (lb.new_price_overall) == 'number' ? lb.new_price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+            Number(lb.new_price_overall || 0).toLocaleString('id-ID')
+          }</td>`
           + `</tr>`;
         ++no;
       });
@@ -455,11 +481,15 @@ $(document).ready(function () {
           + `<td>${idx + 1}</td>`
           + `<td>${barang.item_name}</td>`
           + `<td><input type="number" min="0" class="qty-input-barang" index=${idx} value=${barang.total_item}></td>`
-          + `<td>Rp ${barang.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>`
+          + `<td>Rp ${
+            // barang.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+            Number(barang.selling_price || 0).toLocaleString('id-ID')
+          }</td>`
           + `<td>Rp <span id="overallPrice-${idx}">
-              ${typeof(barang.price_overall) == 'number' ?
-                barang.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-                : ''}</span>
+              ${
+                // typeof(barang.price_overall) == 'number' ? barang.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+                Number(barang.price_overall || 0).toLocaleString('id-ID')
+              }</span>
             </td>`
           +`<td>
               <button type="button" class="btn btn-danger btnDeleteSelectedBarang" value=${idx}>
@@ -490,7 +520,7 @@ $(document).ready(function () {
     $('.btnDeleteSelectedBarang').click(function() {
       const getObj = listSelectedBarangPetShop[$(this).val()];
       listBarang.push(getObj);
-      
+
       drawDropdownListBarang();
 
       listSelectedBarangPetShop.splice($(this).val(), 1);
