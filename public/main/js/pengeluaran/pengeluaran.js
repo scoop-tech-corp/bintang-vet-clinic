@@ -224,9 +224,10 @@ $(document).ready(function () {
           `<td>${no}</td>` +
           `<td>${dt.item_name}</td>` +
           `<td>Rp ${
-            typeof dt.amount == "number"
-              ? dt.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-              : ""
+            Number(dt.amount || 0).toLocaleString('id-ID')
+            // typeof dt.amount == "number"
+            //   ? dt.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            //   : ""
           }</td>` +
           `<td>${dt.quantity}</td>` +
           `<td>Rp ${

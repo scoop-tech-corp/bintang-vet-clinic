@@ -207,7 +207,7 @@ $(document).ready(function() {
 
       calculationPay.forEach(calc => total += calc.price_overall_after_discount );
 
-      let totalText = `Rp. ${total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')},00`;
+      let totalText = `Rp. ${Number(total || 0).toLocaleString('id-ID')},00`;
       $('#label-tagihan').text('Total tagihan');
       $('#totalBayarTxt').text(totalText);
     } else {
