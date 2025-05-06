@@ -20,7 +20,7 @@ $(document).ready(function() {
       <li class="active"><a href="#general" data-toggle="tab">Utama</a></li>
       <li><a href="#kelompok_obat" data-toggle="tab">Obat</a></li>
     `);
-    
+
     $('#modal-detail-riwayat-pasien #general').addClass('active in');
     $('#modal-detail-riwayat-pasien #kelompok_obat').removeClass('active in');
   });
@@ -130,7 +130,10 @@ $(document).ready(function() {
           + `<td>${lj.created_by}</td>`
           + `<td>${lj.category_name}</td>`
           + `<td>${lj.service_name}</td>`
-          + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            Number(lj.price_overall || 0).toLocaleString('id-ID')
+            // typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
           + `</tr>`;
           ++no;
       });
@@ -227,7 +230,7 @@ $(document).ready(function() {
     } else {
       rowSelectedListBarang += '<tr><td colspan="9" class="text-center">Tidak ada data.</td></tr>';
     }
-  
+
     return rowSelectedListBarang;
   }
 

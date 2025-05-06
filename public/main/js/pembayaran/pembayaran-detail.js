@@ -69,8 +69,14 @@ $(document).ready(function() {
         + `<td>${lj.category_name}</td>`
         + `<td>${lj.service_name}</td>`
         + `<td>${lj.quantity}</td>`
-        + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${
+          Number(lj.selling_price || 0).toLocaleString('id-ID')
+          // typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+        }</td>`
+        + `<td>${
+          Number(lj.price_overall || 0).toLocaleString('id-ID')
+          // typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+        }</td>`
         + `<td>${lj.status_paid_off ? 'Lunas' : 'Belum Lunas'}</td>`
         + `</tr>`;
         ++no;
@@ -91,8 +97,14 @@ $(document).ready(function() {
           + `<td>${lj.created_by}</td>`
           + `<td>${lj.item_name}</td>`
           + `<td>${lj.total_item}</td>`
-          + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            Number(lj.selling_price || 0).toLocaleString('id-ID')
+            //typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
+          + `<td>${
+            Number(lj.price_overall || 0).toLocaleString('id-ID')
+            // typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
           + `<td>${lj.payment_method}</td>`
           + `</tr>`;
           ++no;
@@ -115,9 +127,15 @@ $(document).ready(function() {
           + `<td>${lj.category_name}</td>`
           + `<td>${lj.service_name}</td>`
           + `<td>${lj.quantity}</td>`
-          + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            Number(lj.selling_price || 0).toLocaleString('id-ID')
+            // typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
           + `<td>${lj.discount} %</td>`
-          + `<td>${typeof(lj.price_overall_after_discount) == 'number' ? lj.price_overall_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            Number(lj.price_overall_after_discount || 0).toLocaleString('id-ID')
+            // typeof(lj.price_overall_after_discount) == 'number' ? lj.price_overall_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
           + `<td>${lj.payment_method}</td>`
           + `</tr>`;
           ++no;
@@ -138,8 +156,14 @@ $(document).ready(function() {
         + `<td>${lb.created_by}</td>`
         + `<td>${lb.group_name}</td>`
         + `<td>${lb.quantity}</td>`
-        + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        + `<td>${
+          Number(lb.each_price || 0).toLocaleString('id-ID')
+          //typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+        }</td>`
+        + `<td>${
+          // typeof(lb.selling_price) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          Number(lb.selling_price || 0).toLocaleString('id-ID')
+        }</td>`
         + `<td>${lb.status_paid_off ? 'Lunas' : 'Belum Lunas'}</td>`
         + `</tr>`;
         ++no;
@@ -160,9 +184,15 @@ $(document).ready(function() {
           + `<td>${lb.created_by}</td>`
           + `<td>${lb.group_name}</td>`
           + `<td>${lb.quantity}</td>`
-          + `<td>${typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            Number(lb.each_price || 0).toLocaleString('id-ID')
+            // typeof(lb.each_price) == 'number' ? lb.each_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
           + `<td>${lb.discount} %</td>`
-          + `<td>${typeof(lb.price_overall_after_discount) == 'number' ? lb.price_overall_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            Number(lb.price_overall_after_discount || 0).toLocaleString('id-ID')
+            // typeof(lb.price_overall_after_discount) == 'number' ? lb.price_overall_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
           + `<td>${lb.payment_method}</td>`
           + `</tr>`;
           ++no;
@@ -175,9 +205,9 @@ $(document).ready(function() {
     if (!data.status_paid_off) {
       let total = 0;
 
-      calculationPay.forEach(calc => total += calc.price_overall_after_discount );
+      calculationPay.forEach(calc => total += parseInt(calc.price_overall_after_discount) );
 
-      let totalText = `Rp. ${total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')},00`;
+      let totalText = `Rp. ${Number(total || 0).toLocaleString('id-ID')},00`;
       $('#label-tagihan').text('Total tagihan');
       $('#totalBayarTxt').text(totalText);
     } else {
