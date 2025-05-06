@@ -162,6 +162,10 @@ Route::get('/laporan-keuangan-rekap', function () {
 	return view('laporan-keuangan.rekap.index');
 });
 
+Route::get('/laporan-keuangan-omset', function () {
+	return view('laporan-keuangan.omset.index');
+});
+
 Route::get('/laporan-keuangan-bulanan/detail/{id}', function () {
 	return view('laporan-keuangan.bulanan.detail-bulanan');
 });

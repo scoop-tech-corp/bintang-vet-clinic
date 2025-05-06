@@ -69,7 +69,7 @@ $(document).ready(function() {
 	$('.input-search-section input').keypress(function(e) {
 		if (e.which == 13) { onSearch($(this).val()); }
 	});
-	
+
 	$('.onOrdering').click(function() {
 		const column = $(this).attr('data');
 		const orderBy = $(this).attr('orderby');
@@ -90,7 +90,7 @@ $(document).ready(function() {
 		loadPenggajian();
 	});
 
-  
+
   $('#pokok').mask("#.##0", {reverse: true, maxlength: false});
   $('#akomodasi').mask("#.##0", {reverse: true, maxlength: false});
   $('#inputInap').mask("#.##0", {reverse: true, maxlength: false});
@@ -107,7 +107,7 @@ $(document).ready(function() {
       loadGajiKaryawan($('#selectedNamaKaryawan').val());
       validationForm();
   });
-  
+
   $('#selectedNamaKaryawan').on('select2:select', function (e) {
     const getIdKaryawan = $(this).val();
     loadGajiKaryawan(getIdKaryawan);
@@ -154,12 +154,12 @@ $(document).ready(function() {
   $('#inputInap').keyup(function () { validationForm(); overallTotalCalculation(); });
   $('#inputOperasi').keyup(function () { validationForm(); overallTotalCalculation(); });
 	$('#inputGrooming').keyup(function () { validationForm(); overallTotalCalculation(); });
-	
+
 	$('.openFormAdd').click(function() {
 		modalState = 'add';
 		$('.modal-title').text('Tambah Penggajian');
     $('#btnSubmitPenggajian').text('Simpan & Cetak');
-    
+
 		refreshForm(); formConfigure();
 	});
 
@@ -282,7 +282,7 @@ $(document).ready(function() {
 				}, complete: function() { $('#loading-screen').hide(); }
 				, error: function(err) {
           if (err.status === 422) {
-            let errText = ''; $('#beErr').empty(); 
+            let errText = ''; $('#beErr').empty();
             $('#modal-confirmation').modal('toggle');
             $('#btnSubmitPenggajian').attr('disabled', true);
             $.each(err.responseJSON.errors, function(idx, v) {
@@ -355,17 +355,38 @@ $(document).ready(function() {
               + ((role.toLowerCase() != 'admin') ? `` : `<td>${v.fullname}</td>`)
               + `<td>${v.date_payed}</td>`
               + ((role.toLowerCase() != 'admin') ? `` : `<td>${v.branch_name}</td>`)
-              + `<td>Rp ${typeof(v.basic_sallary) == 'number' ? v.basic_sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
-              <td>Rp ${typeof(v.accomodation) == 'number' ? v.accomodation.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
-              <td>Rp ${typeof(v.total_turnover) == 'number' ? v.total_turnover.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
-              <td>Rp ${typeof(v.total_inpatient) == 'number' ? v.total_inpatient.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
-              <td>Rp ${typeof(v.total_surgery) == 'number' ? v.total_surgery.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
-							<td>Rp ${typeof(v.total_grooming) == 'number' ? v.total_grooming.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
-              <td>Rp ${typeof(v.total_overall) == 'number' ? v.total_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>`
+              + `<td>Rp ${
+                Number(v.basic_sallary || 0).toLocaleString('id-ID')
+                // typeof(v.basic_sallary) == 'number' ? v.basic_sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>
+              <td>Rp ${
+                Number(v.accomodation || 0).toLocaleString('id-ID')
+                  // typeof(v.accomodation) == 'number' ? v.accomodation.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>
+              <td>Rp ${
+                Number(v.total_turnover || 0).toLocaleString('id-ID')
+                // typeof(v.total_turnover) == 'number' ? v.total_turnover.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>
+              <td>Rp ${
+                Number(v.total_inpatient || 0).toLocaleString('id-ID')
+                // typeof(v.total_inpatient) == 'number' ? v.total_inpatient.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>
+              <td>Rp ${
+                Number(v.total_surgery || 0).toLocaleString('id-ID')
+                // typeof(v.total_surgery) == 'number' ? v.total_surgery.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>
+							<td>Rp ${
+                Number(v.total_grooming || 0).toLocaleString('id-ID')
+                // typeof(v.total_grooming) == 'number' ? v.total_grooming.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>
+              <td>Rp ${
+                Number(v.total_overall || 0).toLocaleString('id-ID')
+                // typeof(v.total_overall) == 'number' ? v.total_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
               +`<td>
                 <button type="button" class="btn btn-info onCetak m-r-3px" value=${v.id}><i class="fa fa-print" aria-hidden="true"></i></button>`
-              + ((role.toLowerCase() != 'admin') ?  
-                `<button type="button" class="btn btn-info openFormDetail" value=${v.id}><i class="fa fa-eye" aria-hidden="true"></i></button>` 
+              + ((role.toLowerCase() != 'admin') ?
+                `<button type="button" class="btn btn-info openFormDetail" value=${v.id}><i class="fa fa-eye" aria-hidden="true"></i></button>`
                 :
                 `<button type="button" class="btn btn-warning openFormEdit" value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-danger openFormDelete" value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>`)
@@ -427,7 +448,7 @@ $(document).ready(function() {
           overallTotalCalculation();
           // validationForm();
 				});
-        
+
         $('.openFormDetail').click(function() {
           const getObj = getData.find(x => x.id == $(this).val());
 					modalState = 'detail';
@@ -449,7 +470,7 @@ $(document).ready(function() {
         $('.onCetak').click(function() {
           processPrint($(this).val());
         });
-			
+
 				$('.openFormDelete').click(function() {
 					getId = $(this).val();
 					modalState = 'delete';
@@ -632,25 +653,25 @@ $(document).ready(function() {
 
 		if (!$('#datepicker').datepicker('getDate')) {
 			$('#tanggalErr1').text('Tanggal harus di isi'); isValidTanggal = false;
-		} else { 
+		} else {
 			$('#tanggalErr1').text(''); isValidTanggal = true;
 		}
 
 		if (!$('#selectedNamaKaryawan').val()) {
 			$('#namaKaryawanErr1').text('Nama karyawan harus di isi'); isValidSelectedKaryawan = false;
-		} else { 
+		} else {
 			$('#namaKaryawanErr1').text(''); isValidSelectedKaryawan = true;
 		}
 
     if (!$('#pokok').val()) {
 			$('#pokokErr1').text('Pokok harus di isi'); isValidPokok = false;
-		} else { 
+		} else {
 			$('#pokokErr1').text(''); isValidPokok = true;
 		}
 
     if (!$('#akomodasi').val()) {
 			$('#akomodasiErr1').text('Akomodasi harus di isi'); isValidAkomodasi = false;
-		} else { 
+		} else {
 			$('#akomodasiErr1').text(''); isValidAkomodasi = true;
 		}
 
@@ -663,25 +684,25 @@ $(document).ready(function() {
 
     if (!$('#inputOmset').val()) {
 			$('#omsetErr1').text('Omset harus di isi'); isValidOmset = false;
-		} else { 
+		} else {
 			$('#omsetErr1').text(''); isValidOmset = true;
 		}
 
     if (!$('#inputInap').val()) {
 			$('#inapErr1').text('Inap harus di isi'); isValidInap = false;
-		} else { 
+		} else {
 			$('#inapErr1').text(''); isValidInap = true;
 		}
 
     if (!$('#inputOperasi').val()) {
 			$('#operasiErr1').text('Operasi harus di isi'); isValidOperasi = false;
-		} else { 
+		} else {
 			$('#operasiErr1').text(''); isValidOperasi = true;
 		}
 
 		if (!$('#inputGrooming').val()) {
 			$('#groomingErr1').text('Grooming harus di isi'); isValidGrooming = false;
-		} else { 
+		} else {
 			$('#groomingErr1').text(''); isValidGrooming = true;
 		}
 
@@ -689,8 +710,8 @@ $(document).ready(function() {
 
     const getTotalKeseluruhan = parseFloat($('#totalKeseluruhan').attr('value'));
 
-		if (!isValidTanggal || !isValidSelectedKaryawan || !isValidPokok || !isValidAkomodasi || !isValidMinusTurnOver 
-				|| !isValidOmset || !isValidInap || !isValidOperasi || !isValidGrooming || isBeErr 
+		if (!isValidTanggal || !isValidSelectedKaryawan || !isValidPokok || !isValidAkomodasi || !isValidMinusTurnOver
+				|| !isValidOmset || !isValidInap || !isValidOperasi || !isValidGrooming || isBeErr
 				|| (getTotalKeseluruhan !== 0 && !getTotalKeseluruhan)) {
 			$('#btnSubmitPenggajian').attr('disabled', true);
 		} else {
