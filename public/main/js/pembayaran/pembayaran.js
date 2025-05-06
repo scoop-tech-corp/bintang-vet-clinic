@@ -309,18 +309,20 @@ $(document).ready(function() {
               + `<td>${v.item_name}</td>`
               + `<td>${v.total_item}</td>`
               + `<td>Rp ${
-                typeof v.each_price == "number"
-                  ? v.each_price
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.each_price || 0).toLocaleString('id-ID')
+                // typeof v.each_price == "number"
+                //   ? v.each_price
+                //       .toString()
+                //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>`
               + `<td>Rp ${
-                typeof v.overall_price == "number"
-                  ? v.overall_price
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.overall_price || 0).toLocaleString('id-ID')
+                // typeof v.overall_price == "number"
+                //   ? v.overall_price
+                //       .toString()
+                //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>`
               + `<td>${v.created_by}</td>`
               + `<td>
