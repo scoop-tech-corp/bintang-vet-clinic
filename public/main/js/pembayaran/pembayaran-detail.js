@@ -205,7 +205,7 @@ $(document).ready(function() {
     if (!data.status_paid_off) {
       let total = 0;
 
-      calculationPay.forEach(calc => total += calc.price_overall_after_discount );
+      calculationPay.forEach(calc => total += parseInt(calc.price_overall_after_discount) );
 
       let totalText = `Rp. ${Number(total || 0).toLocaleString('id-ID')},00`;
       $('#label-tagihan').text('Total tagihan');

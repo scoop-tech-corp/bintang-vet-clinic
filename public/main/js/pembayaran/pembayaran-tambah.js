@@ -380,9 +380,9 @@ $(document).ready(function () {
   function processCalculationTagihan() {
     let total = 0;
 
-    calculationPay.forEach(calc => total += calc.price);
+    calculationPay.forEach(calc => total += parseInt(calc.price));
 
-    let totalText = `Rp. ${total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')},00`;
+    let totalText = `Rp. ${Number(total || 0).toLocaleString('id-ID')},00`;
     $('#totalBayarTxt').text(totalText);
   }
 
