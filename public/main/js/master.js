@@ -47,13 +47,14 @@ $(document).ready(function() {
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').show();
+      $('.menuOmset').show();
     } else if (role === 'resepsionis') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();
       $('.menuKunjungan').show(); $('.menuGudang').show();
       $('.menuPenggajian').show(); $('.menuPeriksa').show();
       $('.menuPengeluaran').show(); $('.menuKeuangan').show();
-      $('.menuRekap').hide();
+      $('.menuRekap').hide(); $('.menuOmset').hide();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
@@ -61,6 +62,7 @@ $(document).ready(function() {
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').hide();
+      $('.menuOmset').hide();
     }
   }
 
@@ -81,7 +83,7 @@ $(document).ready(function() {
         $('.menuPendaftaran').addClass('active');
       } else if (pathName === '/dokter-rawat-jalan' || pathName === '/dokter-rawat-inap') {
         $('.menuDokter').addClass('active');
-      } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan' || pathName === '/laporan-keuangan-rekap') {
+      } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan' || pathName === '/laporan-keuangan-rekap'|| pathName === '/laporan-keuangan-omset') {
         $('.menuKeuangan').addClass('active');
       }
     } else {
