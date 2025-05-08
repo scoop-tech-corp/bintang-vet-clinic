@@ -402,8 +402,14 @@ $(document).ready(function() {
         + `<td>${lj.category_name}</td>`
         + `<td>${lj.service_name}</td>`
         + `<td><input type="number" min="0" class="qty-input-jasa" index=${idx} value=${lj.quantity}></td>`
-        + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        + `<td><span id="totalBarang-jasa-${idx}">${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span></td>`
+        + `<td>${
+          Number(lj.selling_price || 0).toLocaleString('id-ID')
+          // typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+        }</td>`
+        + `<td><span id="totalBarang-jasa-${idx}">${
+          Number(lj.price_overall || 0).toLocaleString('id-ID')
+          // typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+        }</span></td>`
         + `<td>
             <button type="button" class="btn btn-danger btnRemoveSelectedListJasa" value=${idx}>
               <i class="fa fa-trash-o" aria-hidden="true"></i>
