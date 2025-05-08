@@ -246,7 +246,7 @@ $(document).ready(function () {
       fd.append("HargaModal",$("#hargaModalOnBarang").val().replaceAll(".", "")
       );
       fd.append('Profit', $('#label-keuntungan').text().replaceAll('.', ''));
-        
+
       $.ajax({
         url: $(".baseUrl").val() + "/api/pembagian-harga-barang-petshop",
         type: "POST",
@@ -396,7 +396,7 @@ $(document).ready(function () {
       $("#satuanBarangTxt").text("-");
     }
 
-    
+
 
     validationHargaJual();
     validationForm();
@@ -501,25 +501,18 @@ $(document).ready(function () {
               `<td>${v.limit_item}</td>` +
               `<td>${v.expired_date}</td>` +
               `<td>Rp ${
-                typeof v.selling_price == "number"
-                  ? v.selling_price
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.selling_price || 0).toLocaleString('id-ID')
               }</td>` +
               `<td>Rp ${
-                typeof v.capital_price == "number"
-                  ? v.capital_price
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.capital_price || 0).toLocaleString('id-ID')
               }</td>` +
               `<td>Rp ${
-                typeof v.profit == "number"
-                  ? v.profit
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.profit || 0).toLocaleString('id-ID')
+                // typeof v.profit == "number"
+                //   ? v.profit
+                //       .toString()
+                //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>` +
               `<td>${v.branch_name}</td>` +
               `<td>${v.created_by}</td>` +

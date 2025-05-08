@@ -50,14 +50,37 @@ $(document).ready(function() {
               + `<td>${lj.category_name}</td>`
               + `<td>${lj.service_name}</td>`
               + `<td>${lj.quantity}</td>`
-              + `<td>${typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>${typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>${typeof(lj.capital_price) == 'number' ? lj.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>${typeof(lj.doctor_fee) == 'number' ? lj.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>${typeof(lj.petshop_fee) == 'number' ? lj.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>${
+                Number(lj.selling_price || 0).toLocaleString('id-ID')
+                // typeof(lj.selling_price) == 'number' ? lj.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
+              + `<td>${
+                Number(lj.price_overall || 0).toLocaleString('id-ID')
+                // typeof(lj.price_overall) == 'number' ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
+              + `<td>${
+                Number(lj.capital_price || 0).toLocaleString('id-ID')
+                // typeof(lj.capital_price) == 'number' ? lj.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
+              + `<td>${
+                Number(lj.doctor_fee || 0).toLocaleString('id-ID')
+                // typeof(lj.doctor_fee) == 'number' ? lj.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
+              + `<td>${
+                Number(lj.petshop_fee || 0).toLocaleString('id-ID')
+                // typeof(lj.petshop_fee) == 'number' ? lj.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
               + `<td>${lj.discount} %</td>`
-              + `<td>${typeof(lj.amount_discount) == 'number' ? lj.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>${typeof(lj.fee_doctor_after_discount) == 'number' ? lj.fee_doctor_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>${
+                Number(lj.amount_discount || 0).toLocaleString('id-ID')
+                // typeof(lj.amount_discount) == 'number' ? lj.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+              }</td>`
+              + `<td>${
+                Number(lj.fee_doctor_after_discount || 0).toLocaleString('id-ID')
+                // typeof(lj.fee_doctor_after_discount) == 'number' ? lj.fee_doctor_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+              }</td>`
               + `</tr>`;
               ++no1;
           });
@@ -129,14 +152,42 @@ $(document).ready(function() {
         +         `<td>${li.created_by}</td>`
         +         `<td>${li.group_name}</td>`
         +         `<td>${li.quantity}</td>`
-        +         `<td>${typeof(li.selling_price) == 'number' ? li.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        +         `<td>${typeof(li.price_overall) == 'number' ? li.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        +         `<td>${typeof(li.capital_price) == 'number' ? li.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        +         `<td>${typeof(li.doctor_fee) == 'number' ? li.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        +         `<td>${typeof(li.petshop_fee) == 'number' ? li.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        +         `<td>${
+          Number(li.selling_price || 0).toLocaleString('id-ID')
+          // typeof(li.selling_price) == 'number' ? li.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+        }</td>`
+        +         `<td>${
+          Number(li.price_overall || 0).toLocaleString('id-ID')
+          // typeof(li.price_overall) == 'number' ? li.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+        }</td>`
+        +         `<td>${
+          Number(li.capital_price || 0).toLocaleString('id-ID')
+          // typeof(li.capital_price) == 'number' ? li.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+        }</td>`
+        +         `<td>${
+          Number(li.doctor_fee || 0).toLocaleString('id-ID')
+          // typeof(li.doctor_fee) == 'number' ? li.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+        }</td>`
+        +         `<td>${
+          Number(li.petshop_fee || 0).toLocaleString('id-ID')
+          // typeof(li.petshop_fee) == 'number' ? li.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+        }</td>`
         +         `<td>${li.discount}%</td>`
-        +         `<td>${typeof(li.amount_discount) == 'number' ? li.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-        +         `<td>${typeof(li.fee_doctor_after_discount) == 'number' ? li.fee_doctor_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+        +         `<td>${
+          Number(li.amount_discount || 0).toLocaleString('id-ID')
+          // typeof(li.amount_discount) == 'number' ? li.amount_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+        }</td>`
+        +         `<td>${
+          Number(li.fee_doctor_after_discount || 0).toLocaleString('id-ID')
+          // typeof(li.fee_doctor_after_discount) == 'number' ? li.fee_doctor_after_discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+        }</td>`
         +       `</tbody>`
         +  `</table>`
         + `</div>`
@@ -186,11 +237,31 @@ $(document).ready(function() {
           + `<td>${lb.category_name}</td>`
           + `<td>${lb.unit_name}</td>`
           + `<td>${lb.quantity}</td>`
-          + `<td>${typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof(lb.capital_price) == 'number' ? lb.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof(lb.doctor_fee) == 'number' ? lb.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof(lb.petshop_fee) == 'number' ? lb.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            Number(lb.selling_price || 0).toLocaleString('id-ID')
+            // typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+          }</td>`
+          + `<td>${
+            Number(lb.price_overall || 0).toLocaleString('id-ID')
+            // typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+          }</td>`
+          + `<td>${
+            Number(lb.capital_price || 0).toLocaleString('id-ID')
+            // typeof(lb.capital_price) == 'number' ? lb.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+          }</td>`
+          + `<td>${
+            Number(lb.doctor_fee || 0).toLocaleString('id-ID')
+            // typeof(lb.doctor_fee) == 'number' ? lb.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+          }</td>`
+          + `<td>${
+            Number(lb.petshop_fee || 0).toLocaleString('id-ID')
+            // typeof(lb.petshop_fee) == 'number' ? lb.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+
+          }</td>`
           + `</tr>`;
           ++no;
       });
