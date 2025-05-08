@@ -39,6 +39,22 @@ $(document).ready(function() {
       $('.content-header').append('<h2>Selamat datang di Sistem Administrasi Bintang Vet Clinic</h2>')
     }
 
+    const hostname = window.location.hostname;
+
+    if (hostname === 'admin.bintangvet.com' || hostname === 'uat.bintangvet.com' || hostname === '127.0.0.1') {
+
+      if (role === 'admin') {
+        $('.menuOmset').show();
+      } else if (role === 'resepsionis') {
+        $('.menuOmset').hide();
+      } else if (role === 'dokter') {
+        $('.menuOmset').hide();
+      }
+
+    } else {
+      $('.menuOmset').hide();
+    }
+
     if (role === 'admin') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuDokter').show();   $('.menuTindakan').show();
@@ -47,14 +63,13 @@ $(document).ready(function() {
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').show();
-      $('.menuOmset').show();
     } else if (role === 'resepsionis') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();
       $('.menuKunjungan').show(); $('.menuGudang').show();
       $('.menuPenggajian').show(); $('.menuPeriksa').show();
       $('.menuPengeluaran').show(); $('.menuKeuangan').show();
-      $('.menuRekap').hide(); $('.menuOmset').hide();
+      $('.menuRekap').hide();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
@@ -62,7 +77,7 @@ $(document).ready(function() {
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').hide();
-      $('.menuOmset').hide();
+
     }
   }
 
