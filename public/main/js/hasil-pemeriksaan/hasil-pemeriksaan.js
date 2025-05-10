@@ -139,7 +139,8 @@ $(document).ready(function() {
 
 				function generateBedge(status) {
 					let bedge = '';
-					switch (status) {
+          let num = parseInt(status);
+					switch (num) {
 						case 1:
 							bedge = '<span class="label label-success">Selesai</span>';
 							break;
@@ -180,8 +181,8 @@ $(document).ready(function() {
 					const getClassName = this.className;
 					const getNumber = parseFloat($(this).text());
 
-					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
-						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
 
 					if (getClassName.includes('arrow-left')) {
 						getCurrentPage = getCurrentPage - 1;

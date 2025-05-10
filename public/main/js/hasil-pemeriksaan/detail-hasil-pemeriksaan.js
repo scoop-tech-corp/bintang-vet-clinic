@@ -2,7 +2,7 @@
 $(document).ready(function() {
 
   // if (role.toLowerCase() == 'resepsionis') {
-	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;	
+	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	// } else {
     const url = window.location.pathname;
     const stuff = url.split('/');
@@ -27,9 +27,9 @@ $(document).ready(function() {
       success: function(data) {
         const getData = data;
 
-        $('#nomorRegistrasiDetailTxt').text(getData.registration.registration_number); $('#nomorPasienDetailTxt').text(getData.registration.patient_number); 
-        $('#jenisHewanDetailTxt').text(getData.registration.pet_category); $('#namaHewanDetailTxt').text(getData.registration.pet_name); 
-        $('#jenisKelaminDetailTxt').text(getData.registration.pet_gender); 
+        $('#nomorRegistrasiDetailTxt').text(getData.registration.registration_number); $('#nomorPasienDetailTxt').text(getData.registration.patient_number);
+        $('#jenisHewanDetailTxt').text(getData.registration.pet_category); $('#namaHewanDetailTxt').text(getData.registration.pet_name);
+        $('#jenisKelaminDetailTxt').text(getData.registration.pet_gender);
         $('#usiaHewanTahunDetailTxt').text(`${getData.registration.pet_year_age} Tahun`); $('#usiaHewanBulanDetailTxt').text(`${getData.registration.pet_month_age} Bulan`);
         $('#namaPemilikDetailTxt').text(getData.registration.owner_name); $('#alamatPemilikDetailTxt').text(getData.registration.owner_address);
         $('#nomorHpPemilikDetailTxt').text(getData.registration.owner_phone_number);
@@ -51,7 +51,10 @@ $(document).ready(function() {
               + `<td>${lj.service_name}</td>`
               + `<td>${lj.quantity}</td>`
               + `<td>${lj.selling_price}</td>`
-              + `<td>${typeof(lj.price_overall) == 'number'  ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>${
+                Number(lj.price_overall || 0).toLocaleString('id-ID')
+                // typeof(lj.price_overall) == 'number'  ? lj.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
               + `</tr>`;
               ++no1;
           });
@@ -59,7 +62,7 @@ $(document).ready(function() {
         } else {
           $('#detail-list-jasa').append('<tr><td colspan="8" class="text-center">Tidak ada data.</td></tr>');
         }
-        
+
         let rowListDescription = ''; let no = 1;
         $('#detail-list-inpatient tr').remove();
         if (getData.inpatient.length) {
@@ -89,7 +92,7 @@ $(document).ready(function() {
           rowFotoKondPasien = 'Tidak ada foto.';
         }
         $('#section-foto-kondisi-pasien').append(rowFotoKondPasien);
-  
+
       }, complete: function() { $('#loading-screen').hide(); },
       error: function(err) {
         if (err.status == 401) {
@@ -155,21 +158,27 @@ $(document).ready(function() {
           + `<td>${lb.category_name}</td>`
           + `<td>${lb.unit_name}</td>`
           + `<td>${lb.quantity}</td>`
-          + `<td>${typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-          + `<td>${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+          + `<td>${
+            Number(lb.selling_price || 0).toLocaleString('id-ID')
+            // typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
+          + `<td>${
+            Number(lb.price_overall || 0).toLocaleString('id-ID')
+            // typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>`
           + `</tr>`;
           ++no;
       });
     } else {
       rowSelectedListBarang += '<tr><td colspan="9" class="text-center">Tidak ada data.</td></tr>';
     }
-  
+
     return rowSelectedListBarang;
   }
 
   function refreshText() {
-    $('#nomorRegistrasiDetailTxt').text('-'); $('#nomorPasienDetailTxt').text('-'); 
-    $('#jenisHewanDetailTxt').text('-'); $('#namaHewanDetailTxt').text('-'); 
+    $('#nomorRegistrasiDetailTxt').text('-'); $('#nomorPasienDetailTxt').text('-');
+    $('#jenisHewanDetailTxt').text('-'); $('#namaHewanDetailTxt').text('-');
     $('#jenisKelaminDetailTxt').text('-'); $('#nomorHpPemilikDetailTxt').text('-');
     $('#usiaHewanTahunDetailTxt').text(`- Tahun`); $('#usiaHewanBulanDetailTxt').text(`- Bulan`);
     $('#namaPemilikDetailTxt').text('-'); $('#alamatPemilikDetailTxt').text('-');

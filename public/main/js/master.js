@@ -39,6 +39,22 @@ $(document).ready(function() {
       $('.content-header').append('<h2>Selamat datang di Sistem Administrasi Stella Vet Clinic</h2>')
     }
 
+    const hostname = window.location.hostname;
+
+    if (hostname === 'admin.bintangvet.com' || hostname === 'uat.bintangvet.com' || hostname === '127.0.0.1') {
+
+      if (role === 'admin') {
+        $('.menuOmset').show();
+      } else if (role === 'resepsionis') {
+        $('.menuOmset').hide();
+      } else if (role === 'dokter') {
+        $('.menuOmset').hide();
+      }
+
+    } else {
+      $('.menuOmset').hide();
+    }
+
     if (role === 'admin') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuDokter').show();   $('.menuTindakan').show();
@@ -61,6 +77,7 @@ $(document).ready(function() {
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').hide();
+
     }
   }
 
@@ -81,7 +98,7 @@ $(document).ready(function() {
         $('.menuPendaftaran').addClass('active');
       } else if (pathName === '/dokter-rawat-jalan' || pathName === '/dokter-rawat-inap') {
         $('.menuDokter').addClass('active');
-      } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan' || pathName === '/laporan-keuangan-rekap') {
+      } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan' || pathName === '/laporan-keuangan-rekap'|| pathName === '/laporan-keuangan-omset') {
         $('.menuKeuangan').addClass('active');
       }
     } else {
