@@ -179,31 +179,34 @@ $(document).ready(function () {
               `<td>${++idx}</td>` +
               `<td>${v.dates}</td>` +
               `<td>${
-                typeof v.total_omset == "number"
-                  ? v.total_omset
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.total_omset || 0).toLocaleString('id-ID')
+                // typeof v.total_omset == "number"
+                //   ? v.total_omset.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>` +
               `<td>${
-                typeof v.discount == "number"
-                  ? v.discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.discount || 0).toLocaleString('id-ID')
+                // typeof v.discount == "number"
+                //   ? v.discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>` +
               `<td>${
-                typeof v.expenses == "number"
-                  ? v.expenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.expenses || 0).toLocaleString('id-ID')
+                // typeof v.expenses == "number"
+                //   ? v.expenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>` +
               `<td>${
-                typeof v.sallary == "number"
-                  ? v.sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.sallary || 0).toLocaleString('id-ID')
+                // typeof v.sallary == "number"
+                //   ? v.sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>` +
               `<td>${
-                typeof v.netto == "number"
-                  ? v.netto.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.netto || 0).toLocaleString('id-ID')
+                // typeof v.netto == "number"
+                //   ? v.netto.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>` +
               `</tr>`;
           });

@@ -147,7 +147,7 @@ function appendDropdownKelompokObat() {
       for (let i = 0 ; i < listKelompokObat.length ; i++) {
         optKelompokObat += `<option value=${listKelompokObat[i].id}>${listKelompokObat[i].group_name} - ${listKelompokObat[i].branch_name} - ${listKelompokObat[i].selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</option>`;
       }
-    } 
+    }
     $(this).append(optKelompokObat);
     $(this).select2().val(getValue).trigger('change');
   });
@@ -179,12 +179,18 @@ function appendListSelectBarang(arrSelectedListBarang, idxKelompokObat) {
       + `<td>${lb.item_name}</td>`
       + `<td>${lb.category_name}</td>`
       + `<td>${lb.unit_name}</td>`
-      + `<td><input type="number" min="0" class="qty-input-barang" idxKelompokObat=${idxKelompokObat} index=${idx} 
+      + `<td><input type="number" min="0" class="qty-input-barang" idxKelompokObat=${idxKelompokObat} index=${idx}
           value=${lb.quantity} ${lb.status_paid_off ? 'disabled': ''}></td>`
-      + `<td>${typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-      + `<td><span id="totalBarang-${idxKelompokObat}-${idx}">${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span></td>`
+      + `<td>${
+        Number(lb.selling_price || 0).toLocaleString('id-ID')
+        // typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+      }</td>`
+      + `<td><span id="totalBarang-${idxKelompokObat}-${idx}">${
+        Number(lb.price_overall || 0).toLocaleString('id-ID')
+        // typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+      }</span></td>`
       + `<td>
-          <button type="button" class="btn btn-danger btnRemoveSelectedListBarang" 
+          <button type="button" class="btn btn-danger btnRemoveSelectedListBarang"
             ${lb.status_paid_off ? 'disabled': ''} idxKelompokObat=${idxKelompokObat} index=${idx}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
         </td>`
       + `</tr>`;
@@ -202,9 +208,9 @@ function processSelectedBarang(selectedId, selected, idx) {
     arrayKelompokObat[idx].selectDropdownBarang.push(selectedId);
     arrayKelompokObat[idx].selectedListBarang.push({
       id: null,
-      price_item_id: getObj.id, 
-      category_name: getObj.category_name, 
-      item_name: getObj.item_name, 
+      price_item_id: getObj.id,
+      category_name: getObj.category_name,
+      item_name: getObj.item_name,
       unit_name: getObj.unit_name,
       selling_price: getObj.selling_price,
       quantity: null, price_overall: null
@@ -243,8 +249,14 @@ function processAppendListSelectedBarang(idxKelompokObat) {
       + `<td>${lb.category_name}</td>`
       + `<td>${lb.unit_name}</td>`
       + `<td><input type="number" min="0" class="qty-input-barang" idxKelompokObat=${idxKelompokObat} index=${idx} value=${lb.quantity}></td>`
-      + `<td>${typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-      + `<td><span id="totalBarang-${idxKelompokObat}-${idx}">${typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</span></td>`
+      + `<td>${
+        Number(lb.selling_price || 0).toLocaleString('id-ID')
+        // typeof(lb.selling_price) == 'number' ? lb.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+      }</td>`
+      + `<td><span id="totalBarang-${idxKelompokObat}-${idx}">${
+        Number(lb.price_overall || 0).toLocaleString('id-ID')
+        // typeof(lb.price_overall) == 'number' ? lb.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+      }</span></td>`
       + `<td>
           <button type="button" class="btn btn-danger btnRemoveSelectedListBarang" idxKelompokObat=${idxKelompokObat} index=${idx}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
         </td>`

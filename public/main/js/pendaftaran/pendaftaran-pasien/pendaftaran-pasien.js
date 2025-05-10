@@ -257,7 +257,8 @@ $(document).ready(function() {
 
 				function generateBedge(status) {
 					let bedge = '';
-					switch (status) {
+          let num = parseInt(status);
+					switch (num) {
 						case 1:
 							bedge = '<span class="label label-success">Diterima</span>';
 							break;
