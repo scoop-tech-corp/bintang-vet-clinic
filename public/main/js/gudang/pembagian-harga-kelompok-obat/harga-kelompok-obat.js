@@ -371,10 +371,22 @@ $(document).ready(function() {
               + `<td>${++idx}</td>`
               + `<td>${v.group_name}</td>`
               + `<td>${v.branch_name}</td>`
-              + `<td>Rp ${typeof(v.selling_price) == 'number' ? v.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>Rp ${typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>Rp ${typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
-              + `<td>Rp ${typeof(v.petshop_fee) == 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''}</td>`
+              + `<td>Rp ${
+                Number(v.selling_price || 0).toLocaleString('id-ID')
+                // typeof(v.selling_price) == 'number' ? v.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
+              + `<td>Rp ${
+                Number(v.capital_price || 0).toLocaleString('id-ID')
+                // typeof(v.capital_price) == 'number' ? v.capital_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
+              + `<td>Rp ${
+                Number(v.doctor_fee || 0).toLocaleString('id-ID')
+                // typeof(v.doctor_fee) == 'number' ? v.doctor_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
+              + `<td>Rp ${
+                Number(v.petshop_fee || 0).toLocaleString('id-ID')
+                // typeof(v.petshop_fee) == 'number' ? v.petshop_fee.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>`
               + `<td>${v.created_by}</td>`
               + `<td>${v.created_at}</td>`
               + ((role.toLowerCase() != 'admin') ? `` : `<td>

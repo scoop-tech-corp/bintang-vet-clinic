@@ -53,11 +53,11 @@ $(document).ready(function () {
     paramUrlSetup.year  = getYear;
     loadPengeluaran();
   });
-  
+
     $(".section-left-box-title").append(
       `<button class="btn btn-info openFormAdd m-r-10px">Tambah</button>`
     );
-    
+
 
     // load karyawan
   loadKaryawan();
@@ -224,12 +224,16 @@ $(document).ready(function () {
           `<td>${no}</td>` +
           `<td>${dt.item_name}</td>` +
           `<td>Rp ${
-            typeof dt.amount == "number"
-              ? dt.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-              : ""
+            Number(dt.amount || 0).toLocaleString('id-ID')
+            // typeof dt.amount == "number"
+            //   ? dt.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+            //   : ""
           }</td>` +
           `<td>${dt.quantity}</td>` +
-          `<td>Rp ${typeof(dt.amount_overall) == 'number' ? dt.amount_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>` +
+          `<td>Rp ${
+            Number(dt.amount_overall || 0).toLocaleString('id-ID')
+            // typeof(dt.amount_overall) == 'number' ? dt.amount_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+          }</td>` +
           `<td>
 							<button type="button" class="btn btn-danger btnRemoveListFinalPengeluaran" value=${idx}>
 								<i class="fa fa-trash-o" aria-hidden="true"></i>
@@ -363,7 +367,7 @@ $(document).ready(function () {
         column: paramUrlSetup.column,
         keyword: paramUrlSetup.keyword,
         branch_id: paramUrlSetup.branchId,
-        month: paramUrlSetup.month, 
+        month: paramUrlSetup.month,
         year: paramUrlSetup.year,
         page: getCurrentPage
       },
@@ -383,8 +387,14 @@ $(document).ready(function () {
 							<td>${v.fullname}</td>
 							<td>${v.item_name}</td>
 							<td>${v.quantity}</td>
-							<td>Rp ${typeof(v.amount) == 'number' ? v.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
-							<td>Rp ${typeof(v.amount_overall) == 'number' ? v.amount_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '' }</td>
+							<td>Rp ${
+                Number(v.amount || 0).toLocaleString('id-ID')
+                // typeof(v.amount) == 'number' ? v.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>
+							<td>Rp ${
+                Number(v.amount_overall || 0).toLocaleString('id-ID')
+                // typeof(v.amount_overall) == 'number' ? v.amount_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</td>
 							<td>${v.created_by}</td>
 							<td>${v.created_at}</td>
 							<td>
@@ -420,7 +430,7 @@ $(document).ready(function () {
           getId = getObj.id;
 
           getDate = getObj.date_spend;
-          
+
           const dateArr = getObj.date_spend.split("/");
           $("#datepicker").datepicker(
             "update",
@@ -430,7 +440,7 @@ $(document).ready(function () {
               parseFloat(dateArr[0])
             )
           );
-          
+
           $("#selectedNamaUser").val(getObj.user_id_spender);
           $("#selectedNamaUser").trigger("change");
           $("#namaItem").val(getObj.item_name);

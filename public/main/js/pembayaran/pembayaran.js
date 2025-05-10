@@ -30,7 +30,7 @@ $(document).ready(function() {
 
   loadMetodePembayaran();
   loadPembayaran();
-  
+
   loadPembayaranPetshop();
 
   $('#selectedMetodePembayaran').on('select2:select', function (e) {
@@ -95,7 +95,7 @@ $(document).ready(function() {
 
   $('#filterCabang').on('select2:select', function () { onFilterCabang($(this).val()); });
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
-  
+
 	$('#filterCabangPet').on('select2:select', function () { onFilterCabangPetShop($(this).val()); });
   $('#filterCabangPet').on("select2:unselect", function () { onFilterCabangPetShop($(this).val()); });
 
@@ -250,7 +250,7 @@ $(document).ready(function() {
 
         $('.openFormDeletePetShop').click(function() {
           getId = $(this).val();
-          
+
 					if (role.toLowerCase() == 'admin') {
             $('#modal-confirmation-pet-shop .modal-title').text('Peringatan');
 						$('#modal-confirmation-pet-shop .box-body').text('Anda yakin ingin menghapus data ini?');
@@ -262,8 +262,8 @@ $(document).ready(function() {
 					const getClassName = this.className;
 					const getNumber = parseFloat($(this).text());
 
-					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
-						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
 
 					if (getClassName.includes('arrow-left')) {
 						getCurrentPage = getCurrentPage - 1;
@@ -309,18 +309,20 @@ $(document).ready(function() {
               + `<td>${v.item_name}</td>`
               + `<td>${v.total_item}</td>`
               + `<td>Rp ${
-                typeof v.each_price == "number"
-                  ? v.each_price
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.each_price || 0).toLocaleString('id-ID')
+                // typeof v.each_price == "number"
+                //   ? v.each_price
+                //       .toString()
+                //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>`
               + `<td>Rp ${
-                typeof v.overall_price == "number"
-                  ? v.overall_price
-                      .toString()
-                      .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                  : ""
+                Number(v.overall_price || 0).toLocaleString('id-ID')
+                // typeof v.overall_price == "number"
+                //   ? v.overall_price
+                //       .toString()
+                //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                //   : ""
               }</td>`
               + `<td>${v.created_by}</td>`
               + `<td>
@@ -351,8 +353,8 @@ $(document).ready(function() {
 					const getClassName = this.className;
 					const getNumber = parseFloat($(this).text());
 
-					if ((getCurrentPage === 1 && getClassName.includes('arrow-left') 
-						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; } 
+					if ((getCurrentPage === 1 && getClassName.includes('arrow-left')
+						|| (getCurrentPage === resp.total_paging && getClassName.includes('arrow-right')))) { return; }
 
 					if (getClassName.includes('arrow-left')) {
 						getCurrentPage = getCurrentPage - 1;
@@ -440,7 +442,7 @@ $(document).ready(function() {
       beforeSend: function () { $('#loading-screen').show(); },
       success: function (data) {
         $('#selectedBarang option').remove();
-  
+
         if (data.length) {
           for (let i = 0 ; i < data.length ; i++) {
             optBarang += `<option value=${data[i].id}>${data[i].item_name}</option>`;
@@ -526,11 +528,15 @@ $(document).ready(function() {
           + `<td>${idx + 1}</td>`
           + `<td>${barang.item_name}</td>`
           + `<td><input type="number" min="0" class="qty-input-barang" index=${idx} value=${barang.total_item}></td>`
-          + `<td>Rp ${barang.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}</td>`
+          + `<td>Rp ${
+            Number(barang.selling_price || 0).toLocaleString('id-ID')
+            // barang.selling_price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+          }</td>`
           + `<td>Rp <span id="overallPrice-${idx}">
-              ${typeof(barang.price_overall) == 'number' ?
-                barang.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-                : ''}</span>
+              ${
+                Number(barang.price_overall || 0).toLocaleString('id-ID')
+                  // typeof(barang.price_overall) == 'number' ? barang.price_overall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
+              }</span>
             </td>`
           +`<td>
               <button type="button" class="btn btn-danger btnDeleteSelectedBarang" value=${idx}>

@@ -189,11 +189,12 @@ $(document).ready(function () {
                 `<td>${++idx}</td>` +
                 `<td>${v.dates}</td>` +
                 `<td>${
-                  typeof v.total_omset == "number"
-                    ? v.total_omset
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.total_omset || 0).toLocaleString('id-ID')
+                  // typeof v.total_omset == "number"
+                  //   ? v.total_omset
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `</tr>`;
             });
@@ -227,84 +228,100 @@ $(document).ready(function () {
                 `<td>${++idx}</td>` +
                 `<td>${v.dates}</td>` +
                 `<td>${
-                  typeof v.total_omset == "number"
-                    ? v.total_omset
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.total_omset || 0).toLocaleString('id-ID')
+                  // typeof v.total_omset == "number"
+                  //   ? v.total_omset
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.veteran_bintaro == "number"
-                    ? v.veteran_bintaro
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.veteran_bintaro || 0).toLocaleString('id-ID')
+                  // typeof v.veteran_bintaro == "number"
+                  //   ? v.veteran_bintaro
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.tanjung_duren_raya == "number"
-                    ? v.tanjung_duren_raya
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.tanjung_duren_raya || 0).toLocaleString('id-ID')
+                  // typeof v.tanjung_duren_raya == "number"
+                  //   ? v.tanjung_duren_raya
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.pasar_rebo == "number"
-                    ? v.pasar_rebo
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.pasar_rebo || 0).toLocaleString('id-ID')
+                  // typeof v.pasar_rebo == "number"
+                  //   ? v.pasar_rebo
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.srengseng_kembangan == "number"
-                    ? v.srengseng_kembangan
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.srengseng_kembangan || 0).toLocaleString('id-ID')
+                  // typeof v.srengseng_kembangan == "number"
+                  //   ? v.srengseng_kembangan
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.kahfi == "number"
-                    ? v.kahfi.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.kahfi || 0).toLocaleString('id-ID')
+                  // typeof v.kahfi == "number"
+                  //   ? v.kahfi
+                  //   .toString()
+                  //   .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.bsd == "number"
-                    ? v.bsd.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.bsd || 0).toLocaleString('id-ID')
+                  // typeof v.bsd == "number"
+                  //   ? v.bsd
+                  //   .toString()
+                  //   .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.kemayoran == "number"
-                    ? v.kemayoran
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.kemayoran || 0).toLocaleString('id-ID')
+                  // typeof v.kemayoran == "number"
+                  //   ? v.kemayoran
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.tanah_abang == "number"
-                    ? v.tanah_abang
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.tanah_abang || 0).toLocaleString('id-ID')
+                  // typeof v.tanah_abang == "number"
+                  //   ? v.tanah_abang
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.rawamangun == "number"
-                    ? v.rawamangun
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.rawamangun || 0).toLocaleString('id-ID')
+                  // typeof v.rawamangun == "number"
+                  //   ? v.rawamangun
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.pondok_gede == "number"
-                    ? v.pondok_gede
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.pondok_gede || 0).toLocaleString('id-ID')
+                  // typeof v.pondok_gede == "number"
+                  //   ? v.pondok_gede
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `<td>${
-                  typeof v.cirendeu == "number"
-                    ? v.cirendeu
-                        .toString()
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                    : ""
+                  Number(v.cirendeu || 0).toLocaleString('id-ID')
+                  // typeof v.cirendeu == "number"
+                  //   ? v.cirendeu
+                  //       .toString()
+                  //       .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+                  //   : ""
                 }</td>` +
                 `</tr>`;
             });
