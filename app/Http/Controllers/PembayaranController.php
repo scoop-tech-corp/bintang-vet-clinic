@@ -422,7 +422,11 @@ class PembayaranController extends Controller
             )
             ->where('detail_service_patients.check_up_result_id', '=', $data->check_up_result_id)
             ->orderBy('detail_service_patients.id', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+              $item->status_paid_off = (int) $item->status_paid_off;
+              return $item;
+          });
 
         $data['services'] = $services;
 
@@ -485,7 +489,11 @@ class PembayaranController extends Controller
                 ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
                 ->groupby('dmg.medicine_group_id')
                 ->orderBy('dmg.id', 'asc')
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                  $item->status_paid_off = (int) $item->status_paid_off;
+                  return $item;
+              });
         }
 
         $data['item'] = $item;
