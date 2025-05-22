@@ -467,7 +467,11 @@ class PembayaranController extends Controller
                 ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
             // ->groupby('dmg.medicine_group_id')
                 ->orderBy('dmg.id', 'asc')
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                  $item->status_paid_off = (int) $item->status_paid_off;
+                  return $item;
+              });
 
         } else {
 
