@@ -1320,10 +1320,13 @@ class PembayaranController extends Controller
             foreach ($data_service as $service) {
 
                 $check_service = DetailServicePatient::find($service['detail_service_patient_id']);
-                $check_service->status_paid_off = 0;
-                $check_service->user_update_id = $request->user()->id;
-                $check_service->updated_at = \Carbon\Carbon::now();
-                $check_service->save();
+
+                if ($check_service) {
+                    $check_service->status_paid_off = 0;
+                    $check_service->user_update_id = $request->user()->id;
+                    $check_service->updated_at = \Carbon\Carbon::now();
+                    $check_service->save();
+                }
 
             }
 
