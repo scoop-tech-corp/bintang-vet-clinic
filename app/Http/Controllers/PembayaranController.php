@@ -422,7 +422,11 @@ class PembayaranController extends Controller
             )
             ->where('detail_service_patients.check_up_result_id', '=', $data->check_up_result_id)
             ->orderBy('detail_service_patients.id', 'desc')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+              $item->status_paid_off = (int) $item->status_paid_off;
+              return $item;
+          });
 
         $data['services'] = $services;
 
@@ -463,7 +467,11 @@ class PembayaranController extends Controller
                 ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
             // ->groupby('dmg.medicine_group_id')
                 ->orderBy('dmg.id', 'asc')
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                  $item->status_paid_off = (int) $item->status_paid_off;
+                  return $item;
+              });
 
         } else {
 
@@ -485,7 +493,11 @@ class PembayaranController extends Controller
                 ->where('dmg.check_up_result_id', '=', $data->check_up_result_id)
                 ->groupby('dmg.medicine_group_id')
                 ->orderBy('dmg.id', 'asc')
-                ->get();
+                ->get()
+                ->map(function ($item) {
+                  $item->status_paid_off = (int) $item->status_paid_off;
+                  return $item;
+              });
         }
 
         $data['item'] = $item;
@@ -1308,10 +1320,13 @@ class PembayaranController extends Controller
             foreach ($data_service as $service) {
 
                 $check_service = DetailServicePatient::find($service['detail_service_patient_id']);
-                $check_service->status_paid_off = 0;
-                $check_service->user_update_id = $request->user()->id;
-                $check_service->updated_at = \Carbon\Carbon::now();
-                $check_service->save();
+
+                if ($check_service) {
+                    $check_service->status_paid_off = 0;
+                    $check_service->user_update_id = $request->user()->id;
+                    $check_service->updated_at = \Carbon\Carbon::now();
+                    $check_service->save();
+                }
 
             }
 
