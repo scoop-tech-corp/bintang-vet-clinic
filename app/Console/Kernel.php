@@ -34,7 +34,7 @@ class Kernel extends ConsoleKernel
 
         // Perbarui usia hewan setiap hari tengah malam
         $schedule->command('pet:update-age')
-            ->dailyAt('00:01')
+            ->dailyAt('00:10')
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/pet-age.log'));
     }

@@ -13,30 +13,30 @@ class UpdatePetAge extends Command
 
     public function handle(): int
     {
-        // Satu query UPDATE — efisien untuk ribuan data sekaligus.
-        // TIMESTAMPDIFF(YEAR,  birth, today)       → selisih tahun penuh
-        // TIMESTAMPDIFF(MONTH, birth, today) % 12  → sisa bulan setelah tahun dikurangi
-        // DATEDIFF(today, birth + tahun + bulan)   → sisa hari setelah tahun+bulan dikurangi
-        $affected = DB::statement("
+        DB::statement("
             UPDATE patients
             SET
-                pet_year_age  = TIMESTAMPDIFF(YEAR, pet_birth_date, CURDATE()),
+                pet_year_age  = CASE
+                                    WHEN pet_day_age + 1 > 30 AND pet_month_age + 1 > 12
+                                        THEN pet_year_age + 1
+                                    ELSE pet_year_age
+                                END,
 
-                pet_month_age = TIMESTAMPDIFF(MONTH, pet_birth_date, CURDATE()) % 12,
+                pet_month_age = CASE
+                                    WHEN pet_day_age + 1 > 30 AND pet_month_age + 1 > 12
+                                        THEN 0
+                                    WHEN pet_day_age + 1 > 30
+                                        THEN pet_month_age + 1
+                                    ELSE pet_month_age
+                                END,
 
-                pet_day_age   = DATEDIFF(
-                                    CURDATE(),
-                                    DATE_ADD(
-                                        DATE_ADD(
-                                            pet_birth_date,
-                                            INTERVAL TIMESTAMPDIFF(YEAR, pet_birth_date, CURDATE()) YEAR
-                                        ),
-                                        INTERVAL (TIMESTAMPDIFF(MONTH, pet_birth_date, CURDATE()) % 12) MONTH
-                                    )
-                                )
-            WHERE pet_birth_date IS NOT NULL
-              AND pet_birth_date <= CURDATE()
-              AND isDeleted = 0
+                pet_day_age   = CASE
+                                    WHEN pet_day_age + 1 > 30
+                                        THEN 0
+                                    ELSE pet_day_age + 1
+                                END
+
+            WHERE isDeleted = 0
         ");
 
         $count = DB::select('SELECT ROW_COUNT() as n')[0]->n ?? 0;
