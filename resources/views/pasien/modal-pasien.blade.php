@@ -47,6 +47,7 @@
               <div class="section-age-animal">
                 <input id="animalAgeYear" type="number" class="form-control" placeholder="Masukan tahun hewan" min="0">
                 <input id="animalAgeMonth" type="number" class="form-control" placeholder="Masukan bulan hewan" min="0">
+                <input id="animalAgeDay" type="number" class="form-control" placeholder="Masukan hari hewan" min="0">
               </div>
               <div id="animalAgeErr1" class="validate-error"></div>
             </div>

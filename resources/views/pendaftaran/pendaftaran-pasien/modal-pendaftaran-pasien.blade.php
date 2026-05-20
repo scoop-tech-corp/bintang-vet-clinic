@@ -37,6 +37,7 @@
                 <td class="detail-label">Usia Hewan</td>
 								<td id="usiaHewanTahunTxt" class="detail-value"></td>
 								<td id="usiaHewanBulanTxt" class="detail-value"></td>
+                <td id="usiaHewanHariTxt" class="detail-value"></td>
               </tr>
               <tr>
                 <td class="detail-label">Nama Pemilik</td>
@@ -52,8 +53,11 @@
               </tr>
             </table>
             <div class="form-group">
-							<label for="keluhan">Keluhan</label>
-							<input id="keluhan" type="text" class="form-control" placeholder="Masukan Keluhan">
+							<label for="keluhanDropdown">Keluhan</label>
+							<select id="keluhanDropdown" class="form-control" style="width:100%">
+								<option value="">Pilih Keluhan</option>
+							</select>
+							<input id="keluhanLainnya" type="text" class="form-control" placeholder="Masukan keluhan lainnya" style="display:none; margin-top:8px;">
 							<div id="keluhanErr1" class="validate-error"></div>
 						</div>
 						<div class="form-group">

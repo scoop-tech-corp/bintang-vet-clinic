@@ -182,6 +182,10 @@ Route::get('/pengeluaran', function () {
 	return view('pengeluaran.index');
 });
 
+Route::get('pendaftaran/cetak/{id}', 'RegistrasiController@cetakRegistrasi');
+
+Route::get('hasil-pemeriksaan/cetak/{id}', 'HasilPemeriksaanController@cetakHasilPemeriksaan');
+
 Route::get('pembayaran/print/{check_up_result_id}/{service_payment}/{item_payment}', 'PembayaranController@print_pdf');
 
 Route::get('penggajian/generate/{id}', 'PenggajianController@generate');

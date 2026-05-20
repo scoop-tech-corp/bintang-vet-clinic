@@ -76,7 +76,7 @@ class PembayaranController extends Controller
         'registrations.complaint',
         'check_up_results.status_outpatient_inpatient',
         'users.fullname as created_by',
-        DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y') as created_at")
+        DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y %H:%i:%s') as created_at")
       );
 
     if ($request->keyword) {

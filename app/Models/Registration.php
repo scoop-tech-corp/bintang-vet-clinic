@@ -13,8 +13,8 @@ class Registration extends Model
   protected $guarded = ['id'];
 
   protected $fillable = [
-    'id_number', 'patient_id', 'complaint',
-    'registrant', 'user_id', 'doctor_user_id', 'acceptance_status', 'is_hide_from_drop_down'
+    'id_number', 'patient_id', 'complaint', 'complaint_id', 'other_complaint',
+    'registrant','pet_year_age', 'pet_month_age', 'pet_day_age', 'user_id', 'doctor_user_id', 'acceptance_status', 'is_hide_from_drop_down'
   ];
 
   // public function check_up_results()

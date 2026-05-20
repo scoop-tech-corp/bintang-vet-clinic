@@ -204,6 +204,9 @@ $(document).ready(function() {
 
         if (getData.length) {
           $.each(getData, function(idx, v) {
+            const isOver24h    = (new Date() - new Date(v.created_at)) > 24 * 60 * 60 * 1000;
+            const editDisabled = role.toLowerCase() === 'dokter' && isOver24h;
+
             listPembayaran += `<tr>`
               + `<td>${++idx}</td>`
               + `<td>${v.registration_number}</td>`
@@ -216,7 +219,8 @@ $(document).ready(function() {
               + `<td>${v.created_by}</td>`
               + `<td>
                   <button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-warning openFormEdit" value=${v.list_of_payment_id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-info onCetak  m-r-3px" value=${v.list_of_payment_id}><i class="fa fa-print" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-warning openFormEdit" ${editDisabled ? 'disabled title="Waktu edit sudah melebihi 24 jam"' : ''} value=${v.list_of_payment_id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-danger openFormDelete"
                     ${role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.list_of_payment_id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 </td>`
@@ -232,6 +236,34 @@ $(document).ready(function() {
 
         $('.openDetail').click(function() {
 					window.location.href = $('.baseUrl').val() + `/pembayaran/detail/${$(this).val()}`;
+        });
+
+        $('.onCetak').click(function() {
+          const listOfPaymentId = $(this).val();
+          $.ajax({
+            url    : $('.baseUrl').val() + '/api/pembayaran/detail',
+            headers: { 'Authorization': `Bearer ${token}` },
+            type   : 'GET',
+            data   : { list_of_payment_id: listOfPaymentId },
+            beforeSend: function() { $('#loading-screen').show(); },
+            success: function(resp) {
+              const checkUpResultId  = resp.check_up_result_id;
+              const servicePayment   = resp.services.length
+                ? resp.services.map(s => ({ detail_service_patient_id: s.detail_service_patient_id, status: null }))
+                : [{ detail_service_patient_id: null, status: null }];
+              const itemPayment      = resp.item.length
+                ? resp.item.map(i => ({ medicine_group_id: i.medicine_group_id, quantity: i.quantity, status: null }))
+                : [{ medicine_group_id: null, quantity: null, status: null }];
+              processPrint(checkUpResultId, JSON.stringify(servicePayment), JSON.stringify(itemPayment));
+            },
+            complete: function() { $('#loading-screen').hide(); },
+            error: function(err) {
+              if (err.status == 401) {
+                localStorage.removeItem('vet-clinic');
+                location.href = $('.baseUrl').val() + '/masuk';
+              }
+            }
+          });
         });
 
 				$('.openFormEdit').click(function() {
@@ -669,6 +701,38 @@ $(document).ready(function() {
   function processPrint(master_payment_id) {
     let url = '/pembayaranpetshop/printreceipt/' + master_payment_id;
     window.open($('.baseUrl').val() + url, '_blank');
+  }
+
+  function processPrint(check_up_result_id, service_payment, item_payment) {
+    let downloadUrl = '/pembayaran/print/' + check_up_result_id + '/' + service_payment + '/' + item_payment;
+    $.ajax({
+      url       : downloadUrl,
+      headers   : { 'Authorization': `Bearer ${token}` },
+      type      : 'GET',
+      xhrFields : { responseType: 'blob' },
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data, status, xhr) {
+        let disposition = xhr.getResponseHeader('content-disposition');
+        let matches  = /"([^"]*)"/.exec(disposition);
+        let filename = (matches != null && matches[1]) ? matches[1] : `receipt-${check_up_result_id}.pdf`;
+        let blob = new Blob([data], { type: 'application/pdf' });
+        let url  = URL.createObjectURL(blob);
+        let a    = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      },
+      complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        if (err.status == 401) {
+          localStorage.removeItem('vet-clinic');
+          location.href = $('.baseUrl').val() + '/masuk';
+        }
+      }
+    });
   }
 
 });
