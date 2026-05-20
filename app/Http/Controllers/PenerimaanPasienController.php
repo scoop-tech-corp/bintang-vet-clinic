@@ -50,7 +50,7 @@ class PenerimaanPasienController extends Controller
                 'user_doctor.username as username_doctor',
                 'users.fullname as created_by',
                 'registrations.acceptance_status',
-                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at"),
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y %H:%i:%s') as created_at"),
                 'users.branch_id as user_branch_id')
             ->where('registrations.acceptance_status', '=', '0')
             ->where('registrations.isDeleted', '=', '0');

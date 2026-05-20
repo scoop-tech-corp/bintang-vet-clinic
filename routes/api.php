@@ -145,6 +145,7 @@ Route::group(['middleware' => ['api']], function () {
 
         //registrasi pasien
         Route::get('registrasi-pasien', 'RegistrasiController@index');
+        Route::get('list-keluhan', 'RegistrasiController@listKeluhan');
         Route::post('registrasi-pasien', 'RegistrasiController@create');
         Route::put('registrasi-pasien', 'RegistrasiController@update');
         Route::delete('registrasi-pasien', 'RegistrasiController@delete');
@@ -254,6 +255,7 @@ Route::group(['middleware' => ['api']], function () {
         //dashboard
         Route::get('dashboard/barchart', 'DashboardController@BarChartPatient');
         Route::get('dashboard/barchart-inpatient', 'DashboardController@BarChartInPatient');
+        Route::get('dashboard/tidak-pengabaran', 'DashboardController@PasienTidakPengabaran');
 
         //penggajian
         Route::get('penggajian/gaji-user', 'PenggajianController@sallary_user');

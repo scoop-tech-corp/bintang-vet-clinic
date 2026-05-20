@@ -104,6 +104,7 @@ $(document).ready(function() {
 	$('#animalName').keyup(function () { validationForm(); });
 	$('#animalAgeYear').keyup(function () { validationForm(); });
 	$('#animalAgeMonth').keyup(function () { validationForm(); });
+	$('#animalAgeDay').keyup(function () { validationForm(); });
 	$('#ownerName').keyup(function () { validationForm(); });
 	$('#ownerAddress').keyup(function () { validationForm(); });
 	$('#ownerTelp').keyup(function () { validationForm(); });
@@ -126,6 +127,7 @@ $(document).ready(function() {
 			fd.append('jenis_kelamin_hewan', $('#animalSex').val());
       fd.append('usia_tahun_hewan', $('#animalAgeYear').val());
       fd.append('usia_bulan_hewan', $('#animalAgeMonth').val());
+      fd.append('usia_hari_hewan', $('#animalAgeDay').val());
       fd.append('id_pemilik', (isTambahPemilik ? '' : ownerId));
 			fd.append('nama_pemilik', ownerNameValue);
 			fd.append('alamat_pemilik', $('#ownerAddress').val());
@@ -182,6 +184,7 @@ $(document).ready(function() {
         jenis_kelamin_hewan: $('#animalSex').val(),
         usia_tahun_hewan: $('#animalAgeYear').val(),
 				usia_bulan_hewan: $('#animalAgeMonth').val(),
+				usia_hari_hewan: $('#animalAgeDay').val(),
         id_pemilik: (isTambahPemilik ? ((ownerId == 0) ? 0 : '') : ownerId),
 				nama_pemilik: ownerNameValue,
 				alamat_pemilik: $('#ownerAddress').val(),
@@ -301,7 +304,7 @@ $(document).ready(function() {
               + `<td>${v.pet_name}</td>`
               + `<td>${v.owner_name}</td>`
               + `<td>${v.pet_gender}</td>`
-              + `<td>${v.pet_year_age} Tahun</td>`
+              + `<td>${v.pet_year_age} Tahun ${v.pet_month_age} Bulan ${v.pet_day_age} Hari</td>`
               + `<td>${v.branch_name}</td>`
               + `<td>${v.created_by}</td>`
               + ((role.toLowerCase() == 'resepsionis') ? `` : `<td>
@@ -347,6 +350,7 @@ $(document).ready(function() {
 					$('#animalName').val(getObj.pet_name);
 					$('#animalAgeYear').val(getObj.pet_year_age);
 					$('#animalAgeMonth').val(getObj.pet_month_age);
+					$('#animalAgeDay').val(getObj.pet_day_age);
           $('#ownerName').val(ownerNameValue);
           $('#ownerAddress').val(getObj.owner_address);
           $('#ownerTelp').val(getObj.owner_phone_number);
@@ -480,7 +484,7 @@ $(document).ready(function() {
 			$('#animalSexErr1').text(''); isValidAnimalSex = true;
     }
 
-    if (!$('#animalAgeYear').val() || !$('#animalAgeMonth').val()) {
+    if (!$('#animalAgeYear').val() || !$('#animalAgeMonth').val()|| !$('#animalAgeDay').val()) {
 			$('#animalAgeErr1').text('Usia Hewan harus di isi'); isValidAnimalAge = false;
 		} else {
 			$('#animalAgeErr1').text(''); isValidAnimalAge = true;
@@ -519,7 +523,7 @@ $(document).ready(function() {
     $('#branch').val(null); $('#branch').trigger('change');
 		$('#animalType').val(null); $('#animalSex').val(null);
     $('#animalName').val(null); $('#ownerTelp').val(null);
-		$('#animalAgeYear').val(null); $('#ownerAddress').val(null);
+		$('#animalAgeYear').val(null); $('#animalAgeDay').val(null); $('#ownerAddress').val(null);
 
     $('#ownerName').val(null); ownerNameValue = ''; ownerId = null;
     $('#ownerDropdown').val(null); $('#ownerDropdown').trigger('change');
@@ -527,6 +531,7 @@ $(document).ready(function() {
     $('#animalSexErr1').text(''); isValidAnimalSex = true;
     $('#branchErr1').text(''); isValidBranch = true;
     $('#animalAgeMonth').val(null); isValidAnimalAgeMonth = true;
+    $('#animalAgeDay').val(null); isValidAnimalAgeDay = true;
     $('#animalTypeErr1').text(''); isValidAnimalType = true;
     $('#animalNameErr1').text('');isValidAnimalName = true;
     $('#animalAgeErr1').text(''); isValidAnimalAgeYear = true;

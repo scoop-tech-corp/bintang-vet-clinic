@@ -32,12 +32,13 @@ class PasienController extends Controller
         'patients.pet_gender',
         'patients.pet_year_age',
         'patients.pet_month_age',
+        'patients.pet_day_age',
         DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
         DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
         DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
         'branches.branch_name',
         'users.fullname as created_by',
-        DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y') as created_at"),
+        DB::raw("DATE_FORMAT(patients.created_at, '%d %b %Y %H:%i:%s') as created_at"),
         'owners.id as owner_id',
         'owners.owner_name as owner_name_new',
         'owners.owner_address as owner_address_new',
@@ -372,6 +373,7 @@ class PasienController extends Controller
       'jenis_kelamin_hewan' => 'required|string|max:50',
       'usia_tahun_hewan' => 'required|numeric|min:0',
       'usia_bulan_hewan' => 'required|numeric|min:0|max:12',
+      'usia_hari_hewan' => 'required|numeric|min:0|max:30',
       // 'nama_pemilik' => 'required|string|max:50',
       // 'alamat_pemilik' => 'required|string|max:100',
       // 'nomor_ponsel_pengirim' => 'required|numeric|digits_between:10,13',
@@ -477,6 +479,12 @@ class PasienController extends Controller
       'pet_gender' => $request->jenis_kelamin_hewan,
       'pet_year_age' => $request->usia_tahun_hewan,
       'pet_month_age' => $request->usia_bulan_hewan,
+      'pet_day_age' => $request->usia_hari_hewan,
+      'pet_birth_date' => \Carbon\Carbon::today()
+          ->subYears((int) $request->usia_tahun_hewan)
+          ->subMonths((int) $request->usia_bulan_hewan)
+          ->subDays((int) $request->usia_hari_hewan)
+          ->toDateString(),
       'owner_name' => '',
       'owner_address' => '',
       'owner_phone_number' => '',
@@ -508,6 +516,7 @@ class PasienController extends Controller
       'jenis_kelamin_hewan' => 'required|string|max:50',
       'usia_tahun_hewan' => 'required|numeric|min:0',
       'usia_bulan_hewan' => 'required|numeric|min:0|max:12',
+      'usia_hari_hewan' => 'required|numeric|min:0|max:30',
       // 'nama_pemilik' => 'required|string|max:50',
       // 'alamat_pemilik' => 'required|string|max:100',
       // 'nomor_ponsel_pengirim' => 'required|numeric|digits_between:10,13',
@@ -622,8 +631,14 @@ class PasienController extends Controller
     $patient->pet_category = $request->kategori_hewan;
     $patient->pet_name = $request->nama_hewan;
     $patient->pet_gender = $request->jenis_kelamin_hewan;
-    $patient->pet_year_age = $request->usia_tahun_hewan;
+    $patient->pet_year_age  = $request->usia_tahun_hewan;
     $patient->pet_month_age = $request->usia_bulan_hewan;
+    $patient->pet_day_age   = $request->usia_hari_hewan;
+    $patient->pet_birth_date = \Carbon\Carbon::today()
+        ->subYears((int) $request->usia_tahun_hewan)
+        ->subMonths((int) $request->usia_bulan_hewan)
+        ->subDays((int) $request->usia_hari_hewan)
+        ->toDateString();
     // $patient->owner_name = $request->nama_pemilik;
     // $patient->owner_address = $request->alamat_pemilik;
     // $patient->owner_phone_number = $request->nomor_ponsel_pengirim;
@@ -691,8 +706,9 @@ class PasienController extends Controller
         'patients.pet_category',
         'patients.pet_name',
         'patients.pet_gender',
-        'patients.pet_year_age',
-        'patients.pet_month_age',
+        'registrations.pet_year_age',
+        'registrations.pet_month_age',
+        'registrations.pet_day_age',
         DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
         DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
         DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
@@ -974,6 +990,7 @@ class PasienController extends Controller
         'patients.pet_gender',
         'patients.pet_year_age',
         'patients.pet_month_age',
+        'patients.pet_day_age',
         DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
         DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
         DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),

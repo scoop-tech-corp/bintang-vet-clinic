@@ -27,7 +27,7 @@ class PenggajianController extends Controller
                     'py.id as id',
                     'py.user_employee_id as user_employee_id',
                     'users.fullname as fullname',
-                    DB::raw("DATE_FORMAT(py.date_payed, '%d/%m/%Y') as date_payed"),
+                    DB::raw("DATE_FORMAT(py.date_payed, '%d %b %Y %H:%i:%s') as date_payed"),
                     'branches.branch_name as branch_name',
                     DB::raw("TRIM(py.basic_sallary)+0 as basic_sallary"),
                     DB::raw("TRIM(py.accomodation)+0 as accomodation"),
@@ -46,6 +46,8 @@ class PenggajianController extends Controller
                     DB::raw("TRIM(py.count_grooming)+0 as count_grooming"),
                     DB::raw("TRIM(py.total_grooming)+0 as total_grooming"),
                     DB::raw("TRIM(py.minus_turnover)+0 as minus_turnover"),
+                    DB::raw("TRIM(py.eat)+0 as eat"),
+                    DB::raw("TRIM(py.fine)+0 as fine"),
                 )
                 ->where('py.isDeleted', '=', 0);
 
@@ -102,6 +104,8 @@ class PenggajianController extends Controller
                     DB::raw("TRIM(py.count_grooming)+0 as count_grooming"),
                     DB::raw("TRIM(py.total_grooming)+0 as total_grooming"),
                     DB::raw("TRIM(py.minus_turnover)+0 as minus_turnover"),
+                    DB::raw("TRIM(py.eat)+0 as eat"),
+                    DB::raw("TRIM(py.fine)+0 as fine"),
                 )
                 ->where('py.isDeleted', '=', 0);
 
@@ -230,6 +234,8 @@ class PenggajianController extends Controller
             'total_grooming' => 'required|numeric|min:0',
 
             'minus_turnover' => 'required|numeric|min:0',
+            'eat' => 'required|numeric|min:0',
+            'fine' => 'required|numeric|min:0',
         ]);
 
         if ($validate->fails()) {
@@ -286,6 +292,8 @@ class PenggajianController extends Controller
             'total_grooming' => $request->total_grooming,
 
             'minus_turnover' => $request->minus_turnover,
+            'eat' => $request->eat,
+            'fine' => $request->fine,
         ]);
 
         return response()->json([
@@ -473,6 +481,8 @@ class PenggajianController extends Controller
             'total_grooming' => 'required|numeric|min:0',
 
             'minus_turnover' => 'required|numeric|min:0',
+            'eat' => 'required|numeric|min:0',
+            'fine' => 'required|numeric|min:0',
         ]);
 
         if ($validate->fails()) {
@@ -528,6 +538,8 @@ class PenggajianController extends Controller
         $payroll->total_grooming = $request->total_grooming;
 
         $payroll->minus_turnover = $request->minus_turnover;
+        $payroll->eat = $request->eat;
+        $payroll->fine = $request->fine;
 
         $payroll->save();
 
@@ -597,6 +609,8 @@ class PenggajianController extends Controller
                 'py.total_inpatient as total_inpatient',
                 'py.total_surgery as total_surgery',
                 'py.total_grooming as total_grooming',
+                'py.eat as eat',
+                'py.fine as fine',
                 DB::raw("TRIM(py.total_overall)+0 as total_overall"),
             )
             ->where('py.id', '=', $request->id)

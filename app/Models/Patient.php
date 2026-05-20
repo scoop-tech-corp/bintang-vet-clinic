@@ -23,6 +23,8 @@ class Patient extends Model
         'pet_gender',
         'pet_year_age',
         'pet_month_age',
+        'pet_day_age',
+        'pet_birth_date',
         'owner_name',
         'owner_address',
         'owner_phone_number',

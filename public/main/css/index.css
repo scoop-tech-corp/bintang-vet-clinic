@@ -25,6 +25,54 @@
   display: flex;
 }
 
+#tidakPengabaranChart {
+  min-height: 280px;
+}
+
+.tidak-pengabaran .table th {
+  background-color: #f7f7f7;
+  white-space: nowrap;
+}
+
+.tidak-pengabaran .table td {
+  vertical-align: middle;
+}
+
+/* ── Tidak Pengabaran header layout ─────────────────────────────────── */
+.tidak-pengabaran-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tidak-pengabaran-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.tidak-pengabaran-tools .tp-datepicker-wrap .input-group {
+  width: auto;
+  margin-bottom: 0;
+}
+
+.tidak-pengabaran-tools .tp-date-input {
+  width: 100px;
+}
+
+.tidak-pengabaran-tools .tp-range-input {
+  min-width: 185px;
+}
+
+.tidak-pengabaran-tools .select2-container {
+  min-width: 150px !important;
+}
+
 @media (max-width: 768px) {
 
   .rawat-inap .box-tools {
@@ -37,5 +85,52 @@
 
   .rawat-inap-filtercabang {
     width: unset; margin-left: unset;
+  }
+
+}
+
+/* tablet: title stacks above tools, tools align left */
+@media (max-width: 991px) {
+  .tidak-pengabaran-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tidak-pengabaran-tools {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* mobile: all controls stack full-width */
+@media (max-width: 767px) {
+  .tidak-pengabaran-tools {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .tidak-pengabaran-tools .btn-group {
+    display: flex;
+    width: 100%;
+  }
+
+  .tidak-pengabaran-tools .btn-group .btn {
+    flex: 1;
+  }
+
+  .tidak-pengabaran-tools .tp-datepicker-wrap,
+  .tidak-pengabaran-tools .tp-datepicker-wrap .input-group {
+    width: 100%;
+  }
+
+  .tidak-pengabaran-tools .tp-date-input,
+  .tidak-pengabaran-tools .tp-range-input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .tidak-pengabaran-tools .select2-container {
+    width: 100% !important;
   }
 }

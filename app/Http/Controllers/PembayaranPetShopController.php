@@ -37,7 +37,7 @@ class PembayaranPetShopController extends Controller
                 'branches.branch_name',
                 'users.id as user_id',
                 'users.fullname as created_by',
-                DB::raw("DATE_FORMAT(mp.created_at, '%d/%m/%Y') as created_at")
+                DB::raw("DATE_FORMAT(mp.created_at, '%d %b %Y %H:%i:%s') as created_at")
             )
             ->where('mp.isDeleted', '=', 0);
 
