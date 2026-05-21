@@ -674,7 +674,7 @@ $(document).ready(function() {
   }
 
   function processPrint(idPayroll) {
-    let url = '/penggajian/generate/' + idPayroll;
+    let url = '/penggajian/generate/' + idPayroll + '?token=' + token;
     window.open($('.baseUrl').val() + url, '_blank');
   }
 

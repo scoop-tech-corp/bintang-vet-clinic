@@ -699,7 +699,7 @@ $(document).ready(function() {
   });
 
   function processPrint(master_payment_id) {
-    let url = '/pembayaranpetshop/printreceipt/' + master_payment_id;
+    let url = '/pembayaranpetshop/printreceipt/' + master_payment_id + '?token=' + token;
     window.open($('.baseUrl').val() + url, '_blank');
   }
 

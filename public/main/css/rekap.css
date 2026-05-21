@@ -15,33 +15,35 @@
   margin: 12px 0;
 }
 
-/* ── Left: date label + pickers ──────────────────────── */
+/* ── Left: periode buttons + date filters ────────────── */
 .section-left-box-title {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
-.label-date {
-  white-space: nowrap;
-  align-self: center;
-  margin-right: 8px;
-}
-
-#monthYearPicker {
-  display: flex;
+/* ── Period date filter containers ───────────────────── */
+.filter-periode-input {
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
-#datepickerFromInput,
-#datepickerToInput {
-  width: 115px !important;
+#filter-mingguan input[type="date"] {
+  width: 140px;
 }
 
-#filterYear {
-  width: 130px !important;
+.filter-sep {
+  white-space: nowrap;
+}
+
+.filter-bulanan-group {
+  width: 160px;
+}
+
+.filter-tahun-select {
+  width: 90px !important;
 }
 
 /* ── Right: download + cabang + periode ──────────────── */
@@ -68,7 +70,8 @@
 }
 
 /* ── Chart ───────────────────────────────────────────── */
-#rekapWidget {
+#rekapWidget,
+#rekapWidgetOmset {
   width: 100%;
   height: 350px;
   min-height: 240px;
@@ -98,13 +101,10 @@
     gap: 8px;
   }
 
-  /* Left: date filters */
   .section-left-box-title {
     width: 100%;
-    flex-wrap: wrap;
   }
 
-  /* Right: controls row — full width, wraps gracefully */
   .section-right-box-title {
     width: 100%;
     flex-wrap: wrap;
@@ -114,14 +114,14 @@
     flex: 0 0 100%;
   }
 
-  /* Both Select2 containers share the row equally */
   .section-right-box-title .select2-container {
     flex: 1 1 0% !important;
     width: auto !important;
     min-width: 130px;
   }
 
-  #rekapWidget {
+  #rekapWidget,
+  #rekapWidgetOmset {
     height: 300px;
   }
 }
@@ -134,36 +134,24 @@
     margin: 8px 0;
   }
 
-  /* Date label stacks above the pickers */
-  .label-date {
-    display: block;
+  /* Filter inputs expand to full row when wrapping */
+  .filter-periode-input {
     width: 100%;
-    margin-right: 0;
-    margin-bottom: 4px;
   }
 
-  #monthYearPicker {
+  #filter-mingguan input[type="date"] {
+    flex: 1;
+    min-width: 120px;
+  }
+
+  .filter-bulanan-group {
     width: 100%;
-    flex-wrap: wrap;
-    gap: 4px;
   }
 
-  /* Each datepicker input-group takes half the row */
-  #monthYearPicker .input-group.date {
-    flex: 1 1 calc(50% - 18px);
-    min-width: 100px;
-  }
-
-  #datepickerFromInput,
-  #datepickerToInput {
+  .filter-tahun-select {
     width: 100% !important;
   }
 
-  #filterYear {
-    width: 100% !important;
-  }
-
-  /* Right section: stack everything */
   .section-right-box-title {
     flex-direction: column;
     align-items: stretch;
@@ -187,7 +175,8 @@
     width: 40%;
   }
 
-  #rekapWidget {
+  #rekapWidget,
+  #rekapWidgetOmset {
     height: 260px;
   }
 }
@@ -196,23 +185,23 @@
    Small phone  ≤ 480px
 ════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
-  /* Datepickers stack vertically (too narrow for side by side) */
-  #monthYearPicker {
+  /* Date range (mingguan) stacks vertically */
+  #filter-mingguan {
     flex-direction: column;
     align-items: stretch;
   }
 
-  #monthYearPicker > span {
-    text-align: center;
-    padding: 2px 0;
-  }
-
-  #monthYearPicker .input-group.date {
+  #filter-mingguan input[type="date"] {
+    width: 100% !important;
     flex: unset;
-    width: 100%;
   }
 
-  #rekapWidget {
+  .filter-sep {
+    text-align: center;
+  }
+
+  #rekapWidget,
+  #rekapWidgetOmset {
     height: 220px;
   }
 
