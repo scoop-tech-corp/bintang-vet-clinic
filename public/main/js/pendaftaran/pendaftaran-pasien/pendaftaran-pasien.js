@@ -320,7 +320,7 @@ $(document).ready(function() {
 
 				$('.onCetak').click(function() {
 					const regisId = $(this).val();
-					window.open($('.baseUrl').val() + '/pendaftaran/cetak/' + regisId, '_blank');
+					window.open($('.baseUrl').val() + '/pendaftaran/cetak/' + regisId + '?token=' + token, '_blank');
 				});
 
 				$('.openFormDelete').click(function() {

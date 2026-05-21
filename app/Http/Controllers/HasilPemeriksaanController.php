@@ -52,22 +52,17 @@ class HasilPemeriksaanController extends Controller
             ->where('check_up_results.isDeleted', '=', 0);
 
         if ($request->keyword) {
-            $res = $this->Search($request);
-            if ($res) {
-                $data = $data->Where($res[0], 'like', '%' . $request->keyword . '%');
-
-                for ($i = 1; $i < count($res); $i++) {
-
-                    $data = $data->orWhere($res[$i], 'like', '%' . $request->keyword . '%');
-                }
-
-            } else {
-                $data = [];
-                return response()->json([
-                    'total_paging' => 0,
-                    'data' => $data
-                ], 200);
-            }
+            $keyword = '%' . $request->keyword . '%';
+            $data = $data->where(function ($q) use ($keyword) {
+                $q->where('registrations.id_number',  'like', $keyword)
+                  ->orWhere('patients.id_member',      'like', $keyword)
+                  ->orWhere('patients.pet_category',   'like', $keyword)
+                  ->orWhere('patients.pet_name',       'like', $keyword)
+                  ->orWhere('patients.owner_name',     'like', $keyword)
+                  ->orWhere('owners.owner_name',       'like', $keyword)
+                  ->orWhere('registrations.complaint', 'like', $keyword)
+                  ->orWhere('users.fullname',          'like', $keyword);
+            });
         }
 
         if ($request->user()->role == 'dokter') {
@@ -101,299 +96,6 @@ class HasilPemeriksaanController extends Controller
             'total_paging' => ceil($total_paging),
             'data' => $data
         ], 200);
-    }
-
-    private function Search($request)
-    {
-        $temp_column = null;
-
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select(
-                'registrations.id_number',
-                'patients.id_member',
-                'patients.pet_category',
-                'patients.pet_name',
-                'patients.owner_name',
-                'registrations.complaint',
-                'users.fullname'
-            )
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
-
-        if ($request->keyword) {
-            $data = $data->where('registrations.id_number', 'like', '%' . $request->keyword . '%');
-        }
-
-        $data = $data->get();
-
-        if (count($data)) {
-            $temp_column[] = 'registrations.id_number';
-            // return $temp_column;
-        }
-        //============================================
-
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select(
-                'registrations.id_number',
-                'patients.id_member',
-                'patients.pet_category',
-                'patients.pet_name',
-                'patients.owner_name',
-                'registrations.complaint',
-                'users.fullname'
-            )
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
-
-        if ($request->keyword) {
-            $data = $data->where('patients.id_member', 'like', '%' . $request->keyword . '%');
-        }
-
-        $data = $data->get();
-
-        if (count($data)) {
-            $temp_column[] = 'patients.id_member';
-            // return $temp_column;
-        }
-        //============================================
-
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select(
-                'registrations.id_number',
-                'patients.id_member',
-                'patients.pet_category',
-                'patients.pet_name',
-                'patients.owner_name',
-                'registrations.complaint',
-                'users.fullname'
-            )
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
-
-        if ($request->keyword) {
-            $data = $data->where('patients.pet_category', 'like', '%' . $request->keyword . '%');
-        }
-
-        $data = $data->get();
-
-        if (count($data)) {
-            $temp_column[] = 'patients.pet_category';
-            // return $temp_column;
-        }
-        //============================================
-
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select(
-                'registrations.id_number',
-                'patients.id_member',
-                'patients.pet_category',
-                'patients.pet_name',
-                'patients.owner_name',
-                'registrations.complaint',
-                'users.fullname'
-            )
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
-
-        if ($request->keyword) {
-            $data = $data->where('patients.pet_name', 'like', '%' . $request->keyword . '%');
-        }
-
-        $data = $data->get();
-
-        if (count($data)) {
-            $temp_column[] = 'patients.pet_name';
-            // return $temp_column;
-        }
-        //============================================
-
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->join('owners', 'patients.owner_id', '=', 'owners.id')
-            ->select(
-                'registrations.id_number',
-                'patients.id_member',
-                'patients.pet_category',
-                'patients.pet_name',
-                'patients.owner_name',
-                //DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
-                'registrations.complaint',
-                'users.fullname'
-            )
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
-
-        if ($request->keyword) {
-            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%');
-            //->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
-        }
-
-        $data = $data->get();
-
-        if (count($data)) {
-            $temp_column[] = 'patients.owner_name';
-            // return $temp_column;
-        }
-        //============================================
-
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->join('owners', 'patients.owner_id', '=', 'owners.id')
-            ->select(
-                'registrations.id_number',
-                'patients.id_member',
-                'patients.pet_category',
-                'patients.pet_name',
-                'owners.owner_name',
-                //DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
-                'registrations.complaint',
-                'users.fullname'
-            )
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
-
-        if ($request->keyword) {
-            $data = $data->where('owners.owner_name', 'like', '%' . $request->keyword . '%');
-            //->orwhere('owners.owner_name', 'like', '%' . $request->keyword . '%');
-        }
-
-        $data = $data->get();
-
-        if (count($data)) {
-            $temp_column[] = 'owners.owner_name';
-            // return $temp_column;
-        }
-        //============================================
-
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select(
-                'registrations.id_number',
-                'patients.id_member',
-                'patients.pet_category',
-                'patients.pet_name',
-                'patients.owner_name',
-                'registrations.complaint',
-                'users.fullname'
-            )
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
-
-        if ($request->keyword) {
-            $data = $data->where('registrations.complaint', 'like', '%' . $request->keyword . '%');
-        }
-
-        $data = $data->get();
-
-        if (count($data)) {
-            $temp_column[] = 'registrations.complaint';
-            // return $temp_column;
-        }
-        //============================================
-
-        $data = DB::table('check_up_results')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->select(
-                'registrations.id_number',
-                'patients.id_member',
-                'patients.pet_category',
-                'patients.pet_name',
-                'patients.owner_name',
-                'registrations.complaint',
-                'users.fullname'
-            )
-            ->where('check_up_results.isDeleted', '=', 0);
-
-        if ($request->user()->role == 'dokter') {
-            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-        }
-
-        if ($request->branch_id && $request->user()->role == 'admin') {
-            $data = $data->where('users.branch_id', '=', $request->branch_id);
-        }
-
-        if ($request->keyword) {
-            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
-        }
-
-        $data = $data->get();
-
-        if (count($data)) {
-            $temp_column[] = 'users.fullname';
-            // return $temp_column;
-        }
-        //============================================
-
-        return $temp_column;
     }
 
     public function create(Request $request)
@@ -858,7 +560,7 @@ class HasilPemeriksaanController extends Controller
             ->where('user_id', $request->user()->id)->delete();
 
         if ($request->hasfile('filenames')) {
-            foreach ($files as $file) {
+            foreach ($request->file('filenames') as $file) {
 
                 foreach ($file as $fil) {
 
@@ -868,11 +570,11 @@ class HasilPemeriksaanController extends Controller
 
                     $fileName = "/image_check_up_result/" . $name;
 
-                    $file = new ImagesCheckUpResults();
-                    $file->image = $fileName;
-                    $file->check_up_result_id = $item->id;
-                    $file->user_id = $request->user()->id;
-                    $file->save();
+                    $imageFile = new ImagesCheckUpResults();
+                    $imageFile->image = $fileName;
+                    $imageFile->check_up_result_id = $item->id;
+                    $imageFile->user_id = $request->user()->id;
+                    $imageFile->save();
                 }
             }
         }
@@ -1901,7 +1603,7 @@ class HasilPemeriksaanController extends Controller
         );
     }
 
-    private function update_item($list_of_medicine, $add_parent, $check_up_result, $request)
+    private function update_item(array $list_of_medicine, Detail_medicine_group_check_up_result $add_parent, CheckUpResult $check_up_result, Request $request)
     {
         foreach ($list_of_medicine as $value_item) {
 
@@ -2598,7 +2300,7 @@ class HasilPemeriksaanController extends Controller
         return response()->json($data, 200);
     }
 
-    public function cetakHasilPemeriksaan($id)
+    public function cetakHasilPemeriksaan(int $id)
     {
         $data = CheckUpResult::find($id);
 

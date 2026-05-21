@@ -163,7 +163,7 @@ $(document).ready(function() {
         });
 
         $('.onCetak').click(function() {
-          window.open($('.baseUrl').val() + '/hasil-pemeriksaan/cetak/' + $(this).val(), '_blank');
+          window.open($('.baseUrl').val() + '/hasil-pemeriksaan/cetak/' + $(this).val() + '?token=' + token, '_blank');
         });
 
 				$('.openFormEdit').click(function() {
