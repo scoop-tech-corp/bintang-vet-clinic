@@ -272,6 +272,21 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('pengeluaran', 'PengeluaranController@create');
         Route::put('pengeluaran', 'PengeluaranController@update');
         Route::delete('pengeluaran', 'PengeluaranController@delete');
+
+        //shift
+        Route::get('shift', 'ShiftController@index');
+        Route::get('shift/dropdown', 'ShiftController@dropdown');
+        Route::post('shift', 'ShiftController@create');
+        Route::put('shift', 'ShiftController@update');
+        Route::put('shift/toggle-status', 'ShiftController@toggleStatus');
+        Route::delete('shift', 'ShiftController@delete');
+
+        //absensi
+        Route::get('absensi/cek-hari-ini', 'AbsensiController@cekHariIni');
+        Route::post('absensi/masuk', 'AbsensiController@masuk');
+        Route::post('absensi/keluar', 'AbsensiController@keluar');
+        Route::get('absensi/export', 'AbsensiController@export');
+        Route::get('absensi', 'AbsensiController@index');
     });
 });
 

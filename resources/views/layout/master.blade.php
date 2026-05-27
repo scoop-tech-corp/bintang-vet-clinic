@@ -33,6 +33,25 @@
 	<link rel="stylesheet" type='text/css' href="{{ asset('main/css/input-custom.css') }}">
 	<link rel="stylesheet" type='text/css' href="{{ asset('main/css/global.css') }}">
 	@yield('css-content')
+  <style>
+    #banner-absen-keluar {
+      display: none;
+      background: #f39c12;
+      color: #fff;
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    #banner-absen-keluar .banner-text { flex: 1; }
+    #video-keluar { width: 100%; border-radius: 6px; background: #000; }
+    #canvas-keluar { display: none; }
+    #preview-keluar { width: 100%; border-radius: 6px; display: none; border: 2px solid #00a65a; }
+    .jam-keluar-realtime { font-size: 26px; font-weight: bold; color: #3c8dbc; text-align: center; margin-bottom: 12px; }
+    .foto-keluar-actions { text-align: center; margin-top: 8px; }
+  </style>
 
   <!-- Google Font -->
   <link rel="stylesheet"
@@ -121,6 +140,17 @@
 
 		<!-- Content Wrapper. Contains page content -->
 		<div class="content-wrapper">
+
+      <!-- Banner Absen Keluar -->
+      <div id="banner-absen-keluar" style="display:none; background:#f39c12; color:#fff; padding:10px 20px; font-weight:600; font-size:14px;">
+        <span class="banner-text">
+          <i class="fa fa-clock-o"></i>&nbsp; Anda belum absen pulang hari ini!
+        </span>
+        <button id="btn-buka-modal-keluar" class="btn btn-sm btn-white" style="color:#f39c12; font-weight:700;">
+          <i class="fa fa-sign-out"></i> Absen Pulang Sekarang
+        </button>
+      </div>
+
 			<!-- Content Header (Page header) -->
 			<section class="content-header">
 				{{-- <ol class="breadcrumb">
@@ -159,9 +189,49 @@
 				immediately after the control sidebar -->
 		<div class="control-sidebar-bg"></div>
 
+    <!-- Modal Absen Keluar (Pulang) -->
+    <div class="modal fade" id="modal-absen-keluar" tabindex="-1" data-backdrop="static" data-keyboard="false">
+      <div class="modal-dialog" style="width:500px; max-width:95%;">
+        <div class="modal-content">
+          <div class="modal-header" style="background:#f39c12; color:#fff;">
+            <h4 class="modal-title"><i class="fa fa-sign-out"></i> Absen Pulang</h4>
+          </div>
+          <div class="modal-body">
+
+            <div class="jam-keluar-realtime" id="jam-absen-keluar">--:--:--</div>
+
+            <div class="form-group">
+              <label>Foto Selfie <span class="text-danger">*</span></label>
+              <video id="video-keluar" autoplay playsinline></video>
+              <canvas id="canvas-keluar"></canvas>
+              <img id="preview-keluar" src="" alt="Foto selfie pulang">
+              <div class="foto-keluar-actions">
+                <button type="button" class="btn btn-sm btn-info m-t-5px" id="btn-ambil-foto-keluar">
+                  <i class="fa fa-camera"></i> Ambil Foto
+                </button>
+                <button type="button" class="btn btn-sm btn-default m-t-5px" id="btn-ulangi-foto-keluar" style="display:none;">
+                  <i class="fa fa-refresh"></i> Ulangi
+                </button>
+              </div>
+            </div>
+
+            <div id="alert-absen-keluar" class="alert" style="display:none;"></div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" id="btn-batal-keluar">Batal</button>
+            <button type="button" class="btn btn-warning" id="btn-submit-keluar" disabled>
+              <i class="fa fa-check"></i> Konfirmasi Pulang
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 	<!-- ./wrapper -->
 		<script src="{{ asset('main/js/master.js') }}"></script>
+		<script src="{{ asset('main/js/absensi/absensi-keluar.js') }}"></script>
 
 		@yield('vue-content')
 

@@ -63,6 +63,8 @@ $(document).ready(function() {
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').show();
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').show(); $('.menuLaporanAbsensi').show();
     } else if (role === 'resepsionis') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();
@@ -70,6 +72,8 @@ $(document).ready(function() {
       $('.menuPenggajian').show(); $('.menuPeriksa').show();
       $('.menuPengeluaran').show(); $('.menuKeuangan').show();
       $('.menuRekap').hide();
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
@@ -77,7 +81,8 @@ $(document).ready(function() {
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').hide();
-
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
     }
   }
 
@@ -100,6 +105,8 @@ $(document).ready(function() {
         $('.menuDokter').addClass('active');
       } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan' || pathName === '/laporan-keuangan-rekap'|| pathName === '/laporan-keuangan-omset') {
         $('.menuKeuangan').addClass('active');
+      } else if (pathName === '/shift' || pathName === '/absensi') {
+        $('.menuAbsensi').addClass('active');
       }
     } else {
       // additional custom url
