@@ -968,6 +968,16 @@ $(document).ready(function () {
   }
   // ── End Tidak Pengabaran ───────────────────────────────────────────────────
 
+  // Hide tidak-pengabaran section when Pet Shop tab is active
+  $('a[href="#pet_shop"]').on("shown.bs.tab", function () {
+    $(".tidak-pengabaran").hide();
+  });
+  $('a[href="#clinic"]').on("shown.bs.tab", function () {
+    if (role === "admin") {
+      $(".tidak-pengabaran").show();
+    }
+  });
+
   function loadCabang() {
     $.ajax({
       url: $(".baseUrl").val() + "/api/cabang",

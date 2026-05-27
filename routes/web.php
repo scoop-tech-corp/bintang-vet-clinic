@@ -252,3 +252,11 @@ Route::post('/print', function(Request $request) {
 Route::get('/unauthorized', function () {
 	return view('errors.unauthorized');
 });
+
+Route::get('/shift', function () {
+	return view('absensi.shift');
+});
+
+Route::get('/absensi', function () {
+	return view('absensi.index');
+});
