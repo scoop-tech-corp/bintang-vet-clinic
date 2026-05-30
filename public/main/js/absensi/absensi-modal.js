@@ -225,6 +225,7 @@
       latitude: latitude,
       longitude: longitude,
       alamat: alamat,
+      keterangan: $('#input-keterangan').val(),
     };
 
     axios.post(baseUrl + '/api/absensi/masuk', payload, {

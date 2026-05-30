@@ -33,9 +33,10 @@ class AbsensiController extends Controller
         $validator = Validator::make($request->all(), [
             'shift_id' => 'required|integer',
             'foto'     => 'required|string',
-            'latitude' => 'nullable|numeric',
-            'longitude'=> 'nullable|numeric',
-            'alamat'   => 'nullable|string',
+            'latitude'    => 'nullable|numeric',
+            'longitude'   => 'nullable|numeric',
+            'alamat'      => 'nullable|string',
+            'keterangan'  => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -69,11 +70,12 @@ class AbsensiController extends Controller
             'shift_id'   => $request->shift_id,
             'tanggal'    => $today,
             'jam_masuk'  => $jamSekarang,
-            'latitude'   => $request->latitude,
-            'longitude'  => $request->longitude,
-            'alamat'     => $request->alamat,
-            'foto_masuk' => $fotoPath,
-            'status'     => $status,
+            'latitude'    => $request->latitude,
+            'longitude'   => $request->longitude,
+            'alamat'      => $request->alamat,
+            'keterangan'  => $request->keterangan,
+            'foto_masuk'  => $fotoPath,
+            'status'      => $status,
         ]);
 
         $pesan = $status === 'terlambat' ? 'Absen masuk berhasil (Terlambat).' : 'Absen masuk berhasil!';
@@ -136,6 +138,7 @@ class AbsensiController extends Controller
                 'a.latitude',
                 'a.longitude',
                 'a.alamat',
+                'a.keterangan',
                 'a.status'
             );
 

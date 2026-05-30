@@ -64,9 +64,10 @@ class DashboardController extends Controller
       ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
       ->join('users', 'cur.user_id', '=', 'users.id')
       ->join('branches', 'users.branch_id', '=', 'branches.id')
-      ->select(DB::raw('COUNT(cur.id) as total_patient'), 'branches.branch_name')
+      ->select(DB::raw('COUNT(DISTINCT reg.patient_id) as total_patient'), 'branches.branch_name')
       ->where('reg.isDeleted', '=', 0)
-      ->where('cur.status_outpatient_inpatient', '=', 1);
+      ->where('cur.status_outpatient_inpatient', '=', 1)
+      ->where('cur.status_finish', '=', 0);
 
     $periode = $request->periode ?? 'bulanan';
 

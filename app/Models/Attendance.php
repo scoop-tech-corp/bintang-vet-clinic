@@ -17,6 +17,7 @@ class Attendance extends Model
         'latitude',
         'longitude',
         'alamat',
+        'keterangan',
         'status',
     ];
 }

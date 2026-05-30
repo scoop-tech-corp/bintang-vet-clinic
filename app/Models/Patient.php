@@ -19,6 +19,8 @@ class Patient extends Model
     protected $fillable = ['branch_id',
         'id_member',
         'pet_category',
+        'pet_category_id',
+        'other_pet_category',
         'pet_name',
         'pet_gender',
         'pet_year_age',
@@ -33,4 +35,9 @@ class Patient extends Model
         'update_by',
         'deleted_by',
         'deleted_at'];
+
+    public function petCategory()
+    {
+        return $this->belongsTo(PetCategory::class, 'pet_category_id');
+    }
 }

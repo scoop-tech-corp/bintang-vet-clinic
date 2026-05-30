@@ -28,21 +28,49 @@
     @media (min-width: 768px) {
       #modal-absensi .modal-dialog { width: 680px; }
     }
-    #video-selfie  { width: 100%; border-radius: 6px; background: #000; }
-    #canvas-selfie { display: none; }
+    #video-selfie   { width: 100%; border-radius: 6px; background: #000; }
+    #canvas-selfie  { display: none; }
     #preview-selfie { width: 100%; border-radius: 6px; display: none; border: 2px solid #00a65a; }
-    #peta-absensi  { height: 150px; border-radius: 6px; background: #eee; }
+    #peta-absensi   { height: 150px; border-radius: 6px; background: #eee; }
     @media (min-width: 768px) {
       #peta-absensi { height: 200px; }
     }
-    .jam-realtime  { font-size: 22px; font-weight: bold; color: #3c8dbc; text-align: center; margin-bottom: 8px; }
+    .jam-realtime    { font-size: 22px; font-weight: bold; color: #3c8dbc; text-align: center; margin-bottom: 8px; }
     @media (min-width: 768px) {
-      .jam-realtime { font-size: 28px; margin-bottom: 10px; }
+      .jam-realtime  { font-size: 28px; margin-bottom: 10px; }
     }
     .tanggal-absensi { text-align: center; color: #555; margin-bottom: 12px; font-size: 13px; }
     .status-lokasi   { font-size: 12px; color: #777; margin-top: 6px; }
     .section-kamera  { position: relative; }
     .foto-actions    { text-align: center; margin-top: 8px; }
+
+    /* ── Scrollable body agar modal tidak melampaui tinggi layar ── */
+    #modal-absensi .modal-body {
+      max-height: calc(100vh - 130px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ── Mobile kecil (≤480px) ── */
+    @media (max-width: 480px) {
+      .jam-realtime { font-size: 18px; }
+
+      #modal-absensi .modal-body {
+        padding: 10px;
+      }
+
+      #modal-absensi .modal-footer {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      #modal-absensi .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+      }
+    }
   </style>
 </head>
 <body class="hold-transition login-page">
@@ -133,6 +161,12 @@
           <div class="status-lokasi" id="status-lokasi">
             <i class="fa fa-spinner fa-spin"></i> Mendeteksi lokasi...
           </div>
+        </div>
+
+        <!-- Keterangan -->
+        <div class="form-group">
+          <label>Keterangan</label>
+          <textarea class="form-control" id="input-keterangan" rows="3" placeholder="Masukkan keterangan (opsional)"></textarea>
         </div>
 
         <div id="alert-absensi" class="alert" style="display:none;"></div>

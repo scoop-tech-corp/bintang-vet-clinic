@@ -24,7 +24,7 @@
           <label style="margin:0; white-space:nowrap;">Filter Cabang:</label>
           <select class="form-control input-sm" v-model="filterBranchId" @change="loadShift" style="min-width:200px;">
             <option value="">Semua Cabang</option>
-            <option v-for="c in listCabang" :key="c.connection + '_' + c.id" :value="c.id">@{{ c.branch_name }}</option>
+            <option v-for="c in listCabang" :key="c.id" :value="c.id">@{{ c.branch_name }}</option>
           </select>
         </div>
       </div>
@@ -105,7 +105,7 @@
             <label>Cabang <span class="text-danger">*</span></label>
             <select class="form-control" v-model="form.id_cabang">
               <option value="">-- Pilih Cabang --</option>
-              <option v-for="c in listCabangForm" :key="c.connection + '_' + c.id" :value="c.id">@{{ c.branch_name }}</option>
+              <option v-for="c in listCabangForm" :key="c.id" :value="c.id">@{{ c.branch_name }}</option>
             </select>
             <span class="help-block text-danger" v-if="errors.id_cabang">@{{ errors.id_cabang }}</span>
           </div>

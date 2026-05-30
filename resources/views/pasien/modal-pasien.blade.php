@@ -24,7 +24,10 @@
             </div>
             <div class="form-group">
               <label for="animalType">Jenis Hewan</label>
-              <input id="animalType" type="text" class="form-control" placeholder="Masukan Jenis Hewan">
+              <select id="animalType" class="form-control" style="width: 100%">
+                <option value="">Pilih Jenis Hewan</option>
+              </select>
+              <input id="otherAnimalType" type="text" class="form-control" placeholder="Masukan Jenis Hewan Lainnya" style="display:none; margin-top:8px;">
               <div id="animalTypeErr1" class="validate-error"></div>
             </div>
             <div class="form-group">
