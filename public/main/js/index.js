@@ -112,8 +112,8 @@ $(document).ready(function () {
     $input.daterangepicker({
       autoUpdateInput: false,
       autoApply: false,
-      linkedCalendars: false,
-      opens: "left",
+      linkedCalendars: true,
+      opens: "right",
       locale: {
         format: "YYYY-MM-DD",
         applyLabel: "Terapkan",
@@ -237,8 +237,8 @@ $(document).ready(function () {
     $input.daterangepicker({
       autoUpdateInput: false,
       autoApply: false,
-      linkedCalendars: false,
-      opens: "left",
+      linkedCalendars: true,
+      opens: "right",
       locale: {
         format: "YYYY-MM-DD",
         applyLabel: "Terapkan",
@@ -317,12 +317,86 @@ $(document).ready(function () {
           plotOptions: {
             column: {
               stacking: "normal",
-              dataLabels: { enabled: true, style: { textOutline: "none" } },
+              dataLabels: { enabled: false },
+              cursor: "pointer",
+              point: {
+                events: {
+                  click: function () {
+                    const branchName    = this.category;
+                    const complaintName = this.series.name;
+                    const colIdx        = complaintSet.indexOf(complaintName) + 1; // +1 karena kolom 0 = Cabang
+                    const rowIdx        = branchSet.indexOf(branchName);
+
+                    // Hapus highlight sebelumnya
+                    $("#tabel-pasien-cabang td.tabel-highlight").removeClass("tabel-highlight");
+
+                    if (rowIdx === -1 || colIdx === 0) return;
+
+                    // Highlight cell yang sesuai
+                    const $row = $("#tabel-pasien-cabang-body tr").eq(rowIdx);
+                    $row.find("td").eq(colIdx).addClass("tabel-highlight");
+
+                    // Scroll ke tabel
+                    $("html, body").animate({
+                      scrollTop: $("#tabel-pasien-cabang").offset().top - 20
+                    }, 300);
+                  },
+                },
+              },
             },
           },
-          yAxis: { title: { text: "Jumlah Pasien" } },
+          yAxis: {
+            title: { text: "Jumlah Pasien" },
+            stackLabels: {
+              enabled: true,
+              style: {
+                fontWeight: "bold",
+                color: "#333",
+                textOutline: "none",
+              },
+            },
+          },
+          tooltip: {
+            headerFormat: "<b>{point.x}</b><br/>",
+            pointFormat: "{series.name}: <b>{point.y}</b><br/>Total: <b>{point.stackTotal}</b>",
+          },
           series: series,
         });
+
+        // Render tabel pivot di bawah chart
+        const thead =
+          "<tr><th>Cabang</th>" +
+          complaintSet.map(function (c) { return "<th>" + c + "</th>"; }).join("") +
+          "<th style='background:#f5f5f5;'>Total</th></tr>";
+
+        let tbody = "";
+        const grandTotals = complaintSet.map(function () { return 0; });
+        let grandTotal = 0;
+
+        branchSet.forEach(function (branch) {
+          let rowTotal = 0;
+          const cells = complaintSet.map(function (complaint, ci) {
+            const found = getData.find(function (d) {
+              return d.branch_name === branch && d.complaint_name === complaint;
+            });
+            const val = found ? found.total_patient : 0;
+            rowTotal += val;
+            grandTotals[ci] += val;
+            return "<td>" + (val > 0 ? val : "-") + "</td>";
+          }).join("");
+          grandTotal += rowTotal;
+          tbody +=
+            "<tr><td>" + branch + "</td>" + cells +
+            "<td style='background:#f5f5f5;font-weight:bold;'>" + rowTotal + "</td></tr>";
+        });
+
+        tbody +=
+          "<tr style='background:#e8f4fd;font-weight:bold;'><td>Total</td>" +
+          grandTotals.map(function (t) { return "<td>" + t + "</td>"; }).join("") +
+          "<td style='background:#d5eaf8;'>" + grandTotal + "</td></tr>";
+
+        $("#tabel-pasien-cabang-head").html(thead);
+        $("#tabel-pasien-cabang-body").html(tbody);
       },
       complete: function () {
         $("#loading-screen").hide();
@@ -810,8 +884,8 @@ $(document).ready(function () {
     $input.daterangepicker({
       autoUpdateInput:  false,
       autoApply:        false,
-      linkedCalendars:  false,
-      opens:            "left",
+      linkedCalendars:  true,
+      opens:            "right",
       locale: {
         format:      "YYYY-MM-DD",
         applyLabel:  "Terapkan",

@@ -203,7 +203,7 @@ $(document).ready(function() {
 		if (getObj) {
 			$('#nomorPasienTxt').text(getObj.id_member); $('#jenisHewanTxt').text(getObj.pet_category);
 			$('#namaHewanTxt').text(getObj.pet_name); $('#jenisKelaminTxt').text(getObj.pet_gender);
-			$('#usiaHewanTahunTxt').text(`${getObj.pet_year_age} Tahun`); $('#usiaHewanBulanTxt').text(`${getObj.pet_month_age} Bulan`); $('#usiaHewanHariTxt').text(`${getObj.pet_day_age} Hari`);
+			$('#usiaHewanTahunTxt').text(`${getObj.pet_year_age} Tahun `); $('#usiaHewanBulanTxt').text(`${getObj.pet_month_age} Bulan `); $('#usiaHewanHariTxt').text(`${getObj.pet_day_age} Hari`);
 			$('#namaPemilikTxt').text(getObj.owner_name); $('#alamatPemilikTxt').text(getObj.owner_address);
 			$('#nomorHpPemilikTxt').text(getObj.owner_phone_number);
 		} else { refreshText(); }
@@ -312,7 +312,7 @@ $(document).ready(function() {
 						$('#selectedDokter').val(getObj.user_doctor_id); $('#selectedDokter').trigger('change');
 						$('#nomorPasienTxt').text(getObj.id_member); $('#jenisHewanTxt').text(getObj.pet_category);
 						$('#namaHewanTxt').text(getObj.pet_name); $('#jenisKelaminTxt').text(getObj.pet_gender);
-						$('#usiaHewanTahunTxt').text(`${getObj.pet_year_age} Tahun`); $('#usiaHewanBulanTxt').text(`${getObj.pet_month_age} Bulan`); $('#usiaHewanHariTxt').text(`${getObj.pet_day_age} Hari`);
+						$('#usiaHewanTahunTxt').text(`${getObj.pet_year_age} Tahun `); $('#usiaHewanBulanTxt').text(`${getObj.pet_month_age} Bulan `); $('#usiaHewanHariTxt').text(`${getObj.pet_day_age} Hari`);
 						$('#namaPemilikTxt').text(getObj.owner_name); $('#alamatPemilikTxt').text(getObj.owner_address);
 						$('#nomorHpPemilikTxt').text(getObj.owner_phone_number);
 					}
@@ -476,7 +476,7 @@ $(document).ready(function() {
 	function refreshText() {
 		$('#nomorPasienTxt').text('-'); $('#jenisHewanTxt').text('-');
 		$('#namaHewanTxt').text('-'); $('#jenisKelaminTxt').text('-');
-		$('#usiaHewanTahunTxt').text('- Tahun'); $('#usiaHewanBulanTxt').text('- Bulan'); $('#usiaHewanHariTxt').text('- Hari');
+		$('#usiaHewanTahunTxt').text('- Tahun '); $('#usiaHewanBulanTxt').text('- Bulan '); $('#usiaHewanHariTxt').text('- Hari');
 		$('#namaPemilikTxt').text('-'); $('#alamatPemilikTxt').text('-');
 		$('#nomorHpPemilikTxt').text('-');
 	}

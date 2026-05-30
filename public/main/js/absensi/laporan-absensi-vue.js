@@ -58,7 +58,7 @@ const absensiApp = new Vue({
       }).finally(() => { this.loading = false; });
     },
     loadCabang() {
-      axios.get(this.baseUrl + '/api/cabang/all', {
+      axios.get(this.baseUrl + '/api/cabang', {
         headers: { Authorization: 'Bearer ' + this.token }
       }).then(res => { this.listCabang = res.data; }).catch(() => {});
     },

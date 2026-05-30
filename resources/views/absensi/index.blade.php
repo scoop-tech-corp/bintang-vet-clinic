@@ -71,7 +71,7 @@
         <label>Cabang</label>
         <select class="form-control input-sm" v-model="filter.branch_id" @change="loadAbsensi" style="min-width:180px;">
           <option value="">Semua Cabang</option>
-          <option v-for="c in listCabang" :key="c.connection + '_' + c.id" :value="c.id">@{{ c.branch_name }}</option>
+          <option v-for="c in listCabang" :key="c.id" :value="c.id">@{{ c.branch_name }}</option>
         </select>
       </div>
 
@@ -105,12 +105,14 @@
             <th>Jam Shift</th>
             <th>Foto Masuk</th>
             <th>Foto Pulang</th>
+            <th>Lokasi</th>
+            <th>Keterangan</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="listAbsensi.length === 0" class="text-center">
-            <td :colspan="isAdmin ? 11 : 9">@{{ loading ? 'Memuat data...' : 'Tidak ada data.' }}</td>
+            <td :colspan="isAdmin ? 13 : 11">@{{ loading ? 'Memuat data...' : 'Tidak ada data.' }}</td>
           </tr>
           <tr v-for="(item, idx) in listAbsensi" :key="item.id">
             <td>@{{ idx + 1 }}</td>
@@ -129,6 +131,14 @@
             <td>
               <img v-if="item.foto_keluar" :src="baseUrl + '/' + item.foto_keluar"
                 class="foto-thumb" @click="lihatFoto(baseUrl + '/' + item.foto_keluar)" title="Foto Pulang">
+              <span v-else>-</span>
+            </td>
+            <td style="max-width:200px; white-space:normal; font-size:12px;">
+              <span v-if="item.alamat">@{{ item.alamat }}</span>
+              <span v-else>-</span>
+            </td>
+            <td style="max-width:180px; white-space:normal; font-size:12px;">
+              <span v-if="item.keterangan">@{{ item.keterangan }}</span>
               <span v-else>-</span>
             </td>
             <td>

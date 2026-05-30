@@ -34,6 +34,7 @@ class HasilPemeriksaanController extends Controller
             ->join('registrations', 'check_up_results.patient_registration_id', '=', 'registrations.id')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
             ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->leftJoin('complaints', 'registrations.complaint_id', '=', 'complaints.id')
             ->select(
                 'check_up_results.id',
                 'registrations.id_number as registration_number',
@@ -42,7 +43,9 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_category',
                 'patients.pet_name',
                 DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
-                'registrations.complaint',
+                'registrations.complaint_id',
+                'registrations.other_complaint',
+                DB::raw('CASE WHEN registrations.complaint_id = 11 AND registrations.other_complaint IS NOT NULL THEN registrations.other_complaint ELSE COALESCE(complaints.name, registrations.complaint) END AS complaint'),
                 'check_up_results.status_finish',
                 'check_up_results.status_pengabaran',
                 'check_up_results.status_outpatient_inpatient',
@@ -118,7 +121,7 @@ class HasilPemeriksaanController extends Controller
                 'anamnesa' => 'nullable|string',
                 'sign' => 'nullable|string',
                 'diagnosa' => 'nullable|string',
-                'status_finish' => 'required|bool',
+                'status_finish' => 'nullable|bool',
                 'status_pengabaran' => 'nullable|bool',
                 'alasan_tidak_pengabaran' => 'required_if:status_pengabaran,0|nullable|string',
                 'status_outpatient_inpatient' => 'required|bool',
@@ -142,7 +145,7 @@ class HasilPemeriksaanController extends Controller
                 // 'anamnesa' => 'required|string|min:1',
                 // 'sign' => 'required|string|min:1',
                 // 'diagnosa' => 'required|string|min:1',
-                'status_finish' => 'required|bool',
+                'status_finish' => 'nullable|bool',
                 'status_pengabaran' => 'nullable|bool',
                 'alasan_tidak_pengabaran' => 'required_if:status_pengabaran,0|nullable|string',
                 'status_outpatient_inpatient' => 'required|bool',
@@ -461,7 +464,7 @@ class HasilPemeriksaanController extends Controller
             'anamnesa' => $anamnesa,
             'sign' => $sign,
             'diagnosa' => $diagnosa,
-            'status_finish' => $request->status_finish,
+            'status_finish' => $request->status_outpatient_inpatient == false ? 1 : ($request->status_finish ?? 0),
             'status_pengabaran' => $request->status_pengabaran,
             'alasan_tidak_pengabaran' => $request->status_pengabaran == 0 ? ($request->alasan_tidak_pengabaran ?? '') : null,
             'status_outpatient_inpatient' => $request->status_outpatient_inpatient,
@@ -602,6 +605,7 @@ class HasilPemeriksaanController extends Controller
         $registration = DB::table('registrations')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
             ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->leftJoin('complaints', 'registrations.complaint_id', '=', 'complaints.id')
             ->select(
                 'registrations.id_number as registration_number',
                 'patients.id as patient_id',
@@ -609,13 +613,15 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_category',
                 'patients.pet_name',
                 'patients.pet_gender',
-                'patients.pet_year_age',
-                'patients.pet_month_age',
-                'patients.pet_day_age',
+                'registrations.pet_year_age',
+                'registrations.pet_month_age',
+                'registrations.pet_day_age',
                 DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                 DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
                 DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
-                'registrations.complaint',
+                'registrations.complaint_id',
+                'registrations.other_complaint',
+                DB::raw('CASE WHEN registrations.complaint_id = 11 AND registrations.other_complaint IS NOT NULL THEN registrations.other_complaint ELSE COALESCE(complaints.name, registrations.complaint) END AS complaint'),
                 'registrations.registrant'
             )
             ->where('registrations.id', '=', $data->patient_registration_id)
@@ -743,7 +749,7 @@ class HasilPemeriksaanController extends Controller
             'sign' => 'nullable|string',
             'diagnosa' => 'nullable|string',
             'status_outpatient_inpatient' => 'required|bool',
-            'status_finish' => 'required|bool',
+            'status_finish' => 'nullable|bool',
             'status_pengabaran' => 'nullable|bool',
             'alasan_tidak_pengabaran' => 'required_if:status_pengabaran,0|nullable|string',
         ]);
@@ -1268,7 +1274,7 @@ class HasilPemeriksaanController extends Controller
         $check_up_result->sign = $sign;
         $check_up_result->diagnosa = $diagnosa;
         $check_up_result->status_outpatient_inpatient = $request->status_outpatient_inpatient;
-        $check_up_result->status_finish = $request->status_finish;
+        $check_up_result->status_finish = $request->status_finish ?? 0;
         $check_up_result->status_pengabaran = $request->status_pengabaran;
         $check_up_result->alasan_tidak_pengabaran = $request->status_pengabaran == 0 ? ($request->alasan_tidak_pengabaran ?? '') : null;
         $check_up_result->user_update_id = $request->user()->id;
@@ -2171,19 +2177,22 @@ class HasilPemeriksaanController extends Controller
         $registration = DB::table('registrations')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
             ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->leftJoin('pet_categories', 'patients.pet_category_id', '=', 'pet_categories.id')
+            ->leftJoin('complaints', 'registrations.complaint_id', '=', 'complaints.id')
             ->select(
                 'registrations.id_number as registration_number',
                 'patients.id as patient_id',
                 'patients.id_member as patient_number',
-                'patients.pet_category',
+                DB::raw('CASE WHEN patients.pet_category_id = 6 AND patients.other_pet_category IS NOT NULL AND patients.other_pet_category != "" THEN patients.other_pet_category ELSE COALESCE(pet_categories.name, patients.pet_category) END as pet_category'),
                 'patients.pet_name',
                 'patients.pet_gender',
-                'patients.pet_year_age',
-                'patients.pet_month_age',
+                'registrations.pet_year_age',
+                'registrations.pet_month_age',
+                'registrations.pet_day_age',
                 DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                 DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
                 DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
-                'registrations.complaint',
+                DB::raw('CASE WHEN registrations.complaint_id = 11 AND registrations.other_complaint IS NOT NULL THEN registrations.other_complaint ELSE COALESCE(complaints.name, registrations.complaint) END AS complaint'),
                 'registrations.registrant'
             )
             ->where('registrations.id', '=', $data->patient_registration_id)
@@ -2297,6 +2306,13 @@ class HasilPemeriksaanController extends Controller
 
         $data['inpatient'] = $inpatient;
 
+        $existing_payment = DB::table('list_of_payments')
+            ->where('check_up_result_id', '=', $data->id)
+            ->select('id')
+            ->first();
+
+        $data['existing_payment_id'] = $existing_payment ? $existing_payment->id : null;
+
         return response()->json($data, 200);
     }
 
@@ -2317,9 +2333,9 @@ class HasilPemeriksaanController extends Controller
                 'patients.pet_category',
                 'patients.pet_name',
                 'patients.pet_gender',
-                'patients.pet_year_age',
-                'patients.pet_month_age',
-                'patients.pet_day_age',
+                'registrations.pet_year_age',
+                'registrations.pet_month_age',
+                'registrations.pet_day_age',
                 DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
                 DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
                 DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),

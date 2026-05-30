@@ -8,8 +8,11 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithTitle
+class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithTitle, WithEvents
 {
     protected $filters;
     protected $no = 0;
@@ -35,6 +38,7 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
                 DB::raw("TIME_FORMAT(a.jam_masuk, '%H:%i') as jam_masuk"),
                 DB::raw("TIME_FORMAT(a.jam_keluar, '%H:%i') as jam_keluar"),
                 'a.alamat',
+                'a.keterangan',
                 'a.status'
             );
 
@@ -71,7 +75,7 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
 
     public function headings(): array
     {
-        return ['No', 'Nama Karyawan', 'Cabang', 'Shift', 'Tanggal', 'Jam Shift Masuk', 'Jam Shift Keluar', 'Jam Absen Masuk', 'Jam Absen Keluar', 'Alamat', 'Status'];
+        return ['No', 'Nama Karyawan', 'Cabang', 'Shift', 'Tanggal', 'Jam Shift Masuk', 'Jam Shift Keluar', 'Jam Absen Masuk', 'Jam Absen Keluar', 'Lokasi', 'Keterangan', 'Status'];
     }
 
     public function map($row): array
@@ -85,11 +89,38 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
             default       => $row->status,
         };
 
-        return [$this->no, $row->fullname, $row->branch_name, $row->nama_shift, $row->tanggal, $row->shift_jam_masuk, $row->shift_jam_keluar, $row->jam_masuk ?? '-', $row->jam_keluar ?? '-', $row->alamat ?? '-', $statusLabel];
+        return [$this->no, $row->fullname, $row->branch_name, $row->nama_shift, $row->tanggal, $row->shift_jam_masuk, $row->shift_jam_keluar, $row->jam_masuk ?? '-', $row->jam_keluar ?? '-', $row->alamat ?? '-', $row->keterangan ?? '-', $statusLabel];
     }
 
     public function title(): string
     {
         return 'Laporan Absensi';
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet      = $event->sheet->getDelegate();
+                $highestRow = $sheet->getHighestRow();
+
+                // Kolom B = Nama Karyawan, L = Status
+                for ($row = 2; $row <= $highestRow; $row++) {
+                    $status = $sheet->getCell('L' . $row)->getValue();
+
+                    if ($status === 'Terlambat') {
+                        $styleOrange = [
+                            'fill' => [
+                                'fillType'   => Fill::FILL_SOLID,
+                                'startColor' => ['rgb' => 'f39c12'],
+                            ],
+                            'font' => ['color' => ['rgb' => 'ffffff'], 'bold' => true],
+                        ];
+                        $sheet->getStyle('B' . $row)->applyFromArray($styleOrange);
+                        $sheet->getStyle('L' . $row)->applyFromArray($styleOrange);
+                    }
+                }
+            },
+        ];
     }
 }

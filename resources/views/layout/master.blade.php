@@ -34,8 +34,11 @@
 	<link rel="stylesheet" type='text/css' href="{{ asset('main/css/global.css') }}">
 	@yield('css-content')
   <style>
+    /* ── Banner absen pulang ─────────────────────────────────────── */
     #banner-absen-keluar {
       display: none;
+      width: 100%;
+      box-sizing: border-box;
       background: #f39c12;
       color: #fff;
       padding: 8px 20px;
@@ -46,11 +49,51 @@
       gap: 12px;
     }
     #banner-absen-keluar .banner-text { flex: 1; }
-    #video-keluar { width: 100%; border-radius: 6px; background: #000; }
-    #canvas-keluar { display: none; }
+
+    @media (max-width: 480px) {
+      #banner-absen-keluar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 15px;
+      }
+      #banner-absen-keluar #btn-buka-modal-keluar {
+        width: 100%;
+      }
+    }
+
+    /* ── Modal absen pulang ──────────────────────────────────────── */
+    #video-keluar   { width: 100%; border-radius: 6px; background: #000; }
+    #canvas-keluar  { display: none; }
     #preview-keluar { width: 100%; border-radius: 6px; display: none; border: 2px solid #00a65a; }
-    .jam-keluar-realtime { font-size: 26px; font-weight: bold; color: #3c8dbc; text-align: center; margin-bottom: 12px; }
-    .foto-keluar-actions { text-align: center; margin-top: 8px; }
+    .jam-keluar-realtime   { font-size: 26px; font-weight: bold; color: #3c8dbc; text-align: center; margin-bottom: 12px; }
+    .foto-keluar-actions   { text-align: center; margin-top: 8px; }
+
+    #modal-absen-keluar .modal-body {
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 480px) {
+      .jam-keluar-realtime { font-size: 18px; margin-bottom: 8px; }
+
+      #modal-absen-keluar .modal-body {
+        padding: 10px;
+      }
+
+      #modal-absen-keluar .modal-footer {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      #modal-absen-keluar .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+      }
+    }
   </style>
 
   <!-- Google Font -->
@@ -142,7 +185,7 @@
 		<div class="content-wrapper">
 
       <!-- Banner Absen Keluar -->
-      <div id="banner-absen-keluar" style="display:none; background:#f39c12; color:#fff; padding:10px 20px; font-weight:600; font-size:14px;">
+      <div id="banner-absen-keluar">
         <span class="banner-text">
           <i class="fa fa-clock-o"></i>&nbsp; Anda belum absen pulang hari ini!
         </span>

@@ -87,12 +87,12 @@
             <!-- /.box-body -->
         </div>
 
-        <div class="col-md-6 pasien">
+        <div class="col-md-12 pasien">
             <div class="box box-info">
                 <div class="box-header with-border">
-                    <div style="display: flex; justify-content: space-between">
+                    <div class="pasien-header">
                         <div class="box-title" id="jumlah-pasien-title">Jumlah pasien per cabang per bulan</div>
-                        <div class="box-tools" style="display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0;">
+                        <div class="pasien-tools">
                             <div class="btn-group" id="periode-pasien-group">
                                 <button type="button" class="btn btn-xs btn-default" data-periode="harian">Harian</button>
                                 <button type="button" class="btn btn-xs btn-default" data-periode="mingguan">Mingguan</button>
@@ -107,11 +107,11 @@
                                 </div>
                             </div>
                             <div id="datepicker-range-wrapper" style="display:none;">
-                                <div class="input-group" id="pasien-range-group" style="cursor:pointer;">
+                                <div class="input-group date pasien-range-group" id="pasien-range-group">
                                     <div class="input-group-addon">
                                         <i class="fa fa-calendar"></i>
                                     </div>
-                                    <input type="text" class="form-control" id="datepicker-pasien-range" placeholder="yyyy-mm-dd - yyyy-mm-dd" autocomplete="off" readonly style="min-width:185px; cursor:pointer;">
+                                    <input type="text" class="form-control pasien-range-input" id="datepicker-pasien-range" placeholder="yyyy-mm-dd - yyyy-mm-dd" autocomplete="off" readonly>
                                 </div>
                             </div>
                         </div>
@@ -119,16 +119,25 @@
                 </div>
                 <div class="box-body">
                     <div id="totalPasienWidget" style="width:100%; height:100%"></div>
+                    <hr style="margin:16px 0 12px;">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered" id="tabel-pasien-cabang" style="font-size:13px;">
+                            <thead id="tabel-pasien-cabang-head"></thead>
+                            <tbody id="tabel-pasien-cabang-body">
+                                <tr class="text-center"><td colspan="2">Memuat data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6 rawat-inap">
+        <div class="col-md-12 rawat-inap">
             <div class="box box-info">
                 <div class="box-header with-border">
-                    <div style="display: flex; justify-content: space-between">
+                    <div class="rawat-inap-header">
                         <div class="box-title" id="rawat-inap-title">Rawat Inap per Bulan</div>
-                        <div class="box-tools" style="display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0;">
+                        <div class="rawat-inap-tools">
                             <div class="btn-group" id="periode-rawat-inap-group">
                                 <button type="button" class="btn btn-xs btn-default" data-periode="harian">Harian</button>
                                 <button type="button" class="btn btn-xs btn-default" data-periode="mingguan">Mingguan</button>
@@ -143,11 +152,11 @@
                                 </div>
                             </div>
                             <div id="datepicker-range-rawat-inap-wrapper" style="display:none;">
-                                <div class="input-group" id="rawat-inap-range-group" style="cursor:pointer;">
+                                <div class="input-group date rawat-inap-range-group" id="rawat-inap-range-group">
                                     <div class="input-group-addon">
                                         <i class="fa fa-calendar"></i>
                                     </div>
-                                    <input type="text" class="form-control" id="datepicker-rawat-inap-range" placeholder="yyyy-mm-dd - yyyy-mm-dd" autocomplete="off" readonly style="min-width:185px; cursor:pointer;">
+                                    <input type="text" class="form-control rawat-inap-range-input" id="datepicker-rawat-inap-range" placeholder="yyyy-mm-dd - yyyy-mm-dd" autocomplete="off" readonly>
                                 </div>
                             </div>
                         </div>

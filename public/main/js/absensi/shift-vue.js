@@ -58,7 +58,7 @@ const shiftApp = new Vue({
         .catch(() => { this.tampilAlert(false, 'Gagal memuat data shift.'); });
     },
     loadCabang() {
-      axios.get(this.baseUrl + '/api/cabang/all', { headers: { Authorization: 'Bearer ' + this.token } })
+      axios.get(this.baseUrl + '/api/cabang', { headers: { Authorization: 'Bearer ' + this.token } })
         .then(res => { this.listCabang = res.data; })
         .catch(() => {});
     },
