@@ -85,7 +85,7 @@ $(document).ready(function() {
 		if (getObj) {
 			$('#nomorPasienTxt').text(getObj.id_number_patient); $('#jenisHewanTxt').text(getObj.pet_category);
 			$('#namaHewanTxt').text(getObj.pet_name); $('#jenisKelaminTxt').text(getObj.pet_gender);
-			$('#usiaHewanTahunTxt').text(`${getObj.pet_year_age} Tahun`); $('#usiaHewanBulanTxt').text(`${getObj.pet_month_age} Bulan`); $('#usiaHewanHariTxt').text(`${getObj.pet_day_age} Hari`);
+			$('#usiaHewanTahunTxt').text(`${getObj.pet_year_age ?? 0} Tahun`); $('#usiaHewanBulanTxt').text(`${getObj.pet_month_age ?? 0} Bulan`); $('#usiaHewanHariTxt').text(`${getObj.pet_day_age ?? 0} Hari`);
 			$('#namaPemilikTxt').text(getObj.owner_name); $('#alamatPemilikTxt').text(getObj.owner_address);
       $('#nomorHpPemilikTxt').html(waLink(getObj.owner_phone_number)); $('#nomorRegistrasiTxt').text(getObj.registration_number);
       $('#keluhanTxt').text(getObj.complaint); $('#namaPendaftarTxt').text(getObj.registrant);
