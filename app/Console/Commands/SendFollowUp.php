@@ -36,7 +36,17 @@ class SendFollowUp extends Command
         $this->info("Mengirim {$followUps->count()} follow-up...");
 
         foreach ($followUps as $followUp) {
-            $phone = $this->normalizePhone($followUp->owner_phone);
+            $phone = $this->normalizePhone($followUp->owner_phone ?? '');
+
+            if (empty($phone)) {
+                $followUp->update([
+                    'status'        => 'failed',
+                    'error_message' => 'Nomor telepon tidak tersedia.',
+                ]);
+                $this->warn("  ✗ Skip #{$followUp->id} ({$followUp->owner_name}): nomor telepon kosong.");
+                Log::warning("SendFollowUp skip #{$followUp->id}: nomor telepon kosong.");
+                continue;
+            }
 
             try {
                 $response = Http::timeout(15)
@@ -77,7 +87,7 @@ class SendFollowUp extends Command
         return self::SUCCESS;
     }
 
-    private function normalizePhone(string $phone): string
+    private function normalizePhone(string $phone): string  // returns '' if input has no digits
     {
         $phone = preg_replace('/\D/', '', $phone);
         if (str_starts_with($phone, '0')) {

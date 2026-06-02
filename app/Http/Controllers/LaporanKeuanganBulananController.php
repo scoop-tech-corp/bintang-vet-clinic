@@ -170,9 +170,9 @@ class LaporanKeuanganBulananController extends Controller
     $branchFilterAlias($data);
 
     if ($request->orderby) {
-      $data->orderBy($request->column, $request->orderby);
+      $data = $data->orderBy($request->column, $request->orderby);
     } else {
-      $data->orderBy('list_of_payment_id', 'desc');
+      $data = $data->orderBy('list_of_payment_id', 'desc');
     }
 
     // ── Pagination (single get() call to count, then slice) ──────────────────────
