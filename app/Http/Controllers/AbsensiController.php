@@ -59,6 +59,15 @@ class AbsensiController extends Controller
             return response()->json(['message' => 'Shift tidak ditemukan!', 'errors' => ['Shift tidak valid!']], 404);
         }
 
+        $bolehAbsenDari = Carbon::parse($shift->jam_masuk)->subHours(2);
+        if (Carbon::now()->lt($bolehAbsenDari)) {
+            $waktuBoleh = $bolehAbsenDari->format('H:i');
+            return response()->json([
+                'message' => "Absensi belum bisa dilakukan. Anda baru bisa absen mulai pukul {$waktuBoleh}.",
+                'errors'  => ["Absensi hanya bisa dilakukan mulai pukul {$waktuBoleh} (2 jam sebelum jam masuk)."],
+            ], 422);
+        }
+
         $jamSekarang = Carbon::now()->format('H:i:s');
         $batasLambat = Carbon::parse($shift->jam_masuk)->addMinutes($shift->toleransi_menit)->format('H:i:s');
         $status = $jamSekarang <= $batasLambat ? 'hadir' : 'terlambat';
