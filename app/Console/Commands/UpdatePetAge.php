@@ -17,21 +17,21 @@ class UpdatePetAge extends Command
             UPDATE patients
             SET
                 pet_year_age  = CASE
-                                    WHEN pet_day_age + 1 > 30 AND pet_month_age + 1 > 12
+                                    WHEN pet_day_age + 1 >= 30 AND pet_month_age + 1 >= 12
                                         THEN pet_year_age + 1
                                     ELSE pet_year_age
                                 END,
 
                 pet_month_age = CASE
-                                    WHEN pet_day_age + 1 > 30 AND pet_month_age + 1 > 12
+                                    WHEN pet_day_age + 1 >= 30 AND pet_month_age + 1 >= 12
                                         THEN 0
-                                    WHEN pet_day_age + 1 > 30
+                                    WHEN pet_day_age + 1 >= 30
                                         THEN pet_month_age + 1
                                     ELSE pet_month_age
                                 END,
 
                 pet_day_age   = CASE
-                                    WHEN pet_day_age + 1 > 30
+                                    WHEN pet_day_age + 1 >= 30
                                         THEN 0
                                     ELSE pet_day_age + 1
                                 END

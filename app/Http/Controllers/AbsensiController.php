@@ -59,8 +59,12 @@ class AbsensiController extends Controller
             return response()->json(['message' => 'Shift tidak ditemukan!', 'errors' => ['Shift tidak valid!']], 404);
         }
 
-        $bolehAbsenDari = Carbon::parse($shift->jam_masuk)->subHours(2);
-        if (Carbon::now()->lt($bolehAbsenDari)) {
+        $jamMasukHariIni = Carbon::today()->setTimeFromTimeString($shift->jam_masuk);
+        $bolehAbsenDari  = $jamMasukHariIni->copy()->subHours(2);
+
+        // Hanya blokir jika window belum dimulai hari ini (tidak berlaku untuk shift dini hari
+        // yang window-nya jatuh di hari sebelumnya — dalam kasus itu, izinkan saja).
+        if ($bolehAbsenDari->isToday() && Carbon::now()->lt($bolehAbsenDari)) {
             $waktuBoleh = $bolehAbsenDari->format('H:i');
             return response()->json([
                 'message' => "Absensi belum bisa dilakukan. Anda baru bisa absen mulai pukul {$waktuBoleh}.",
@@ -68,9 +72,9 @@ class AbsensiController extends Controller
             ], 422);
         }
 
-        $jamSekarang = Carbon::now()->format('H:i:s');
-        $batasLambat = Carbon::parse($shift->jam_masuk)->addMinutes($shift->toleransi_menit)->format('H:i:s');
-        $status = $jamSekarang <= $batasLambat ? 'hadir' : 'terlambat';
+        $sekarang    = Carbon::now();
+        $batasLambat = $jamMasukHariIni->copy()->addMinutes($shift->toleransi_menit);
+        $status      = $sekarang->lte($batasLambat) ? 'hadir' : 'terlambat';
 
         $fotoPath = $this->simpanFoto($request->foto, 'absensi/masuk');
 
@@ -78,7 +82,7 @@ class AbsensiController extends Controller
             'user_id'    => $request->user()->id,
             'shift_id'   => $request->shift_id,
             'tanggal'    => $today,
-            'jam_masuk'  => $jamSekarang,
+            'jam_masuk'  => $sekarang->format('H:i:s'),
             'latitude'    => $request->latitude,
             'longitude'   => $request->longitude,
             'alamat'      => $request->alamat,

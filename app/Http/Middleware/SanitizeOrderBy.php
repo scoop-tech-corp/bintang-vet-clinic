@@ -15,18 +15,18 @@ class SanitizeOrderBy
 
     public function handle(Request $request, Closure $next)
     {
-        if ($request->has('column')) {
-            $column = $request->input('column');
-            if (!preg_match(self::COLUMN_PATTERN, (string) $column)) {
-                $request->merge(['column' => null]);
-            }
-        }
+        $column  = $request->input('column');
+        $orderby = $request->input('orderby');
 
-        if ($request->has('orderby')) {
-            $orderby = strtolower((string) $request->input('orderby'));
-            if (!in_array($orderby, self::VALID_DIRECTIONS, true)) {
-                $request->merge(['orderby' => null]);
-            }
+        $columnValid  = $column !== null && preg_match(self::COLUMN_PATTERN, (string) $column);
+        $orderbyValid = $orderby !== null && in_array(strtolower((string) $orderby), self::VALID_DIRECTIONS, true);
+
+        // Keduanya harus valid sekaligus; jika salah satu tidak valid, null-kan dua-duanya
+        // agar controller tidak memanggil orderBy(null, 'asc') yang menghasilkan SQL error.
+        if ($columnValid && $orderbyValid) {
+            $request->merge(['orderby' => strtolower((string) $orderby)]);
+        } else {
+            $request->merge(['column' => null, 'orderby' => null]);
         }
 
         return $next($request);
