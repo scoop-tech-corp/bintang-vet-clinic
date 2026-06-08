@@ -155,7 +155,7 @@ class AbsensiController extends Controller
                 'a.status'
             );
 
-        if ($request->user()->role === 'dokter' || $request->user()->role === 'resepsionis') {
+        if ($request->user()->role !== 'admin') {
             $query->where('a.user_id', '=', $request->user()->id);
         }
         // admin sees all branches — branch_id filter applied below if provided via request
@@ -199,7 +199,7 @@ class AbsensiController extends Controller
             'keyword'        => $request->keyword,
         ];
 
-        if ($request->user()->role === 'dokter' || $request->user()->role === 'resepsionis') {
+        if ($request->user()->role !== 'admin') {
             $filters['user_id'] = $request->user()->id;
         } else {
             // admin: filter by branch_id from request if provided, otherwise no restriction
