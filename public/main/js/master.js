@@ -49,6 +49,8 @@ $(document).ready(function() {
         $('.menuOmset').hide();
       } else if (role === 'dokter') {
         $('.menuOmset').hide();
+      } else if (role === 'paramedis') {
+        $('.menuOmset').hide();
       }
 
     } else {
@@ -81,6 +83,9 @@ $(document).ready(function() {
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').hide();
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
+    } else if (role === 'paramedis') {
       $('.menuAbsensi').show();
       $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
     }
