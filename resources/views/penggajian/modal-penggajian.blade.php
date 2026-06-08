@@ -37,6 +37,16 @@
 							<div id="akomodasiErr1" class="validate-error"></div>
 						</div>
             <div class="form-group">
+							<label for="eat">Uang Makan</label>
+							<input id="eat" type="text" class="form-control" min="0" placeholder="Masukan Nominal Uang Makan">
+							<div id="eatErr1" class="validate-error"></div>
+						</div>
+            <div class="form-group">
+							<label for="fine">Denda</label>
+							<input id="fine" type="text" class="form-control" min="0" placeholder="Masukan Nominal Denda">
+							<div id="fineErr1" class="validate-error"></div>
+						</div>
+            <div class="form-group">
 							<label for="decrease">Pengurangan Omzet</label>
               <input id="inputMinusTurnover" type="text" class="form-control" min="0" placeholder="Masukan Pengurangan Omzet">
               <div id="minusTurnOverErr1" class="validate-error"></div>

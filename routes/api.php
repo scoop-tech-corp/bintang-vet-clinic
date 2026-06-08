@@ -53,6 +53,7 @@ Route::group(['middleware' => ['api']], function () {
         Route::get('pasien/daftar-pemilik', 'PasienController@ListOwner');
 
         Route::get('pasien/dropdown', 'PasienController@dropdown');
+        Route::get('pasien/pet-categories', 'PasienController@petCategories');
 
         //kategori barang
         Route::get('kategori-barang', 'KategoriBarangController@index');
@@ -145,6 +146,7 @@ Route::group(['middleware' => ['api']], function () {
 
         //registrasi pasien
         Route::get('registrasi-pasien', 'RegistrasiController@index');
+        Route::get('list-keluhan', 'RegistrasiController@listKeluhan');
         Route::post('registrasi-pasien', 'RegistrasiController@create');
         Route::put('registrasi-pasien', 'RegistrasiController@update');
         Route::delete('registrasi-pasien', 'RegistrasiController@delete');
@@ -254,6 +256,7 @@ Route::group(['middleware' => ['api']], function () {
         //dashboard
         Route::get('dashboard/barchart', 'DashboardController@BarChartPatient');
         Route::get('dashboard/barchart-inpatient', 'DashboardController@BarChartInPatient');
+        Route::get('dashboard/tidak-pengabaran', 'DashboardController@PasienTidakPengabaran');
 
         //penggajian
         Route::get('penggajian/gaji-user', 'PenggajianController@sallary_user');
@@ -270,6 +273,21 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('pengeluaran', 'PengeluaranController@create');
         Route::put('pengeluaran', 'PengeluaranController@update');
         Route::delete('pengeluaran', 'PengeluaranController@delete');
+
+        //shift
+        Route::get('shift', 'ShiftController@index');
+        Route::get('shift/dropdown', 'ShiftController@dropdown');
+        Route::post('shift', 'ShiftController@create');
+        Route::put('shift', 'ShiftController@update');
+        Route::put('shift/toggle-status', 'ShiftController@toggleStatus');
+        Route::delete('shift', 'ShiftController@delete');
+
+        //absensi
+        Route::get('absensi/cek-hari-ini', 'AbsensiController@cekHariIni');
+        Route::post('absensi/masuk', 'AbsensiController@masuk');
+        Route::post('absensi/keluar', 'AbsensiController@keluar');
+        Route::get('absensi/export', 'AbsensiController@export');
+        Route::get('absensi', 'AbsensiController@index');
     });
 });
 

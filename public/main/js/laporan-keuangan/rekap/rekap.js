@@ -1,17 +1,18 @@
 $(document).ready(function () {
   let optCabang = "";
   let optPeriode = "";
+  let suppressDateChange = false;
   let getCurrentPage = 1;
   let paramUrlSetup = {
     orderby: "",
     column: "",
-    month: "",
-    year: "",
+    monthFrom: "",
+    yearFrom: "",
+    monthTo: "",
+    yearTo: "",
     branchId: "",
     periodeId: "",
   };
-
-  widgetRekap({ month: null, year: null });
 
   // if (role.toLowerCase() == 'resepsionis') {
   // 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
@@ -32,22 +33,56 @@ $(document).ready(function () {
     loadPeriode();
   }
 
-  $('#datepicker').datepicker({
+  const datepickerOpts = {
     autoclose: true,
     clearBtn: true,
     format: 'mm-yyyy',
     todayHighlight: true,
     startView: 'months',
-    minViewMode: 'months'
-  }).on('changeDate', function(e) {
-    const getDate = e.format();
-    const getMonth = getDate.split('-')[0];
-    const getYear = getDate.split('-')[1];
-    paramUrlSetup.month = getMonth;
-    paramUrlSetup.year  = getYear;
+    minViewMode: 'months',
+  };
+
+  $('#datepickerFrom').datepicker(datepickerOpts).on('changeDate', function(e) {
+    if (suppressDateChange) return;
+    const parts = e.format().split('-');
+    paramUrlSetup.monthFrom = parts[0];
+    paramUrlSetup.yearFrom  = parts[1];
+    if (paramUrlSetup.monthTo && paramUrlSetup.yearTo) {
+      widgetRekap();
+      loadLaporanKeuanganRekap();
+    }
   });
 
-  loadLaporanKeuanganRekap();
+  $('#datepickerTo').datepicker(datepickerOpts).on('changeDate', function(e) {
+    if (suppressDateChange) return;
+    const parts = e.format().split('-');
+    paramUrlSetup.monthTo = parts[0];
+    paramUrlSetup.yearTo  = parts[1];
+    if (paramUrlSetup.monthFrom && paramUrlSetup.yearFrom) {
+      widgetRekap();
+      loadLaporanKeuanganRekap();
+    }
+  });
+
+  // Isi opsi tahun untuk mode Tahunan (5 tahun terakhir)
+  const currentYear = new Date().getFullYear();
+  $('#filterYear').append('<option value="">-- Pilih Tahun --</option>');
+  for (let y = currentYear; y >= currentYear - 4; y--) {
+    $('#filterYear').append(`<option value="${y}">${y}</option>`);
+  }
+  $('#filterYear').on('change', function () {
+    const year = $(this).val();
+    if (!year) return;
+    paramUrlSetup.year  = year;
+    paramUrlSetup.month = '';
+    widgetRekap();
+    loadLaporanKeuanganRekap();
+  });
+
+  // Tampilkan placeholder — API tidak dipanggil sampai user memilih Periode
+  $('#list-laporan-keuangan-rekap').html(
+    '<tr class="text-center"><td colspan="7" style="padding:24px; color:#888;">Silahkan pilih <strong>Periode</strong> untuk menampilkan data.</td></tr>'
+  );
 
   $("#filterCabang").on("select2:select", function () {
     onFilterCabang($(this).val());
@@ -137,14 +172,48 @@ $(document).ready(function () {
 
   function onFilterCabang(value) {
     paramUrlSetup.branchId = value;
-    widgetRekap();
-    loadLaporanKeuanganRekap();
+    // Hanya panggil API kalau Periode sudah dipilih
+    if (paramUrlSetup.periodeId) {
+      widgetRekap();
+      loadLaporanKeuanganRekap();
+    }
   }
 
   function onFilterPeriode(value) {
     paramUrlSetup.periodeId = value;
-    widgetRekap();
-    loadLaporanKeuanganRekap();
+    paramUrlSetup.monthFrom = '';
+    paramUrlSetup.yearFrom  = '';
+    paramUrlSetup.monthTo   = '';
+    paramUrlSetup.yearTo    = '';
+
+    if (value == 1) {
+      // Bulanan — tampilkan range datepicker dari-sampai
+      $('#dateFilterLabel').text('Pilih Rentang Bulan');
+      $('#monthYearPicker').css('display', 'flex');
+      $('#filterYear').hide();
+      $('#dateFilterSection').show();
+      suppressDateChange = true;
+      $('#datepickerFrom').datepicker('clearDates');
+      $('#datepickerTo').datepicker('clearDates');
+      suppressDateChange = false;
+    } else if (value == 2) {
+      // Tahunan — tampilkan year select, reset ke placeholder
+      $('#dateFilterLabel').text('Pilih Tahun');
+      $('#monthYearPicker').hide();
+      $('#filterYear').val('').show();
+      $('#dateFilterSection').show();
+    } else if (value == 3) {
+      // Sejak Awal Klinik Buka — tidak butuh input tanggal, langsung load
+      $('#dateFilterSection').hide();
+      widgetRekap();
+      loadLaporanKeuanganRekap();
+    } else {
+      // Periode dikosongkan
+      $('#dateFilterSection').hide();
+      $('#list-laporan-keuangan-rekap').html(
+        '<tr class="text-center"><td colspan="7" style="padding:24px; color:#888;">Silahkan pilih <strong>Periode</strong> untuk menampilkan data.</td></tr>'
+      );
+    }
   }
 
   function loadLaporanKeuanganRekap() {
@@ -155,8 +224,10 @@ $(document).ready(function () {
       data: {
         orderby: paramUrlSetup.orderby,
         column: paramUrlSetup.column,
-        month: paramUrlSetup.month,
-        year: paramUrlSetup.year,
+        month_from: paramUrlSetup.monthFrom,
+        year_from: paramUrlSetup.yearFrom,
+        month_to: paramUrlSetup.monthTo,
+        year_to: paramUrlSetup.yearTo,
         branch_id: paramUrlSetup.branchId,
         periode: paramUrlSetup.periodeId,
         page: getCurrentPage,
@@ -248,6 +319,10 @@ $(document).ready(function () {
         if (err.status == 401) {
           localStorage.removeItem("vet-clinic");
           location.href = $(".baseUrl").val() + "/masuk";
+        } else {
+          $("#list-laporan-keuangan-rekap").html(
+            `<tr class="text-center"><td colspan="7" style="color:red;">Gagal memuat data (${err.status}). Coba ulangi.</td></tr>`
+          );
         }
       },
     });
@@ -321,34 +396,48 @@ $(document).ready(function () {
       data: {
         periode: paramUrlSetup.periodeId,
         branch_id: paramUrlSetup.branchId,
+        month_from: paramUrlSetup.monthFrom,
+        year_from: paramUrlSetup.yearFrom,
+        month_to: paramUrlSetup.monthTo,
+        year_to: paramUrlSetup.yearTo,
       },
       beforeSend: function () {
         $("#loading-screen").show();
       },
       success: function (resp) {
-        const getData = resp;
-        const tempDataSeries = [];
-        const categoriesXAxis = [];
+        const categories = [];
+        const series = {
+          omset     : [],
+          discount  : [],
+          expenses  : [],
+          sallary   : [],
+          netto     : [],
+        };
 
-        getData.forEach((dt) => {
-          categoriesXAxis.push(dt.periode);
-          tempDataSeries.push({ name: dt.periode, y: dt.netto });
+        resp.forEach((dt) => {
+          categories.push(dt.periode);
+          series.omset   .push(dt.total_omset || 0);
+          series.discount.push(dt.discount    || 0);
+          series.expenses.push(dt.expenses    || 0);
+          series.sallary .push(dt.sallary     || 0);
+          series.netto   .push(dt.netto       || 0);
         });
 
-        const finalSeries = [{ name: "Netto", data: tempDataSeries }];
-
         Highcharts.chart("rekapWidget", {
-          title: { text: "" },
-          xAxis: { categories: categoriesXAxis },
-          legend: { enabled: false },
+          chart  : { type: "line" },
+          title  : { text: "" },
           credits: { enabled: false },
-          plotOptions: {
-            column: {
-              dataLabels: { enabled: true },
-            },
-          },
-          yAxis: { title: { text: "Nominal (Rp)" } },
-          series: finalSeries,
+          xAxis  : { categories: categories },
+          yAxis  : { title: { text: "Nominal (Rp)" } },
+          legend : { enabled: true },
+          plotOptions: { column: { dataLabels: { enabled: false } } },
+          series: [
+            { name: "Total Omset"  , data: series.omset    },
+            { name: "Diskon"       , data: series.discount },
+            { name: "Pengeluaran"  , data: series.expenses },
+            { name: "Penggajian"   , data: series.sallary  },
+            { name: "Netto"        , data: series.netto    },
+          ],
         });
       },
       complete: function () {

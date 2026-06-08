@@ -41,13 +41,15 @@ $(document).ready(function() {
 
     const hostname = window.location.hostname;
 
-    if (hostname === 'admin.bintangvet.com' || hostname === 'uat.bintangvet.com' || hostname === '127.0.0.1') {
+    if (hostname === 'bintangvet.stellavet.net' || hostname === 'uat.stellavet.net' || hostname === '127.0.0.1') {
 
       if (role === 'admin') {
         $('.menuOmset').show();
       } else if (role === 'resepsionis') {
         $('.menuOmset').hide();
       } else if (role === 'dokter') {
+        $('.menuOmset').hide();
+      } else if (role === 'paramedis') {
         $('.menuOmset').hide();
       }
 
@@ -63,6 +65,9 @@ $(document).ready(function() {
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').show();
+      $('.menuLayanan').show();
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').show(); $('.menuLaporanAbsensi').show();
     } else if (role === 'resepsionis') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();
@@ -70,6 +75,9 @@ $(document).ready(function() {
       $('.menuPenggajian').show(); $('.menuPeriksa').show();
       $('.menuPengeluaran').show(); $('.menuKeuangan').show();
       $('.menuRekap').hide();
+      $('.menuLayanan').show();
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
     } else if (role === 'dokter') {
       $('.menuDokter').show();   $('.menuPasien').show();
       $('.menuTindakan').show(); $('.menuGudang').show();
@@ -77,7 +85,12 @@ $(document).ready(function() {
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').hide();
-
+      $('.menuLayanan').show();
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
+    } else if (role === 'paramedis') {
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
     }
   }
 
@@ -100,6 +113,8 @@ $(document).ready(function() {
         $('.menuDokter').addClass('active');
       } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan' || pathName === '/laporan-keuangan-rekap'|| pathName === '/laporan-keuangan-omset') {
         $('.menuKeuangan').addClass('active');
+      } else if (pathName === '/shift' || pathName === '/absensi') {
+        $('.menuAbsensi').addClass('active');
       }
     } else {
       // additional custom url
