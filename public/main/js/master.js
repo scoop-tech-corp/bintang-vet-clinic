@@ -65,6 +65,7 @@ $(document).ready(function() {
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').show();
+      $('.menuLayanan').show();
       $('.menuAbsensi').show();
       $('.menuMasterShift').show(); $('.menuLaporanAbsensi').show();
     } else if (role === 'resepsionis') {
@@ -74,6 +75,7 @@ $(document).ready(function() {
       $('.menuPenggajian').show(); $('.menuPeriksa').show();
       $('.menuPengeluaran').show(); $('.menuKeuangan').show();
       $('.menuRekap').hide();
+      $('.menuLayanan').show();
       $('.menuAbsensi').show();
       $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
     } else if (role === 'dokter') {
@@ -83,6 +85,7 @@ $(document).ready(function() {
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
       $('.menuPengeluaran').show(); $('.menuRekap').hide();
+      $('.menuLayanan').show();
       $('.menuAbsensi').show();
       $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
     } else if (role === 'paramedis') {

@@ -19,6 +19,9 @@ $(document).ready(function () {
       $(".rawat-inap").hide();
       $(".tidak-pengabaran").hide();
     }
+    if (role === "paramedis") {
+      $(".daftar-barang-limit-expired").hide();
+    }
   }
 
   let currentPeriodePasien = "bulanan";
