@@ -124,7 +124,7 @@ class HasilPemeriksaanController extends Controller
                 'status_finish' => 'nullable|bool',
                 'status_pengabaran' => 'nullable|bool',
                 'alasan_tidak_pengabaran' => 'required_if:status_pengabaran,0|nullable|string',
-                'status_outpatient_inpatient' => 'required|bool',
+                'status_outpatient_inpatient' => 'nullable|bool',
             ]);
 
             if ($validate->fails()) {
@@ -148,32 +148,12 @@ class HasilPemeriksaanController extends Controller
                 'status_finish' => 'nullable|bool',
                 'status_pengabaran' => 'nullable|bool',
                 'alasan_tidak_pengabaran' => 'required_if:status_pengabaran,0|nullable|string',
-                'status_outpatient_inpatient' => 'required|bool',
+                'status_outpatient_inpatient' => 'nullable|bool',
             ], $message_patient);
 
             if ($validate->fails()) {
                 $errors = $validate->errors()->all();
 
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-        }
-
-        if ($request->status_outpatient_inpatient == true && $request->inpatient != "") {
-
-            $messages = [
-                'inpatient.required' => 'Deskripsi Kondisi Pasien harus diisi',
-                'inpatient.min' => 'Deskripsi Kondisi Pasien harus minimal 10 karakter',
-            ];
-
-            $validate2 = Validator::make($request->all(), [
-                'inpatient' => 'required|string|min:10',
-            ], $messages);
-
-            if ($validate2->fails()) {
-                $errors = $validate2->errors()->all();
                 return response()->json([
                     'message' => 'The given data was invalid.',
                     'errors' => $errors,
@@ -479,8 +459,6 @@ class HasilPemeriksaanController extends Controller
             $registration->acceptance_status = 3;
             $registration->updated_at = \Carbon\Carbon::now();
             $registration->save();
-
-            $this->createFollowUp($item->id, $request->patient_registration_id, $request->user()->id);
         }
 
         $services = $request->service;
@@ -748,7 +726,7 @@ class HasilPemeriksaanController extends Controller
             'anamnesa' => 'nullable|string',
             'sign' => 'nullable|string',
             'diagnosa' => 'nullable|string',
-            'status_outpatient_inpatient' => 'required|bool',
+            'status_outpatient_inpatient' => 'nullable|bool',
             'status_finish' => 'nullable|bool',
             'status_pengabaran' => 'nullable|bool',
             'alasan_tidak_pengabaran' => 'required_if:status_pengabaran,0|nullable|string',
@@ -770,27 +748,6 @@ class HasilPemeriksaanController extends Controller
                 'message' => 'The data was invalid.',
                 'errors' => ['Data Hasil Pemeriksaan tidak ada!'],
             ], 404);
-        }
-
-        if ($request->status_outpatient_inpatient == true && $request->inpatient != "") {
-
-            $messages = [
-                'inpatient.required' => 'Deskripsi Kondisi Pasien harus diisi',
-                'inpatient.min' => 'Deskripsi Kondisi Pasien harus minimal 10 karakter',
-            ];
-
-            $validate2 = Validator::make($request->all(), [
-                'inpatient' => 'required|string|min:10',
-            ], $messages);
-
-            if ($validate2->fails()) {
-                $errors = $validate2->errors()->all();
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
         }
 
         //validasi data jasa
@@ -1288,15 +1245,10 @@ class HasilPemeriksaanController extends Controller
             $registration->acceptance_status = 3;
             $registration->updated_at = \Carbon\Carbon::now();
             $registration->save();
+        }
 
-            // Batalkan follow-up pending lama (jika ada), lalu buat baru
-            CheckUpFollowUp::where('check_up_result_id', $check_up_result->id)
-                ->where('status', 'pending')
-                ->update(['status' => 'cancelled']);
-
-            $this->createFollowUp($check_up_result->id, $request->patient_registration_id, $request->user()->id);
-        } else {
-            // Status diubah ke Tidak — batalkan follow-up yang pending
+        // Batalkan follow-up pending jika status pengabaran diubah ke tidak
+        if (!$request->status_pengabaran) {
             CheckUpFollowUp::where('check_up_result_id', $check_up_result->id)
                 ->where('status', 'pending')
                 ->update(['status' => 'cancelled']);
@@ -1778,40 +1730,6 @@ class HasilPemeriksaanController extends Controller
                 }
             }
         }
-    }
-
-    private function createFollowUp(int $checkUpResultId, int $patientRegistrationId, int $userId): void
-    {
-        $reg = DB::table('registrations')
-            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-            ->join('owners', 'patients.owner_id', '=', 'owners.id')
-            ->select(
-                DB::raw('TRIM(COALESCE(NULLIF(patients.owner_phone_number,""), owners.owner_phone_number, "")) as phone'),
-                DB::raw('TRIM(COALESCE(NULLIF(patients.owner_name,""), owners.owner_name, "")) as owner_name'),
-                'patients.pet_name'
-            )
-            ->where('registrations.id', $patientRegistrationId)
-            ->first();
-
-        if (!$reg || empty($reg->phone)) {
-            return;
-        }
-
-        $message = "Halo Kak, Terima kasih sudah menjadi pelanggan setia kami ya.. \n\n"
-            . "Bila ada pertanyaan apapun terkait anabul, jangan ragu untuk konsultasi ke whatsapp kami.. "
-            . "Dokter kami dengan senang hati menjawab dan mencarikan solusi terbaik💝\n\n"
-            . "Semoga kaka sekeluarga dan semua anabul, selalu diberikan kesehatan 🙏🥰";
-
-        CheckUpFollowUp::create([
-            'check_up_result_id' => $checkUpResultId,
-            'owner_phone'        => $reg->phone,
-            'owner_name'         => $reg->owner_name,
-            'pet_name'           => $reg->pet_name,
-            'message'            => $message,
-            'scheduled_date'     => now()->addDays(3)->toDateString(),
-            'status'             => 'pending',
-            'user_id'            => $userId,
-        ]);
     }
 
     public function delete(Request $request)
@@ -2327,6 +2245,7 @@ class HasilPemeriksaanController extends Controller
         $registration = DB::table('registrations')
             ->join('patients', 'registrations.patient_id', '=', 'patients.id')
             ->join('owners', 'patients.owner_id', '=', 'owners.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
             ->select(
                 'registrations.id_number as registration_number',
                 'patients.id_member as patient_number',
@@ -2340,7 +2259,8 @@ class HasilPemeriksaanController extends Controller
                 DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
                 DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
                 'registrations.complaint',
-                'registrations.registrant'
+                'registrations.registrant',
+                'branches.branch_name'
             )
             ->where('registrations.id', '=', $data->patient_registration_id)
             ->first();
@@ -2382,12 +2302,16 @@ class HasilPemeriksaanController extends Controller
             $detail_item = DB::table('detail_item_patients')
                 ->join('price_items', 'detail_item_patients.price_item_id', '=', 'price_items.id')
                 ->join('list_of_items', 'price_items.list_of_items_id', '=', 'list_of_items.id')
+                ->join('category_item', 'list_of_items.category_item_id', '=', 'category_item.id')
                 ->join('unit_item', 'list_of_items.unit_item_id', '=', 'unit_item.id')
+                ->join('users', 'detail_item_patients.user_id', '=', 'users.id')
                 ->select(
                     'list_of_items.item_name',
                     'detail_item_patients.quantity',
-                    DB::raw("TRIM(detail_item_patients.price_overall)+0 as price_overall"),
-                    'unit_item.unit_name'
+                    'unit_item.unit_name',
+                    'category_item.category_name',
+                    'users.fullname as created_by',
+                    DB::raw("DATE_FORMAT(detail_item_patients.created_at, '%d %b %Y') as created_at")
                 )
                 ->where('detail_item_patients.detail_medicine_group_id', '=', $value->id)
                 ->orderBy('detail_item_patients.id', 'asc')

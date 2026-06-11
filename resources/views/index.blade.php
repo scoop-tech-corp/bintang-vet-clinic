@@ -163,7 +163,7 @@
                     </div>
                 </div>
                 <div class="box-body">
-                    <div id="rawatInapWidget" style="width:100%; height:100%"></div>
+                    <div id="rawatInapWidget" style="width:100%; min-height:300px;"></div>
                 </div>
             </div>
         </div>

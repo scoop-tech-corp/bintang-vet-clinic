@@ -12,11 +12,9 @@ $(document).ready(function () {
     yearTo: "",
     branchId: "",
     periodeId: "",
+    year: "",
   };
 
-  // if (role.toLowerCase() == 'resepsionis') {
-  // 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
-  // } else {
   if (role.toLowerCase() == "dokter" || role.toLowerCase() == "resepsionis") {
     $("#filterCabang").hide();
     $("#filterPeriode").hide();
@@ -172,7 +170,6 @@ $(document).ready(function () {
 
   function onFilterCabang(value) {
     paramUrlSetup.branchId = value;
-    // Hanya panggil API kalau Periode sudah dipilih
     if (paramUrlSetup.periodeId) {
       widgetRekap();
       loadLaporanKeuanganRekap();
@@ -187,7 +184,6 @@ $(document).ready(function () {
     paramUrlSetup.yearTo    = '';
 
     if (value == 1) {
-      // Bulanan — tampilkan range datepicker dari-sampai
       $('#dateFilterLabel').text('Pilih Rentang Bulan');
       $('#monthYearPicker').css('display', 'flex');
       $('#filterYear').hide();
@@ -197,18 +193,15 @@ $(document).ready(function () {
       $('#datepickerTo').datepicker('clearDates');
       suppressDateChange = false;
     } else if (value == 2) {
-      // Tahunan — tampilkan year select, reset ke placeholder
       $('#dateFilterLabel').text('Pilih Tahun');
       $('#monthYearPicker').hide();
       $('#filterYear').val('').show();
       $('#dateFilterSection').show();
     } else if (value == 3) {
-      // Sejak Awal Klinik Buka — tidak butuh input tanggal, langsung load
       $('#dateFilterSection').hide();
       widgetRekap();
       loadLaporanKeuanganRekap();
     } else {
-      // Periode dikosongkan
       $('#dateFilterSection').hide();
       $('#list-laporan-keuangan-rekap').html(
         '<tr class="text-center"><td colspan="7" style="padding:24px; color:#888;">Silahkan pilih <strong>Periode</strong> untuk menampilkan data.</td></tr>'
@@ -217,114 +210,130 @@ $(document).ready(function () {
   }
 
   function loadLaporanKeuanganRekap() {
-    $.ajax({
-      url: $(".baseUrl").val() + "/api/laporan-keuangan/rekap/table",
-      headers: { Authorization: `Bearer ${token}` },
-      type: "GET",
-      data: {
-        orderby: paramUrlSetup.orderby,
-        column: paramUrlSetup.column,
-        month_from: paramUrlSetup.monthFrom,
-        year_from: paramUrlSetup.yearFrom,
-        month_to: paramUrlSetup.monthTo,
-        year_to: paramUrlSetup.yearTo,
-        branch_id: paramUrlSetup.branchId,
-        periode: paramUrlSetup.periodeId,
-        page: getCurrentPage,
-      },
-      beforeSend: function () {
-        $("#loading-screen").show();
-      },
-      success: function (resp) {
-        //console.log(resp);
+    const params = {
+      orderby:    paramUrlSetup.orderby,
+      column:     paramUrlSetup.column,
+      month_from: paramUrlSetup.monthFrom,
+      year_from:  paramUrlSetup.yearFrom,
+      month_to:   paramUrlSetup.monthTo,
+      year_to:    paramUrlSetup.yearTo,
+      branch_id:  paramUrlSetup.branchId,
+      periode:    paramUrlSetup.periodeId,
+      year:       paramUrlSetup.year,
+      page:       getCurrentPage,
+    };
 
-        const getData = resp;
-        let loadLaporanKeuanganRekap = "";
+    $("#loading-screen").show();
 
-        $("#list-laporan-keuangan-rekap tr").remove();
+    $.when(
+      $.ajax({
+        url: $(".baseUrl").val() + "/api/laporan-keuangan/rekap/table",
+        headers: { Authorization: `Bearer ${token}` },
+        type: "GET",
+        data: params,
+      }),
+      $.ajax({
+        url: $(".baseUrl").val() + "/api/laporan-keuangan/rekap/patient-summary",
+        headers: { Authorization: `Bearer ${token}` },
+        type: "GET",
+        data: params,
+      })
+    ).then(function (finansialResult, patientResult) {
+      const getData     = finansialResult[0];
+      const patientData = patientResult[0];
+      const complaints  = patientData.complaints || [];
 
-        if (getData.length) {
-          $.each(getData, function (idx, v) {
-            loadLaporanKeuanganRekap +=
-              `<tr>` +
-              `<td>${++idx}</td>` +
-              `<td>${v.dates}</td>` +
-              `<td>${
-                Number(v.total_omset || 0).toLocaleString('id-ID')
-                // typeof v.total_omset == "number"
-                //   ? v.total_omset.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                //   : ""
-              }</td>` +
-              `<td>${
-                Number(v.discount || 0).toLocaleString('id-ID')
-                // typeof v.discount == "number"
-                //   ? v.discount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                //   : ""
-              }</td>` +
-              `<td>${
-                Number(v.expenses || 0).toLocaleString('id-ID')
-                // typeof v.expenses == "number"
-                //   ? v.expenses.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                //   : ""
-              }</td>` +
-              `<td>${
-                Number(v.sallary || 0).toLocaleString('id-ID')
-                // typeof v.sallary == "number"
-                //   ? v.sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                //   : ""
-              }</td>` +
-              `<td>${
-                Number(v.netto || 0).toLocaleString('id-ID')
-                // typeof v.netto == "number"
-                //   ? v.netto.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-                //   : ""
-              }</td>` +
-              `</tr>`;
-          });
-        } else {
-          loadLaporanKeuanganRekap += `<tr class="text-center"><td colspan="7">Tidak ada data.</td></tr>`;
-        }
+      // Map dates => row untuk lookup cepat
+      const patientMap = {};
+      (patientData.data || []).forEach(function (row) {
+        patientMap[row.dates] = row;
+      });
 
-        $("#list-laporan-keuangan-rekap").append(loadLaporanKeuanganRekap);
+      $("#list-laporan-keuangan-rekap tr").remove();
 
-        generatePagination(getCurrentPage, resp.total_paging);
+      let html = "";
 
-        $(".pagination > li > a").click(function () {
-          const getClassName = this.className;
-          const getNumber = parseFloat($(this).text());
+      if (getData.length) {
+        $.each(getData, function (idx, v) {
+          // Baris keuangan utama
+          html +=
+            `<tr>` +
+            `<td>${++idx}</td>` +
+            `<td>${v.dates}</td>` +
+            `<td>${Number(v.total_omset || 0).toLocaleString('id-ID')}</td>` +
+            `<td>${Number(v.discount   || 0).toLocaleString('id-ID')}</td>` +
+            `<td>${Number(v.expenses   || 0).toLocaleString('id-ID')}</td>` +
+            `<td>${Number(v.sallary    || 0).toLocaleString('id-ID')}</td>` +
+            `<td>${Number(v.netto      || 0).toLocaleString('id-ID')}</td>` +
+            `</tr>`;
 
-          if (
-            (getCurrentPage === 1 && getClassName.includes("arrow-left")) ||
-            (getCurrentPage === resp.total_paging &&
-              getClassName.includes("arrow-right"))
-          ) {
-            return;
+          // Sub-baris keluhan di bawah setiap periode
+          if (complaints.length) {
+            const pRow = patientMap[v.dates] || {};
+
+            let thCells = complaints.map(c =>
+              `<th style="padding:3px 10px; text-align:center; font-weight:600; color:#555; border-bottom:1px solid #c8d8f0; white-space:nowrap;">${c}</th>`
+            ).join('');
+            thCells += `<th style="padding:3px 10px; text-align:center; font-weight:700; color:#2a5298; border-bottom:1px solid #c8d8f0; white-space:nowrap;">Total</th>`;
+
+            let tdCells = complaints.map(function (c) {
+              const count = pRow[c] || 0;
+              return `<td style="padding:3px 10px; text-align:center; color:#333;">${count > 0 ? count : '-'}</td>`;
+            }).join('');
+            tdCells += `<td style="padding:3px 10px; text-align:center; font-weight:700; color:#2a5298;">${pRow.total || 0}</td>`;
+
+            html +=
+              `<tr style="background:#eef3fb;">` +
+              `<td colspan="7" style="padding:4px 12px 8px 28px; border-top:none;">` +
+              `<table style="font-size:12px; border-collapse:collapse;">` +
+              `<thead><tr>${thCells}</tr></thead>` +
+              `<tbody><tr>${tdCells}</tr></tbody>` +
+              `</table>` +
+              `</td></tr>`;
           }
-
-          if (getClassName.includes("arrow-left")) {
-            getCurrentPage = getCurrentPage - 1;
-          } else if (getClassName.includes("arrow-right")) {
-            getCurrentPage = getCurrentPage + 1;
-          } else {
-            getCurrentPage = getNumber;
-          }
-
-          loadLaporanKeuanganRekap();
         });
-      },
-      complete: function () {
-        $("#loading-screen").hide();
-      },
-      error: function (err) {
-        if (err.status == 401) {
-          localStorage.removeItem("vet-clinic");
-          location.href = $(".baseUrl").val() + "/masuk";
-        } else {
-          $("#list-laporan-keuangan-rekap").html(
-            `<tr class="text-center"><td colspan="7" style="color:red;">Gagal memuat data (${err.status}). Coba ulangi.</td></tr>`
-          );
+      } else {
+        html = `<tr class="text-center"><td colspan="7">Tidak ada data.</td></tr>`;
+      }
+
+      $("#list-laporan-keuangan-rekap").append(html);
+
+      generatePagination(getCurrentPage, getData.total_paging);
+
+      $(".pagination > li > a").click(function () {
+        const getClassName = this.className;
+        const getNumber = parseFloat($(this).text());
+
+        if (
+          (getCurrentPage === 1 && getClassName.includes("arrow-left")) ||
+          (getCurrentPage === getData.total_paging &&
+            getClassName.includes("arrow-right"))
+        ) {
+          return;
         }
-      },
+
+        if (getClassName.includes("arrow-left")) {
+          getCurrentPage = getCurrentPage - 1;
+        } else if (getClassName.includes("arrow-right")) {
+          getCurrentPage = getCurrentPage + 1;
+        } else {
+          getCurrentPage = getNumber;
+        }
+
+        loadLaporanKeuanganRekap();
+      });
+
+    }, function (err) {
+      if (err.status == 401) {
+        localStorage.removeItem("vet-clinic");
+        location.href = $(".baseUrl").val() + "/masuk";
+      } else {
+        $("#list-laporan-keuangan-rekap").html(
+          `<tr class="text-center"><td colspan="7" style="color:red;">Gagal memuat data (${err.status}). Coba ulangi.</td></tr>`
+        );
+      }
+    }).always(function () {
+      $("#loading-screen").hide();
     });
   }
 
@@ -394,12 +403,12 @@ $(document).ready(function () {
       headers: { Authorization: `Bearer ${token}` },
       type: "GET",
       data: {
-        periode: paramUrlSetup.periodeId,
-        branch_id: paramUrlSetup.branchId,
+        periode:    paramUrlSetup.periodeId,
+        branch_id:  paramUrlSetup.branchId,
         month_from: paramUrlSetup.monthFrom,
-        year_from: paramUrlSetup.yearFrom,
-        month_to: paramUrlSetup.monthTo,
-        year_to: paramUrlSetup.yearTo,
+        year_from:  paramUrlSetup.yearFrom,
+        month_to:   paramUrlSetup.monthTo,
+        year_to:    paramUrlSetup.yearTo,
       },
       beforeSend: function () {
         $("#loading-screen").show();

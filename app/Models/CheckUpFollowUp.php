@@ -10,6 +10,7 @@ class CheckUpFollowUp extends Model
 
     protected $fillable = [
         'check_up_result_id',
+        'branch_id',
         'owner_phone',
         'owner_name',
         'pet_name',

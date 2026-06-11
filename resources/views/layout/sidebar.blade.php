@@ -88,6 +88,20 @@
 				<ul class="treeview-menu">
 					<li class="menuMasterShift"><a href="{{ url('/shift') }}"><i class="fa fa-circle-o"></i> Master Shift</a></li>
 					<li class="menuLaporanAbsensi"><a href="{{ url('/absensi') }}"><i class="fa fa-circle-o"></i> Laporan Absensi</a></li>
+					<li class="menuRadiusException" style="display:none;"><a href="{{ url('/absensi-radius-exception') }}"><i class="fa fa-circle-o"></i> Pengecualian Radius</a></li>
+				</ul>
+			</li>
+			<li class="treeview menuPengabaran" style="display:none;">
+				<a>
+					<i class="fa fa-whatsapp" aria-hidden="true"></i>
+					<span>Pengabaran</span>
+					<span class="pull-right-container">
+						<i class="fa fa-angle-left pull-right"></i>
+					</span>
+				</a>
+				<ul class="treeview-menu">
+					<li><a href="{{ url('/pengabaran/nomor-wa') }}"><i class="fa fa-circle-o"></i> Nomor WA Cabang</a></li>
+					<li><a href="{{ url('/pengabaran/template') }}"><i class="fa fa-circle-o"></i> Template Pesan</a></li>
 				</ul>
 			</li>
 			<li class="treeview menuKeuangan">

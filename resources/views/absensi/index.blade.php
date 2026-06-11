@@ -2,9 +2,10 @@
 
 @section('css-content')
 <style>
-  .badge-hadir       { background-color: #00a65a; color: #fff; }
-  .badge-terlambat   { background-color: #f39c12; color: #fff; }
-  .badge-tidak_hadir { background-color: #dd4b39; color: #fff; }
+  .badge-hadir        { background-color: #00a65a; color: #fff; }
+  .badge-terlambat    { background-color: #f39c12; color: #fff; }
+  .badge-tidak_hadir  { background-color: #dd4b39; color: #fff; }
+  .badge-tidak_sesuai { background-color: #6f42c1; color: #fff; }
   .foto-thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; cursor: pointer; }
   .filter-section { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 15px; }
   .filter-section .filter-item label { display: block; margin-bottom: 4px; font-weight: 600; }
@@ -63,6 +64,7 @@
           <option value="hadir">Hadir</option>
           <option value="terlambat">Terlambat</option>
           <option value="tidak_hadir">Tidak Hadir</option>
+          <option value="tidak_sesuai">Tidak Sesuai</option>
         </select>
       </div>
 
@@ -106,13 +108,14 @@
             <th>Foto Masuk</th>
             <th>Foto Pulang</th>
             <th>Lokasi</th>
+            <th>Jarak</th>
             <th>Keterangan</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="listAbsensi.length === 0" class="text-center">
-            <td :colspan="isAdmin ? 13 : 11">@{{ loading ? 'Memuat data...' : 'Tidak ada data.' }}</td>
+            <td :colspan="isAdmin ? 14 : 12">@{{ loading ? 'Memuat data...' : 'Tidak ada data.' }}</td>
           </tr>
           <tr v-for="(item, idx) in listAbsensi" :key="item.id">
             <td>@{{ idx + 1 }}</td>
@@ -137,13 +140,17 @@
               <span v-if="item.alamat">@{{ item.alamat }}</span>
               <span v-else>-</span>
             </td>
+            <td style="font-size:12px; white-space:nowrap;">
+              <span v-if="item.jarak_meter !== null && item.jarak_meter !== undefined">@{{ formatJarak(item.jarak_meter) }}</span>
+              <span v-else>-</span>
+            </td>
             <td style="max-width:180px; white-space:normal; font-size:12px;">
               <span v-if="item.keterangan">@{{ item.keterangan }}</span>
               <span v-else>-</span>
             </td>
             <td>
               <span class="badge" :class="'badge-' + item.status">
-                @{{ item.status === 'hadir' ? 'Hadir' : item.status === 'terlambat' ? 'Terlambat' : 'Tidak Hadir' }}
+                @{{ { hadir: 'Hadir', terlambat: 'Terlambat', tidak_hadir: 'Tidak Hadir', tidak_sesuai: 'Absensi Tidak Sesuai (Berpotensi Potong Gaji)' }[item.status] || item.status }}
               </span>
             </td>
           </tr>

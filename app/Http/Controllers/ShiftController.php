@@ -22,6 +22,7 @@ class ShiftController extends Controller
                 DB::raw("TIME_FORMAT(shifts.jam_keluar, '%H:%i') as jam_keluar"),
                 'shifts.toleransi_menit',
                 'shifts.status',
+                'shifts.for_role',
                 'shifts.created_by',
                 DB::raw("DATE_FORMAT(shifts.created_at, '%d %b %Y') as created_at")
             );
@@ -37,10 +38,15 @@ class ShiftController extends Controller
 
     public function dropdown(Request $request)
     {
+        $userRole = $request->user()->role;
+
         $query = DB::table('shifts')
             ->select('shifts.id', 'shifts.nama_shift', 'shifts.jam_masuk', 'shifts.jam_keluar', 'shifts.toleransi_menit')
             ->where('shifts.status', '=', 1)
             ->where('shifts.branch_id', '=', $request->user()->branch_id)
+            ->where(function ($q) use ($userRole) {
+                $q->whereNull('shifts.for_role')->orWhere('shifts.for_role', '=', $userRole);
+            })
             ->orderBy('shifts.jam_masuk', 'asc');
 
         return response()->json($query->get(), 200);
@@ -71,6 +77,7 @@ class ShiftController extends Controller
             'jam_keluar'      => $request->jam_keluar,
             'toleransi_menit' => $request->toleransi_menit,
             'status'          => 1,
+            'for_role'        => $request->for_role ?: null,
             'created_by'      => $request->user()->fullname,
         ]);
 
@@ -105,6 +112,7 @@ class ShiftController extends Controller
         $shift->jam_masuk       = $request->jam_masuk;
         $shift->jam_keluar      = $request->jam_keluar;
         $shift->toleransi_menit = $request->toleransi_menit;
+        $shift->for_role        = $request->for_role ?: null;
         $shift->updated_by      = $request->user()->fullname;
         $shift->save();
 

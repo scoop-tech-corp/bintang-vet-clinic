@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Branch;
 use App\Models\CheckUpFollowUp;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -11,16 +12,12 @@ use Illuminate\Support\Facades\Log;
 class SendFollowUp extends Command
 {
     protected $signature   = 'followup:send';
-    protected $description = 'Kirim WhatsApp pengabaran via Fonnte untuk follow-up yang jatuh tempo hari ini';
+    protected $description = 'Kirim WhatsApp pengabaran untuk follow-up yang jatuh tempo hari ini';
 
     public function handle(): int
     {
-        $token = config('services.fonnte.token');
-
-        if (empty($token)) {
-            $this->error('FONNTE_TOKEN belum diset di .env');
-            return self::FAILURE;
-        }
+        // Cache token per cabang agar tidak query berulang untuk cabang yang sama
+        $branchTokenCache = [];
 
         $today = Carbon::today()->toDateString();
 
@@ -36,6 +33,26 @@ class SendFollowUp extends Command
         $this->info("Mengirim {$followUps->count()} follow-up...");
 
         foreach ($followUps as $followUp) {
+            // Pilih token: cabang → global
+            $branchId = (int) ($followUp->branch_id ?? 0);
+            if (!array_key_exists($branchId, $branchTokenCache)) {
+                $branch = $branchId > 0 ? Branch::find($branchId) : null;
+                $branchTokenCache[$branchId] = ($branch && !empty($branch->fonnte_token))
+                    ? $branch->fonnte_token
+                    : null;
+            }
+            $token = $branchTokenCache[$branchId];
+
+            if (empty($token)) {
+                $followUp->update([
+                    'status'        => 'failed',
+                    'error_message' => 'Token WA belum dikonfigurasi untuk cabang ini maupun global.',
+                ]);
+                $this->warn("  ✗ Skip #{$followUp->id}: token tidak tersedia.");
+                Log::warning("SendFollowUp skip #{$followUp->id}: token tidak tersedia.");
+                continue;
+            }
+
             $phone = $this->normalizePhone($followUp->owner_phone ?? '');
 
             if (empty($phone)) {

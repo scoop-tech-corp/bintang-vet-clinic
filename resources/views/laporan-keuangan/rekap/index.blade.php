@@ -72,6 +72,7 @@
       <ul class="pagination pagination-sm m-t-10px pull-left"></ul>
     </div>
   </div>
+
 </div>
 
 @component('layout.message-box')
