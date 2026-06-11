@@ -47,6 +47,8 @@ class PenggajianController extends Controller
                     DB::raw("TRIM(py.total_grooming)+0 as total_grooming"),
                     DB::raw("TRIM(py.minus_turnover)+0 as minus_turnover"),
                     DB::raw("TRIM(py.eat)+0 as eat"),
+                    DB::raw("TRIM(py.amount_eat)+0 as amount_eat"),
+                    DB::raw("TRIM(py.count_eat)+0 as count_eat"),
                     DB::raw("TRIM(py.fine)+0 as fine"),
                 )
                 ->where('py.isDeleted', '=', 0);
@@ -105,6 +107,8 @@ class PenggajianController extends Controller
                     DB::raw("TRIM(py.total_grooming)+0 as total_grooming"),
                     DB::raw("TRIM(py.minus_turnover)+0 as minus_turnover"),
                     DB::raw("TRIM(py.eat)+0 as eat"),
+                    DB::raw("TRIM(py.amount_eat)+0 as amount_eat"),
+                    DB::raw("TRIM(py.count_eat)+0 as count_eat"),
                     DB::raw("TRIM(py.fine)+0 as fine"),
                 )
                 ->where('py.isDeleted', '=', 0);
@@ -235,6 +239,8 @@ class PenggajianController extends Controller
 
             'minus_turnover' => 'required|numeric|min:0',
             'eat' => 'required|numeric|min:0',
+            'amount_eat' => 'required|numeric|min:0',
+            'count_eat' => 'required|numeric|min:0',
             'fine' => 'required|numeric|min:0',
         ]);
 
@@ -293,6 +299,8 @@ class PenggajianController extends Controller
 
             'minus_turnover' => $request->minus_turnover,
             'eat' => $request->eat,
+            'amount_eat' => $request->amount_eat,
+            'count_eat' => $request->count_eat,
             'fine' => $request->fine,
         ]);
 
@@ -442,11 +450,24 @@ class PenggajianController extends Controller
             $total_grooming = $count_grooming->count_grooming;
         }
 
+        $count_eat_query = DB::table('attendances')
+            ->where('user_id', $request->id)
+            ->where('status', 'hadir');
+
+        if ($request->date) {
+            $count_eat_query = $count_eat_query
+                ->whereMonth('tanggal', $date[1])
+                ->whereYear('tanggal', $date[2]);
+        }
+
+        $count_eat = $count_eat_query->count();
+
         return response()->json([
             'amount_turnover' => $amount_turnover,
             'count_inpatient' => $total_inpatient,
             'amount_surgery' => $amount_surgery->amount_surgery,
             'count_grooming' => $total_grooming,
+            'count_eat' => $count_eat,
         ], 200);
     }
 
@@ -482,6 +503,8 @@ class PenggajianController extends Controller
 
             'minus_turnover' => 'required|numeric|min:0',
             'eat' => 'required|numeric|min:0',
+            'amount_eat' => 'required|numeric|min:0',
+            'count_eat' => 'required|numeric|min:0',
             'fine' => 'required|numeric|min:0',
         ]);
 
@@ -539,6 +562,8 @@ class PenggajianController extends Controller
 
         $payroll->minus_turnover = $request->minus_turnover;
         $payroll->eat = $request->eat;
+        $payroll->amount_eat = $request->amount_eat;
+        $payroll->count_eat = $request->count_eat;
         $payroll->fine = $request->fine;
 
         $payroll->save();

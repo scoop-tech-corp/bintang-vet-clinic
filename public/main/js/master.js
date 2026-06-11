@@ -57,6 +57,11 @@ $(document).ready(function() {
       $('.menuOmset').hide();
     }
 
+    // Halaman pengabaran hanya untuk admin — redirect jika bukan admin
+    if (window.location.pathname.startsWith('/pengabaran/') && role !== 'admin') {
+      location.href = $('.baseUrl').val() + '/unauthorized';
+    }
+
     if (role === 'admin') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuDokter').show();   $('.menuTindakan').show();
@@ -67,7 +72,8 @@ $(document).ready(function() {
       $('.menuPengeluaran').show(); $('.menuRekap').show();
       $('.menuLayanan').show();
       $('.menuAbsensi').show();
-      $('.menuMasterShift').show(); $('.menuLaporanAbsensi').show();
+      $('.menuMasterShift').show(); $('.menuLaporanAbsensi').show(); $('.menuRadiusException').show();
+      $('.menuPengabaran').show();
     } else if (role === 'resepsionis') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuTindakan').show(); $('.menuPembayaran').show();
@@ -113,8 +119,10 @@ $(document).ready(function() {
         $('.menuDokter').addClass('active');
       } else if (pathName === '/laporan-keuangan-harian' || pathName === '/laporan-keuangan-mingguan' || pathName === '/laporan-keuangan-bulanan' || pathName === '/laporan-keuangan-rekap'|| pathName === '/laporan-keuangan-omset') {
         $('.menuKeuangan').addClass('active');
-      } else if (pathName === '/shift' || pathName === '/absensi') {
+      } else if (pathName === '/shift' || pathName === '/absensi' || pathName === '/absensi-radius-exception') {
         $('.menuAbsensi').addClass('active');
+      } else if (pathName.startsWith('/pengabaran/')) {
+        $('.menuPengabaran').addClass('active');
       }
     } else {
       // additional custom url

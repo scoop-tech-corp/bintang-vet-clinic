@@ -38,8 +38,19 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
                 DB::raw("TIME_FORMAT(a.jam_masuk, '%H:%i') as jam_masuk"),
                 DB::raw("TIME_FORMAT(a.jam_keluar, '%H:%i') as jam_keluar"),
                 'a.alamat',
+                'a.jarak_meter',
                 'a.keterangan',
-                'a.status'
+                DB::raw("
+                    CASE
+                        WHEN a.status = 'tidak_sesuai' THEN 'tidak_sesuai'
+                        WHEN a.jam_keluar IS NOT NULL AND a.jam_keluar < shifts.jam_keluar THEN 'tidak_sesuai'
+                        WHEN a.jam_keluar IS NULL AND (
+                            a.tanggal < CURDATE()
+                            OR (a.tanggal = CURDATE() AND TIME(NOW()) > shifts.jam_keluar)
+                        ) THEN 'tidak_sesuai'
+                        ELSE a.status
+                    END as status
+                ")
             );
 
         if (!empty($this->filters['branch_id'])) {
@@ -63,7 +74,7 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
         }
 
         if (!empty($this->filters['status'])) {
-            $query->where('a.status', '=', $this->filters['status']);
+            $query->havingRaw('status = ?', [$this->filters['status']]);
         }
 
         if (!empty($this->filters['keyword'])) {
@@ -75,7 +86,7 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
 
     public function headings(): array
     {
-        return ['No', 'Nama Karyawan', 'Cabang', 'Shift', 'Tanggal', 'Jam Shift Masuk', 'Jam Shift Keluar', 'Jam Absen Masuk', 'Jam Absen Keluar', 'Lokasi', 'Keterangan', 'Status'];
+        return ['No', 'Nama Karyawan', 'Cabang', 'Shift', 'Tanggal', 'Jam Shift Masuk', 'Jam Shift Keluar', 'Jam Absen Masuk', 'Jam Absen Keluar', 'Lokasi', 'Jarak', 'Keterangan', 'Status'];
     }
 
     public function map($row): array
@@ -83,13 +94,21 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
         $this->no++;
 
         $statusLabel = match ($row->status) {
-            'hadir'       => 'Hadir',
-            'terlambat'   => 'Terlambat',
-            'tidak_hadir' => 'Tidak Hadir',
-            default       => $row->status,
+            'hadir'        => 'Hadir',
+            'terlambat'    => 'Terlambat',
+            'tidak_hadir'  => 'Tidak Hadir',
+            'tidak_sesuai' => 'Absensi Tidak Sesuai (Berpotensi Potong Gaji)',
+            default        => $row->status,
         };
 
-        return [$this->no, $row->fullname, $row->branch_name, $row->nama_shift, $row->tanggal, $row->shift_jam_masuk, $row->shift_jam_keluar, $row->jam_masuk ?? '-', $row->jam_keluar ?? '-', $row->alamat ?? '-', $row->keterangan ?? '-', $statusLabel];
+        $jarak = '-';
+        if (!is_null($row->jarak_meter)) {
+            $jarak = $row->jarak_meter >= 1000
+                ? round($row->jarak_meter / 1000, 1) . ' km'
+                : $row->jarak_meter . ' m';
+        }
+
+        return [$this->no, $row->fullname, $row->branch_name, $row->nama_shift, $row->tanggal, $row->shift_jam_masuk, $row->shift_jam_keluar, $row->jam_masuk ?? '-', $row->jam_keluar ?? '-', $row->alamat ?? '-', $jarak, $row->keterangan ?? '-', $statusLabel];
     }
 
     public function title(): string
@@ -104,9 +123,9 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
                 $sheet      = $event->sheet->getDelegate();
                 $highestRow = $sheet->getHighestRow();
 
-                // Kolom B = Nama Karyawan, L = Status
+                // Kolom B = Nama Karyawan, M = Status (setelah tambah kolom Jarak)
                 for ($row = 2; $row <= $highestRow; $row++) {
-                    $status = $sheet->getCell('L' . $row)->getValue();
+                    $status = $sheet->getCell('M' . $row)->getValue();
 
                     if ($status === 'Terlambat') {
                         $styleOrange = [
@@ -117,7 +136,7 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
                             'font' => ['color' => ['rgb' => 'ffffff'], 'bold' => true],
                         ];
                         $sheet->getStyle('B' . $row)->applyFromArray($styleOrange);
-                        $sheet->getStyle('L' . $row)->applyFromArray($styleOrange);
+                        $sheet->getStyle('M' . $row)->applyFromArray($styleOrange);
                     }
                 }
             },

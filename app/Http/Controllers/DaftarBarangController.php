@@ -155,7 +155,7 @@ class DaftarBarangController extends Controller
             $item = $item->where('list_of_items.branch_id', '=', $request->branch_id);
         }
 
-        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+        if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis' || $request->user()->role == 'paramedis') {
             $item = $item->where('list_of_items.branch_id', '=', $request->user()->branch_id);
         }
 

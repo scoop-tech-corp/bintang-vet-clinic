@@ -53,13 +53,14 @@
             <th>Jam Masuk</th>
             <th>Jam Keluar</th>
             <th>Toleransi</th>
+            <th>Untuk Role</th>
             <th>Status</th>
             <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="listShift.length === 0" class="text-center">
-            <td colspan="8">Tidak ada data.</td>
+            <td colspan="9">Tidak ada data.</td>
           </tr>
           <tr v-for="(item, idx) in listShift" :key="item.id">
             <td>@{{ idx + 1 }}</td>
@@ -68,6 +69,7 @@
             <td>@{{ item.jam_masuk }}</td>
             <td>@{{ item.jam_keluar }}</td>
             <td>@{{ item.toleransi_menit }} menit</td>
+            <td>@{{ roleLabel(item.for_role) }}</td>
             <td>
               <span class="label" :class="item.status == 1 ? 'label-success' : 'label-danger'">
                 @{{ item.status == 1 ? 'Aktif' : 'Nonaktif' }}
@@ -137,6 +139,18 @@
             <label>Toleransi Keterlambatan (Menit) <span class="text-danger">*</span></label>
             <input type="number" class="form-control" v-model="form.toleransi_menit" min="0" placeholder="15">
             <span class="help-block">Batas menit setelah jam masuk yang masih dianggap tepat waktu.</span>
+          </div>
+
+          <div class="form-group">
+            <label>Untuk Role</label>
+            <select class="form-control" v-model="form.for_role">
+              <option value="">Semua Role</option>
+              <option value="admin">Admin</option>
+              <option value="dokter">Dokter</option>
+              <option value="resepsionis">Resepsionis</option>
+              <option value="paramedis">Paramedis</option>
+            </select>
+            <span class="help-block">Kosongkan jika shift berlaku untuk semua role.</span>
           </div>
 
         </div>

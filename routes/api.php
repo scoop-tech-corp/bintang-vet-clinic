@@ -249,6 +249,7 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::get('laporan-keuangan/rekap/listperiode', 'RekapController@listperiode');
         Route::get('laporan-keuangan/rekap/download', 'RekapController@export');
+        Route::get('laporan-keuangan/rekap/patient-summary', 'RekapController@patientSummary');
 
         Route::get('laporan-keuangan/rekap-all', 'RekapKeseluruhanController@index');
         Route::get('laporan-keuangan/rekap-all-chart', 'RekapKeseluruhanController@chart');
@@ -288,6 +289,18 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('absensi/keluar', 'AbsensiController@keluar');
         Route::get('absensi/export', 'AbsensiController@export');
         Route::get('absensi', 'AbsensiController@index');
+
+        //absensi radius exception
+        Route::get('absensi-radius-exception', 'AbsensiRadiusExceptionController@index');
+        Route::post('absensi-radius-exception', 'AbsensiRadiusExceptionController@create');
+        Route::delete('absensi-radius-exception', 'AbsensiRadiusExceptionController@delete');
+
+        //pengabaran
+        Route::get('pengabaran/nomor-wa', 'PengabaranController@getNomorWa');
+        Route::put('pengabaran/nomor-wa', 'PengabaranController@saveNomorWa');
+        Route::get('pengabaran/template', 'PengabaranController@getTemplates');
+        Route::put('pengabaran/template', 'PengabaranController@saveTemplate');
+        Route::delete('pengabaran/template', 'PengabaranController@deleteTemplate');
     });
 });
 

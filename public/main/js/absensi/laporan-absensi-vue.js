@@ -67,6 +67,11 @@ const absensiApp = new Vue({
         headers: { Authorization: 'Bearer ' + this.token }
       }).then(res => { this.listShift = res.data; }).catch(() => {});
     },
+    formatJarak(meter) {
+      if (meter === null || meter === undefined) return '-';
+      if (meter >= 1000) return (meter / 1000).toFixed(1) + ' km';
+      return meter + ' m';
+    },
     lihatFoto(url) {
       this.fotoPreview = url;
       $('#modal-foto').modal('show');

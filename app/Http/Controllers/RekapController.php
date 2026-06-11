@@ -428,6 +428,166 @@ class RekapController extends Controller
     ]);
   }
 
+  public function patientSummary(Request $request)
+  {
+    if ($request->user()->role == 'dokter' || $request->user()->role == 'resepsionis') {
+      return response()->json([
+        'message' => 'The user role was invalid.',
+        'errors' => ['Akses User tidak diizinkan!'],
+      ], 403);
+    }
+
+    $is_yearly   = $request->periode == 2;
+    $is_all_time = $request->periode == 3;
+    $lastPeriods = collect();
+    $listDates   = [];
+
+    Carbon::setLocale('id');
+
+    if (!$is_all_time) {
+      if ($is_yearly) {
+        if ($request->year) {
+          $lastPeriods->push(['year' => (int) $request->year]);
+          $listDates[] = ['dates' => (int) $request->year];
+        } else {
+          $currentYear = Carbon::now()->year;
+          for ($i = 0; $i < 5; $i++) {
+            $lastPeriods->push(['year' => $currentYear - $i]);
+            $listDates[] = ['dates' => $currentYear - $i];
+          }
+        }
+      } else {
+        if ($request->month_from && $request->year_from && $request->month_to && $request->year_to) {
+          $cur = Carbon::createFromDate((int) $request->year_from, (int) $request->month_from, 1)->startOfMonth();
+          $end = Carbon::createFromDate((int) $request->year_to,   (int) $request->month_to,   1)->startOfMonth();
+          while ($cur->lte($end)) {
+            $lastPeriods->push(['month' => $cur->month, 'year' => $cur->year]);
+            $listDates[] = ['dates' => $cur->translatedFormat('F Y')];
+            $cur->addMonths(1);
+          }
+        } else {
+          $month = Carbon::now()->subMonths(13);
+          for ($i = 0; $i < 13; $i++) {
+            $month = $month->addMonths(1);
+            if ($month->day !== 1) { $month->day(1); }
+            $lastPeriods->push(['month' => $month->format('n'), 'year' => $month->format('Y')]);
+            $listDates[] = ['dates' => $month->translatedFormat('F Y')];
+          }
+        }
+      }
+    }
+
+    // Build date range for query
+    $dateFrom = $dateTo = null;
+    if (!$is_all_time) {
+      if ($is_yearly) {
+        $year     = $request->year ? (int) $request->year : now()->year;
+        $dateFrom = Carbon::createFromDate($year, 1, 1)->startOfYear();
+        $dateTo   = Carbon::createFromDate($year, 12, 31)->endOfYear();
+      } else {
+        if ($request->month_from && $request->year_from && $request->month_to && $request->year_to) {
+          $dateFrom = Carbon::createFromDate((int) $request->year_from, (int) $request->month_from, 1)->startOfMonth();
+          $dateTo   = Carbon::createFromDate((int) $request->year_to,   (int) $request->month_to,   1)->endOfMonth();
+        } else {
+          $dateFrom = now()->subMonths(13)->startOfMonth();
+          $dateTo   = now()->endOfMonth();
+        }
+      }
+    }
+
+    $groupSel = $is_yearly
+      ? 'YEAR(registrations.created_at) as year_val'
+      : 'YEAR(registrations.created_at) as year_val, MONTH(registrations.created_at) as month_val';
+    $groupBy = $is_yearly
+      ? 'YEAR(registrations.created_at), complaints.id'
+      : 'YEAR(registrations.created_at), MONTH(registrations.created_at), complaints.id';
+
+    $q = DB::table('registrations')
+      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+      ->join('users', 'registrations.doctor_user_id', '=', 'users.id')
+      ->join('branches', 'users.branch_id', '=', 'branches.id')
+      ->leftJoin('complaints', 'registrations.complaint_id', '=', 'complaints.id')
+      ->selectRaw("COUNT(registrations.id) as total, COALESCE(complaints.name, 'Lainnya') as complaint_name, complaints.id as complaint_id, {$groupSel}")
+      ->where('registrations.isDeleted', '=', 0)
+      ->groupByRaw($groupBy)
+      ->orderByRaw($groupBy);
+
+    if (!$is_all_time) {
+      $q->where('registrations.created_at', '>=', $dateFrom)
+        ->where('registrations.created_at', '<=', $dateTo);
+    }
+    if ($request->branch_id) {
+      $q->where('branches.id', '=', $request->branch_id);
+    } elseif ($request->user()->role !== 'admin') {
+      $q->where('branches.id', '=', $request->user()->branch_id);
+    }
+
+    $rows = $q->get();
+
+    // Build period => complaint => total map, and collect complaint order
+    $makeKey = $is_yearly
+      ? fn($r) => (string) $r->year_val
+      : fn($r) => $r->year_val . '-' . $r->month_val;
+
+    $counts_map     = [];
+    $complaint_order = [];
+    foreach ($rows as $row) {
+      $key = $makeKey($row);
+      $counts_map[$key][$row->complaint_name] = (int) $row->total;
+      $complaint_order[$row->complaint_id ?? 'null'] = $row->complaint_name;
+    }
+
+    // Sort complaints by id, 'Lainnya' (null id) last
+    uksort($complaint_order, function ($a, $b) {
+      if ($a === 'null') return 1;
+      if ($b === 'null') return -1;
+      return (int) $a - (int) $b;
+    });
+    $complaints = array_values($complaint_order);
+
+    // For all_time: derive periods from the map
+    if ($is_all_time) {
+      $allKeys = collect(array_keys($counts_map))
+        ->filter(fn($k) => substr_count($k, '-') === 1)
+        ->sort(function ($a, $b) {
+          [$ay, $am] = explode('-', $a);
+          [$by, $bm] = explode('-', $b);
+          return $ay !== $by ? (int)$ay - (int)$by : (int)$am - (int)$bm;
+        })
+        ->values();
+
+      foreach ($allKeys as $k) {
+        [$yr, $mo] = explode('-', $k);
+        $yr = (int) $yr; $mo = (int) $mo;
+        if ($yr < 2000 || $mo < 1 || $mo > 12) continue;
+        $lastPeriods->push(['month' => $mo, 'year' => $yr]);
+        $listDates[] = ['dates' => Carbon::createFromDate($yr, $mo, 1)->translatedFormat('F Y')];
+      }
+    }
+
+    // Build result rows (one per period, columns per complaint)
+    $datas = collect();
+    foreach ($lastPeriods as $i => $val) {
+      $key           = $is_yearly ? (string) $val['year'] : $val['year'] . '-' . $val['month'];
+      $period_counts = $counts_map[$key] ?? [];
+
+      $row_data = ['dates' => $listDates[$i]['dates']];
+      $total    = 0;
+      foreach ($complaints as $complaint) {
+        $count              = $period_counts[$complaint] ?? 0;
+        $row_data[$complaint] = $count;
+        $total              += $count;
+      }
+      $row_data['total'] = $total;
+      $datas->push($row_data);
+    }
+
+    return response()->json([
+      'complaints' => $complaints,
+      'data'       => $datas,
+    ], 200);
+  }
+
   private function buildFinancialMaps(Request $request, bool $is_yearly, bool $is_all_time = false): array
   {
     $branchId = $request->branch_id ?: 'all';
@@ -548,12 +708,12 @@ class RekapController extends Controller
       $expGroup = $byYear ? 'YEAR(e.date_spend)' : 'YEAR(e.date_spend), MONTH(e.date_spend)';
 
       $q = DB::table('expenses as e')
-        ->join('users as u', 'e.user_id_spender', '=', 'u.id')
-        ->join('branches as b', 'u.branch_id', '=', 'b.id')
+        ->leftJoin('users as u', 'e.user_id_spender', '=', 'u.id')
         ->selectRaw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall, {$expSel}")
+        ->where('e.isDeleted', '=', 0)
         ->groupByRaw($expGroup);
       if (!$is_all_time) { $q->where('e.date_spend', '>=', $dateFrom)->where('e.date_spend', '<=', $dateTo); }
-      if ($request->branch_id) { $q->where('b.id', '=', $request->branch_id); }
+      if ($request->branch_id) { $q->where('u.branch_id', '=', $request->branch_id); }
       foreach ($q->get() as $row) {
         $exp_map[$makeKey($row)] = $row->amount_overall;
       }

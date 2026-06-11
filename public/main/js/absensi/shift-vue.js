@@ -10,6 +10,7 @@ const shiftApp = new Vue({
       jam_keluar: '',
       toleransi_menit: 15,
       id_cabang: '',
+      for_role: '',
     },
     errors: {},
     filterBranchId: '',
@@ -72,6 +73,7 @@ const shiftApp = new Vue({
         jam_keluar: '',
         toleransi_menit: 15,
         id_cabang: this.filterBranchId || this.branchId,
+        for_role: '',
       };
       $('#modal-shift').modal('show');
     },
@@ -85,6 +87,7 @@ const shiftApp = new Vue({
         jam_keluar:      item.jam_keluar,
         toleransi_menit: item.toleransi_menit,
         id_cabang:       item.branch_id,
+        for_role:        item.for_role || '',
       };
       $('#modal-shift').modal('show');
     },
@@ -131,6 +134,10 @@ const shiftApp = new Vue({
         const msg = err.response?.data?.errors?.[0] || 'Gagal menghapus shift.';
         this.tampilAlert(false, msg);
       });
+    },
+    roleLabel(role) {
+      const map = { admin: 'Admin', dokter: 'Dokter', resepsionis: 'Resepsionis', paramedis: 'Paramedis' };
+      return map[role] || 'Semua Role';
     },
     tampilAlert(success, msg) {
       this.isSuccess = success;

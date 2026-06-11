@@ -17,7 +17,9 @@ class Attendance extends Model
         'latitude',
         'longitude',
         'alamat',
+        'jarak_meter',
         'keterangan',
+        'alasan_terlambat_pulang',
         'status',
     ];
 }

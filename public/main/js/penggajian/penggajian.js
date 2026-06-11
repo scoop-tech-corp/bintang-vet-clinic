@@ -95,7 +95,7 @@ $(document).ready(function() {
 
   $('#pokok').mask("#.##0", {reverse: true, maxlength: false});
   $('#akomodasi').mask("#.##0", {reverse: true, maxlength: false});
-  $('#eat').mask("#.##0", {reverse: true, maxlength: false});
+  $('#inputEat').mask("#.##0", {reverse: true, maxlength: false});
   $('#fine').mask("#.##0", {reverse: true, maxlength: false});
 
   $('#inputInap').mask("#.##0", {reverse: true, maxlength: false});
@@ -131,6 +131,8 @@ $(document).ready(function() {
           $('#omset-karyawan').attr('value', data.amount_turnover);
           $('#omset-karyawan').text(data.amount_turnover !== null ? data.amount_turnover.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-');
 
+          $('#eat-karyawan').val(data.count_eat !== null ? data.count_eat : 0);
+
           $('#inap-karyawan').attr('value', data.count_inpatient);
           $('#inap-karyawan').text(data.count_inpatient !== null ? data.count_inpatient.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-');
 
@@ -156,6 +158,8 @@ $(document).ready(function() {
   $('#akomodasi').keyup(function () { validationForm(); overallTotalCalculation(); });
 	$('#inputMinusTurnover').keyup(function () { validationForm(); overallTotalCalculation(); });
   $('#inputOmset').keyup(function () { validationForm(); overallTotalCalculation(); });
+  $('#inputEat').keyup(function () { validationForm(); overallTotalCalculation(); });
+  $('#eat-karyawan').keyup(function () { overallTotalCalculation(); });
   $('#inputInap').keyup(function () { validationForm(); overallTotalCalculation(); });
   $('#inputOperasi').keyup(function () { validationForm(); overallTotalCalculation(); });
 	$('#inputGrooming').keyup(function () { validationForm(); overallTotalCalculation(); });
@@ -180,7 +184,9 @@ $(document).ready(function() {
 			fd.append('date_payed', getDate);
 			fd.append('basic_sallary', $('#pokok').val().replaceAll('.', ''));
 			fd.append('accomodation', $('#akomodasi').val().replaceAll('.', ''));
-			fd.append('eat', $('#eat').val().replaceAll('.', ''));
+			fd.append('amount_eat', parseFloat($('#inputEat').val().replaceAll('.', '')) || 0);
+			fd.append('count_eat', parseFloat($('#eat-karyawan').val()) || 0);
+			fd.append('eat', parseFloat($('#totalEat').attr('value')) || 0);
 			fd.append('fine', $('#fine').val().replaceAll('.', ''));
 
 			fd.append('percentage_turnover', $('#inputOmset').val());
@@ -254,7 +260,9 @@ $(document).ready(function() {
 				date_payed: getDate,
 				basic_sallary: $('#pokok').val().replaceAll('.', ''),
 				accomodation: $('#akomodasi').val().replaceAll('.', ''),
-				eat: $('#eat').val().replaceAll('.', ''),
+				amount_eat: parseFloat($('#inputEat').val().replaceAll('.', '')) || 0,
+				count_eat: parseFloat($('#eat-karyawan').val()) || 0,
+				eat: parseFloat($('#totalEat').attr('value')) || 0,
 				fine: $('#fine').val().replaceAll('.', ''),
 				percentage_turnover: $('#inputOmset').val(),
         amount_turnover: parseFloat($('#omset-karyawan').attr('value')),
@@ -376,8 +384,8 @@ $(document).ready(function() {
               }</td>
               <td>Rp ${
                 Number(v.eat || 0).toLocaleString('id-ID')
-                  // typeof(v.eat) == 'number' ? v.eat.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
               }</td>
+              <td>${v.count_eat || 0}</td>
               <td>Rp ${
                 Number(v.fine || 0).toLocaleString('id-ID')
                   // typeof(v.fine) == 'number' ? v.fine.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : ''
@@ -438,8 +446,11 @@ $(document).ready(function() {
 					$('#selectedNamaKaryawan').val(getObj.user_employee_id); $('#selectedNamaKaryawan').trigger('change');
           $('#pokok').val(getObj.basic_sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#akomodasi').val(getObj.accomodation.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
-          $('#eat').val(getObj.eat.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
           $('#fine').val(getObj.fine.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#inputEat').val(getObj.amount_eat.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+          $('#eat-karyawan').val(getObj.count_eat !== null ? getObj.count_eat : 0);
+          $('#totalEat').attr('value', getObj.eat);
+          $('#totalEat').text('Rp ' + getObj.eat.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
 					$('#inputMinusTurnover').val(getObj.minus_turnover.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
 
           $('#inputOmset').val(getObj.percentage_turnover);
@@ -480,7 +491,7 @@ $(document).ready(function() {
           $('#namakaryawan-txt').text(getObj.fullname);
           $('#pokok-txt').text('Rp ' + ((getObj.basic_sallary > -1) ? getObj.basic_sallary.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-'));
           $('#akomodasi-txt').text('Rp ' + ((getObj.accomodation > -1) ? getObj.accomodation.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-'));
-          $('#eat-txt').text('Rp ' + ((getObj.eat > -1) ? getObj.eat.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-'));
+          $('#eat-txt').text('Rp ' + ((getObj.eat >= 0) ? getObj.eat.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-') + ' (' + (getObj.count_eat || 0) + ' hari)');
           $('#fine-txt').text('Rp ' + ((getObj.fine > -1) ? getObj.fine.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-'));
 
           $('#jumlah-omset-txt').text('Rp ' + ((getObj.total_turnover > -1) ? getObj.total_turnover.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') : '-'));
@@ -578,8 +589,9 @@ $(document).ready(function() {
 		$('#selectedNamaKaryawan').val(null);
     $('#pokok').val(null);
     $('#akomodasi').val(null);
-    $('#eat').val(null);
     $('#fine').val(null);
+    $('#inputEat').val(null); $('#totalEat').text('Rp -');
+    $('#eat-karyawan').val(null);
 		$('#inputMinusTurnover').val(null);
 
     $('#inputOmset').val(null); $('#totalOmset').text('Rp -');
@@ -632,6 +644,16 @@ $(document).ready(function() {
       $('#totalOmset').text('Rp ' + totalOmset.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
     }
 
+    // process Uang Makan
+    let totalEat = 0;
+    const getEat = parseFloat($('#inputEat').val().replaceAll('.', ''));
+    const getEatKaryawan = parseFloat($('#eat-karyawan').val()) || 0;
+    if (getEat >= 0 && getEatKaryawan >= 0) {
+      totalEat = getEat * getEatKaryawan;
+      $('#totalEat').attr('value', totalEat);
+      $('#totalEat').text('Rp ' + totalEat.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+    }
+
     // process Inap
     const getInap = parseFloat($('#inputInap').val().replaceAll('.', ''));
     const getInapKaryawan = parseFloat($('#inap-karyawan').attr('value'));
@@ -662,10 +684,9 @@ $(document).ready(function() {
     // process total keseluruhan
     const pokok     = parseFloat($('#pokok').val().replaceAll('.', ''));
     const akomodasi = parseFloat($('#akomodasi').val().replaceAll('.', ''));
-    const eat       = parseFloat($('#eat').val().replaceAll('.', '')) || 0;
     const fine      = parseFloat($('#fine').val().replaceAll('.', '')) || 0;
     if (totalOmset > -1 && totalInap > -1 && totalOperasi > -1 && totalGrooming > -1 && pokok > -1 && akomodasi > -1) {
-      const total = totalOmset + totalInap + totalOperasi + totalGrooming + pokok + akomodasi + eat - fine;
+      const total = totalOmset + totalInap + totalOperasi + totalGrooming + pokok + akomodasi + totalEat - fine;
 
       $('#totalKeseluruhan').attr('value', total);
       $('#totalKeseluruhan').text('Rp ' + total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
@@ -715,6 +736,12 @@ $(document).ready(function() {
 			$('#omsetErr1').text('Omset harus di isi'); isValidOmset = false;
 		} else {
 			$('#omsetErr1').text(''); isValidOmset = true;
+		}
+
+    if (!$('#inputEat').val()) {
+			$('#eatErr1').text('Uang makan harus di isi'); isValidEat = false;
+		} else {
+			$('#eatErr1').text(''); isValidEat = true;
 		}
 
     if (!$('#inputInap').val()) {

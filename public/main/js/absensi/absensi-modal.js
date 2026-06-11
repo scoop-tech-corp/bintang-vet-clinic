@@ -14,6 +14,10 @@
   let petaMarker = null;
   let jamInterval = null;
   let sudahFoto = false;
+  let branchLat = null;
+  let branchLng = null;
+  let jarakOk = true;
+  let radiusBypassed = false;
 
   // Dipanggil dari login-vue.js setelah login berhasil
   window.bukaModalAbsensi = function (authToken, url) {
@@ -28,8 +32,15 @@
         // Sudah absen masuk, langsung redirect dashboard
         window.location.href = baseUrl + '/';
       } else {
+        // Simpan koordinat cabang untuk validasi jarak
+        branchLat       = res.data.branch_latitude ? parseFloat(res.data.branch_latitude) : null;
+        branchLng       = res.data.branch_longitude ? parseFloat(res.data.branch_longitude) : null;
+        radiusBypassed  = res.data.is_radius_bypassed === true;
         // Belum absen, tampilkan modal
         inisialisasiModal();
+        $('#modal-absensi').one('shown.bs.modal', function () {
+          if (petaMap) petaMap.invalidateSize();
+        });
         $('#modal-absensi').modal('show');
       }
     }).catch(function () {
@@ -133,6 +144,7 @@
           latitude.toFixed(6) + ', ' + longitude.toFixed(6)
         );
         inisialisasiPeta(latitude, longitude);
+        cekJarakKlinik();
         // Reverse geocode pakai Nominatim (gratis, tanpa API key)
         fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + latitude + '&lon=' + longitude)
           .then(function (r) { return r.json(); })
@@ -148,7 +160,9 @@
       },
       function () {
         $('#status-lokasi').html('<span class="text-warning"><i class="fa fa-exclamation-triangle"></i> Lokasi tidak dapat dideteksi. Absensi tetap bisa dilakukan.</span>');
+        jarakOk = true;
         inisialisasiPetaDefault();
+        cekSiapSubmit();
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
@@ -161,15 +175,58 @@
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(petaMap);
     petaMarker = L.marker([lat, lng]).addTo(petaMap).bindPopup('Lokasi Anda').openPopup();
+    setTimeout(function () { if (petaMap) petaMap.invalidateSize(); }, 300);
   }
 
   function inisialisasiPetaDefault() {
     if (petaMap) return;
-    // Default ke Jakarta jika GPS gagal
     petaMap = L.map('peta-absensi').setView([-6.2088, 106.8456], 12);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(petaMap);
+    setTimeout(function () { if (petaMap) petaMap.invalidateSize(); }, 300);
+  }
+
+  // ── JARAK KE KLINIK ───────────────────────────────────────────
+  function hitungJarak(lat1, lon1, lat2, lon2) {
+    var R = 6371000;
+    var phi1 = lat1 * Math.PI / 180;
+    var phi2 = lat2 * Math.PI / 180;
+    var dphi = (lat2 - lat1) * Math.PI / 180;
+    var dlambda = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dphi / 2) * Math.sin(dphi / 2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(dlambda / 2) * Math.sin(dlambda / 2);
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+
+  function cekJarakKlinik() {
+    if (!branchLat || !branchLng) {
+      jarakOk = true;
+      $('#status-jarak').hide();
+      cekSiapSubmit();
+      return;
+    }
+
+    var jarak = hitungJarak(latitude, longitude, branchLat, branchLng);
+
+    if (radiusBypassed) {
+      jarakOk = true;
+      $('#status-jarak')
+        .html('<i class="fa fa-info-circle" style="color:#3c8dbc;"></i> <strong style="color:#3c8dbc;">Jarak ke klinik: ' + jarak + ' meter</strong> &mdash; Validasi radius tidak berlaku untuk akun ini.')
+        .show();
+    } else if (jarak <= 500) {
+      jarakOk = true;
+      $('#status-jarak')
+        .html('<i class="fa fa-check-circle text-success"></i> <strong style="color:#00a65a;">Jarak ke klinik: ' + jarak + ' meter</strong> &mdash; Dalam radius yang diizinkan.')
+        .show();
+    } else {
+      jarakOk = false;
+      $('#status-jarak')
+        .html('<i class="fa fa-times-circle text-danger"></i> <strong style="color:#dd4b39;">Jarak ke klinik: ' + jarak + ' meter</strong> &mdash; Melebihi radius 500 meter. Absensi tidak dapat dilakukan.')
+        .show();
+    }
+    cekSiapSubmit();
   }
 
   // ── SHIFT ─────────────────────────────────────────────────────
@@ -208,7 +265,7 @@
   // ── VALIDASI SUBMIT ───────────────────────────────────────────
   function cekSiapSubmit() {
     const shiftDipilih = $('#select-shift').val();
-    $('#btn-submit-absensi').prop('disabled', !sudahFoto || !shiftDipilih);
+    $('#btn-submit-absensi').prop('disabled', !sudahFoto || !shiftDipilih || !jarakOk);
   }
 
   // ── SUBMIT ABSENSI ────────────────────────────────────────────

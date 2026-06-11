@@ -258,6 +258,15 @@
               </div>
             </div>
 
+            <div class="form-group" id="form-alasan-keluar" style="display:none;">
+              <label>Alasan Pulang Terlambat <span class="text-danger">*</span></label>
+              <small class="text-muted" style="display:block; margin-bottom:5px;">
+                Anda pulang lebih dari 1 jam setelah jam shift selesai. Mohon isi alasan.
+              </small>
+              <textarea id="input-alasan-keluar" class="form-control" rows="3"
+                placeholder="Tuliskan alasan pulang terlambat..."></textarea>
+            </div>
+
             <div id="alert-absen-keluar" class="alert" style="display:none;"></div>
 
           </div>

@@ -587,6 +587,7 @@ class RegistrasiController extends Controller
       ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
       ->join('patients', 'registrations.patient_id', '=', 'patients.id')
       ->join('owners', 'patients.owner_id', '=', 'owners.id')
+      ->join('branches', 'patients.branch_id', '=', 'branches.id')
       ->leftJoin('complaints', 'registrations.complaint_id', '=', 'complaints.id')
       ->select(
         'registrations.id_number',
@@ -605,7 +606,7 @@ class RegistrasiController extends Controller
         DB::raw('(CASE WHEN patients.owner_name = "" THEN owners.owner_name ELSE patients.owner_name END) AS owner_name'),
         DB::raw('(CASE WHEN patients.owner_address = "" THEN owners.owner_address ELSE patients.owner_address END) AS owner_address'),
         DB::raw('(CASE WHEN patients.owner_phone_number = "" THEN owners.owner_phone_number ELSE patients.owner_phone_number END) AS owner_phone_number'),
-        'user_doctor.username as username_doctor',
+        'branches.branch_name',
         DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y %H:%i') as created_at")
       )
       ->where('registrations.id', $id)

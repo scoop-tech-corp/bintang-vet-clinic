@@ -18,6 +18,8 @@ class Payroll extends Model
     'basic_sallary',
     'accomodation',
     'eat',
+    'amount_eat',
+    'count_eat',
     'fine',
     'percentage_turnover',
     'amount_turnover',
