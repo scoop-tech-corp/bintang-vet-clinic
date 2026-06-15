@@ -317,17 +317,12 @@
         <tr class="group-header">
           <td colspan="7">{{ $group->group_name }}</td>
         </tr>
-        @if($group->remark)
-        <tr>
-          <td colspan="7" style="padding: 4px 10px; font-style: italic; color: #555; background: #fafafa;">Keterangan: {{ $group->remark }}</td>
-        </tr>
-        @endif
         @foreach ($group->list_of_medicine as $med)
         <tr>
           <td class="no">{{ $noItem++ }}</td>
           <td>{{ $med->created_at }}</td>
           <td>{{ $med->created_by }}</td>
-          <td>{{ $med->item_name }}</td>
+          <td>{{ $group->remark ?: $med->item_name }}</td>
           <td>{{ $med->category_name }}</td>
           <td>{{ $med->unit_name }}</td>
           <td style="text-align:center">{{ $med->quantity }}</td>
