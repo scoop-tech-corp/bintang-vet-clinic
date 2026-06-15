@@ -304,7 +304,6 @@
         <tr>
           <th class="center" style="width:5%">No</th>
           <th style="width:11%">Tanggal</th>
-          <th style="width:13%">Dibuat Oleh</th>
           <th>Nama Barang</th>
           <th style="width:14%">Kategori Barang</th>
           <th style="width:10%">Satuan</th>
@@ -315,13 +314,12 @@
         @php $noItem = 1; @endphp
         @foreach ($item as $group)
         <tr class="group-header">
-          <td colspan="7">{{ $group->group_name }}</td>
+          <td colspan="6">{{ $group->group_name }}</td>
         </tr>
         @foreach ($group->list_of_medicine as $med)
         <tr>
           <td class="no">{{ $noItem++ }}</td>
           <td>{{ $med->created_at }}</td>
-          <td>{{ $med->created_by }}</td>
           <td>{{ $group->remark ?: $med->item_name }}</td>
           <td>{{ $med->category_name }}</td>
           <td>{{ $med->unit_name }}</td>
@@ -334,21 +332,7 @@
     @endif
 
 
-    {{-- Tanda Tangan --}}
-    <table class="sign-table">
-      <tr>
-        <td>
-          <div class="sign-role">Pemilik Hewan</div>
-          <div class="sign-line">{{ $registration->owner_name }}</div>
-        </td>
-        <td>
-          <div class="sign-role">Dokter Pemeriksa</div>
-          <div class="sign-line">{{ $user->username ?? '-' }}</div>
-        </td>
-      </tr>
-    </table>
-
-    <div class="page-footer">
+<div class="page-footer">
       {{ $data->created_at }}
     </div>
 
