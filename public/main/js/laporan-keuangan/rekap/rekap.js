@@ -409,6 +409,7 @@ $(document).ready(function () {
         year_from:  paramUrlSetup.yearFrom,
         month_to:   paramUrlSetup.monthTo,
         year_to:    paramUrlSetup.yearTo,
+        year:       paramUrlSetup.year,
       },
       beforeSend: function () {
         $("#loading-screen").show();
@@ -425,11 +426,11 @@ $(document).ready(function () {
 
         resp.forEach((dt) => {
           categories.push(dt.periode);
-          series.omset   .push(dt.total_omset || 0);
-          series.discount.push(dt.discount    || 0);
-          series.expenses.push(dt.expenses    || 0);
-          series.sallary .push(dt.sallary     || 0);
-          series.netto   .push(dt.netto       || 0);
+          series.omset   .push(parseFloat(dt.total_omset) || 0);
+          series.discount.push(parseFloat(dt.discount)    || 0);
+          series.expenses.push(parseFloat(dt.expenses)    || 0);
+          series.sallary .push(parseFloat(dt.sallary)     || 0);
+          series.netto   .push(parseFloat(dt.netto)       || 0);
         });
 
         Highcharts.chart("rekapWidget", {
