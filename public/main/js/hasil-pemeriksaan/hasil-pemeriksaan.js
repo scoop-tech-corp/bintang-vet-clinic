@@ -123,7 +123,6 @@ $(document).ready(function() {
               + `<td>${v.pet_name}</td>`
               + `<td>${v.owner_name}</td>`
               + `<td>${v.complaint}</td>`
-              + `<td>${generateBedge(v.status_finish)}</td>`
               + `<td>${(v.status_outpatient_inpatient == 1) ? 'Rawat Inap' : 'Rawat Jalan'}</td>`
               + `<td>${v.created_by}</td>`
               + `<td>
@@ -135,7 +134,7 @@ $(document).ready(function() {
               + `</tr>`;
           });
         } else {
-          listHasilPemeriksaan += `<tr class="text-center"><td colspan="12">Tidak ada data.</td></tr>`;
+          listHasilPemeriksaan += `<tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>`;
         }
 				$('#list-hasil-pemeriksaan').append(listHasilPemeriksaan);
 
