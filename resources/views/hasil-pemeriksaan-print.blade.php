@@ -177,10 +177,6 @@
               <td class="label">Tanggal Periksa</td>
               <td class="value">: {{ $data->created_at }}</td>
             </tr>
-            <tr>
-              <td class="label">Dokter</td>
-              <td class="value">: {{ $user->username ?? '-' }}</td>
-            </tr>
           </table>
         </td>
         <td class="doc-title">HASIL PEMERIKSAAN</td>

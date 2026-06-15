@@ -710,7 +710,7 @@ class RekapController extends Controller
       $q = DB::table('expenses as e')
         ->leftJoin('users as u', 'e.user_id_spender', '=', 'u.id')
         ->selectRaw("TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall, {$expSel}")
-        ->where('e.isDeleted', '=', 0)
+        ->whereRaw('COALESCE(e.isDeleted, 0) = 0')
         ->groupByRaw($expGroup);
       if (!$is_all_time) { $q->where('e.date_spend', '>=', $dateFrom)->where('e.date_spend', '<=', $dateTo); }
       if ($request->branch_id) { $q->where('u.branch_id', '=', $request->branch_id); }

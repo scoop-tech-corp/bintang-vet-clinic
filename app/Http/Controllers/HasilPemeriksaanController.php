@@ -1231,7 +1231,7 @@ class HasilPemeriksaanController extends Controller
         $check_up_result->sign = $sign;
         $check_up_result->diagnosa = $diagnosa;
         $check_up_result->status_outpatient_inpatient = $request->status_outpatient_inpatient;
-        $check_up_result->status_finish = $request->status_finish ?? 0;
+        $check_up_result->status_finish = $check_up_result->status_finish == 1 ? 1 : ($request->status_finish ?? 0);
         $check_up_result->status_pengabaran = $request->status_pengabaran;
         $check_up_result->alasan_tidak_pengabaran = $request->status_pengabaran == 0 ? ($request->alasan_tidak_pengabaran ?? '') : null;
         $check_up_result->user_update_id = $request->user()->id;
