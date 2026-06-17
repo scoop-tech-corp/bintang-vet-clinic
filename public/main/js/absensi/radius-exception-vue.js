@@ -19,7 +19,8 @@ const radiusExceptionApp = new Vue({
     this.token   = auth.token;
     this.baseUrl = document.querySelector('.baseUrl').value;
 
-    if (auth.role !== 'admin') {
+    const blockedRoles = ['dokter', 'resepsionis', 'paramedis'];
+    if (blockedRoles.includes(auth.role.toLowerCase())) {
       window.location.href = this.baseUrl + '/unauthorized';
       return;
     }

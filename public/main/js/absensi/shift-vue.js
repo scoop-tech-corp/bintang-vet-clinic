@@ -36,6 +36,12 @@ const shiftApp = new Vue({
     this.role       = auth.role;
     this.baseUrl    = document.querySelector('.baseUrl').value;
 
+    const blockedRoles = ['dokter', 'resepsionis', 'paramedis'];
+    if (blockedRoles.includes(auth.role.toLowerCase())) {
+      window.location.href = this.baseUrl + '/unauthorized';
+      return;
+    }
+
     this.isAdmin = auth.role === 'admin';
 
     this.form.id_cabang = auth.branch_id;
