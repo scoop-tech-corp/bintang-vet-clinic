@@ -159,7 +159,7 @@
 <body>
 
   <div class="header-wrap">
-    <div class="header-clinic">Bintang Vet Clinic</div>
+    <div class="header-clinic">{{ $registration->branch_name }}</div>
     <div class="header-sub">Hasil Pemeriksaan Pasien</div>
   </div>
   <hr class="header-divider">
@@ -176,10 +176,6 @@
             <tr>
               <td class="label">Tanggal Periksa</td>
               <td class="value">: {{ $data->created_at }}</td>
-            </tr>
-            <tr>
-              <td class="label">Dokter</td>
-              <td class="value">: {{ $user->username ?? '-' }}</td>
             </tr>
           </table>
         </td>
@@ -257,16 +253,6 @@
             <td class="val">{{ $data->diagnosa ?: '-' }}</td>
           </tr>
           <tr>
-            <td class="lbl">Jenis Perawatan</td>
-            <td class="val">
-              @if ($data->status_outpatient_inpatient == 1)
-                <span class="badge badge-info">Rawat Inap</span>
-              @else
-                <span class="badge badge-success">Rawat Jalan</span>
-              @endif
-            </td>
-          </tr>
-          <tr>
             <td class="lbl">Status</td>
             <td class="val">
               @if ($data->status_finish == 1)
@@ -290,30 +276,19 @@
           <th>Nama Jasa</th>
           <th>Kategori</th>
           <th class="center" style="width:10%">Qty</th>
-          <th class="right" style="width:18%">Harga Satuan</th>
-          <th class="right" style="width:18%">Total</th>
         </tr>
       </thead>
       <tbody>
-        @php $noSvc = 1; $totalSvc = 0; @endphp
+        @php $noSvc = 1; @endphp
         @foreach ($services as $svc)
         <tr>
           <td class="no">{{ $noSvc++ }}</td>
           <td>{{ $svc->service_name }}</td>
           <td>{{ $svc->category_name }}</td>
           <td style="text-align:center">{{ $svc->quantity }}</td>
-          <td class="right">Rp {{ number_format($svc->selling_price) }}</td>
-          <td class="right">Rp {{ number_format($svc->price_overall) }}</td>
         </tr>
-        @php $totalSvc += $svc->price_overall; @endphp
         @endforeach
       </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="5" style="text-align:right; font-weight:bold; color:#333;">Total Jasa</td>
-          <td class="right total-val">Rp {{ number_format($totalSvc) }}</td>
-        </tr>
-      </tfoot>
     </table>
     @endif
 
@@ -323,93 +298,35 @@
     <table class="data-table">
       <thead>
         <tr>
-          <th class="center" style="width:7%">No</th>
+          <th class="center" style="width:5%">No</th>
+          <th style="width:11%">Tanggal</th>
           <th>Nama Barang</th>
-          <th style="width:12%">Satuan</th>
-          <th class="center" style="width:10%">Qty</th>
-          <th class="right" style="width:20%">Total</th>
+          <th style="width:14%">Kategori Barang</th>
+          <th style="width:10%">Satuan</th>
+          <th class="center" style="width:7%">Jumlah</th>
         </tr>
       </thead>
       <tbody>
-        @php $noItem = 1; $totalItem = 0; @endphp
+        @php $noItem = 1; @endphp
         @foreach ($item as $group)
-        <tr class="group-header">
-          <td colspan="5">{{ $group->group_name }} @if($group->remark) &mdash; {{ $group->remark }} @endif</td>
-        </tr>
         @foreach ($group->list_of_medicine as $med)
         <tr>
           <td class="no">{{ $noItem++ }}</td>
-          <td>{{ $med->item_name }}</td>
+          <td>{{ $med->created_at }}</td>
+          <td>{{ ($group->remark && (stripos($med->item_name, 'sample') !== false || stripos($med->item_name, 'sampel') !== false)) ? $group->remark : $med->item_name }}</td>
+          <td>{{ $med->category_name }}</td>
           <td>{{ $med->unit_name }}</td>
           <td style="text-align:center">{{ $med->quantity }}</td>
-          <td class="right">Rp {{ number_format($med->price_overall) }}</td>
         </tr>
-        @php $totalItem += $med->price_overall; @endphp
         @endforeach
-        @endforeach
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="4" style="text-align:right; font-weight:bold; color:#333;">Total Obat</td>
-          <td class="right total-val">Rp {{ number_format($totalItem) }}</td>
-        </tr>
-      </tfoot>
-    </table>
-    @endif
-
-    {{-- Grand Total --}}
-    @if (count($services) > 0 || count($item) > 0)
-    @php $grandTotal = (isset($totalSvc) ? $totalSvc : 0) + (isset($totalItem) ? $totalItem : 0); @endphp
-    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
-      <tr>
-        <td style="text-align:right; font-weight:bold; font-size:13px; color:#1a5276; padding:8px 10px; border:2px solid #1a5276; background:#eaf4fb;">
-          Total Keseluruhan &nbsp; Rp {{ number_format($grandTotal) }}
-        </td>
-      </tr>
-    </table>
-    @endif
-
-    {{-- Rawat Inap --}}
-    @if ($data->status_outpatient_inpatient == 1 && count($inpatient) > 0)
-    <div class="section-title">Catatan Rawat Inap</div>
-    <table class="data-table">
-      <thead>
-        <tr>
-          <th class="center" style="width:7%">No</th>
-          <th>Keterangan</th>
-          <th style="width:15%">Tanggal</th>
-          <th style="width:20%">Petugas</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach ($inpatient as $idx => $inp)
-        <tr>
-          <td class="no">{{ $idx + 1 }}</td>
-          <td>{{ $inp->description }}</td>
-          <td>{{ $inp->created_at }}</td>
-          <td>{{ $inp->created_by }}</td>
-        </tr>
         @endforeach
       </tbody>
     </table>
     @endif
 
-    {{-- Tanda Tangan --}}
-    <table class="sign-table">
-      <tr>
-        <td>
-          <div class="sign-role">Pemilik Hewan</div>
-          <div class="sign-line">{{ $registration->owner_name }}</div>
-        </td>
-        <td>
-          <div class="sign-role">Dokter Pemeriksa</div>
-          <div class="sign-line">{{ $user->username ?? '-' }}</div>
-        </td>
-      </tr>
-    </table>
 
-    <div class="page-footer">
-      Dokumen ini dicetak secara otomatis oleh sistem Bintang Vet Clinic &bull; {{ $data->created_at }}
+<div class="page-footer">
+      {{ $data->created_at }}
     </div>
 
   </div>

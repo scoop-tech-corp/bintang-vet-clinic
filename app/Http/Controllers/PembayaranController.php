@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CheckUpFollowUp;
 use App\Models\CheckUpResult;
 use App\Models\DetailServicePatient;
 use App\Models\Detail_medicine_group_check_up_result;
@@ -9,6 +10,7 @@ use App\Models\ListofItemsPetShop;
 use App\Models\ListofPaymentItem;
 use App\Models\ListofPayments;
 use App\Models\ListofPaymentService;
+use App\Models\NotificationTemplate;
 use App\Models\list_of_payment_medicine_groups;
 use App\Models\payment_petshop_with_clinic;
 use DB;
@@ -956,6 +958,8 @@ class PembayaranController extends Controller
       $check_up_result->updated_at = \Carbon\Carbon::now();
       $check_up_result->save();
 
+      $this->createFollowUpOnPayment($request->check_up_result_id, $request->user()->id);
+
       $is_paid_off = true;
     }
 
@@ -1299,6 +1303,8 @@ class PembayaranController extends Controller
       $check_up_result->user_update_id = $request->user()->id;
       $check_up_result->updated_at = \Carbon\Carbon::now();
       $check_up_result->save();
+
+      $this->createFollowUpOnPayment($request->check_up_result_id, $request->user()->id);
     }
 
     $list_of_payment = ListofPayments::where('check_up_result_id', '=', $request->check_up_result_id)
@@ -1701,5 +1707,57 @@ class PembayaranController extends Controller
     // $pdf = PDF::loadview('invoice', $data);
 
     // return $pdf->download($data_patient[0]->id_number . ' - ' . $data_patient[0]->pet_name . '.pdf');
+  }
+
+  private function createFollowUpOnPayment(int $checkUpResultId, int $userId): void
+  {
+      $checkUpResult = CheckUpResult::find($checkUpResultId);
+
+      if (!$checkUpResult || !$checkUpResult->status_pengabaran) {
+          return;
+      }
+
+      // Ambil data registrasi + pemilik + branch dokter
+      $reg = DB::table('registrations')
+          ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+          ->join('owners', 'patients.owner_id', '=', 'owners.id')
+          ->join('users as doc', 'registrations.doctor_user_id', '=', 'doc.id')
+          ->select(
+              DB::raw('TRIM(COALESCE(NULLIF(patients.owner_phone_number,""), owners.owner_phone_number, "")) as phone'),
+              DB::raw('TRIM(COALESCE(NULLIF(patients.owner_name,""), owners.owner_name, "")) as owner_name'),
+              'patients.pet_name',
+              'registrations.complaint_id',
+              'doc.branch_id'
+          )
+          ->where('registrations.id', $checkUpResult->patient_registration_id)
+          ->first();
+
+      if (!$reg || empty($reg->phone)) {
+          return;
+      }
+
+      $complaintId = (int) ($reg->complaint_id ?? 11);
+      $branchId    = (int) ($reg->branch_id ?? 0);
+
+      $tpl     = NotificationTemplate::getByComplaint($complaintId, $branchId);
+      $message = $tpl['message'];
+      $days    = $tpl['days'];
+
+      // Batalkan follow-up pending sebelumnya jika ada
+      CheckUpFollowUp::where('check_up_result_id', $checkUpResultId)
+          ->where('status', 'pending')
+          ->update(['status' => 'cancelled']);
+
+      CheckUpFollowUp::create([
+          'check_up_result_id' => $checkUpResultId,
+          'branch_id'          => $branchId,
+          'owner_phone'        => $reg->phone,
+          'owner_name'         => $reg->owner_name,
+          'pet_name'           => $reg->pet_name,
+          'message'            => $message,
+          'scheduled_date'     => now()->addDays($days)->toDateString(),
+          'status'             => 'pending',
+          'user_id'            => $userId,
+      ]);
   }
 }

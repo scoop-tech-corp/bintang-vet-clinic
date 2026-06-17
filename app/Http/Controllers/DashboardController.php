@@ -9,13 +9,6 @@ class DashboardController extends Controller
 {
   public function BarChartPatient(Request $request)
   {
-    if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
-      return response()->json([
-        'message' => 'The user role was invalid.',
-        'errors' => ['Akses User tidak diizinkan!'],
-      ], 403);
-    }
-
     $data = DB::table('registrations')
       ->join('patients', 'registrations.patient_id', '=', 'patients.id')
       ->join('users', 'registrations.doctor_user_id', '=', 'users.id')
@@ -28,6 +21,10 @@ class DashboardController extends Controller
         'complaints.id as complaint_id'
       )
       ->where('registrations.isDeleted', '=', 0);
+
+    if ($request->user()->role !== 'admin') {
+      $data = $data->where('branches.id', '=', $request->user()->branch_id);
+    }
 
     $periode = $request->periode ?? 'bulanan';
 
@@ -53,21 +50,20 @@ class DashboardController extends Controller
 
   public function BarChartInPatient(Request $request)
   {
-    if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
-      return response()->json([
-        'message' => 'The user role was invalid.',
-        'errors' => ['Akses User tidak diizinkan!'],
-      ], 403);
-    }
-
     $data = DB::table('check_up_results as cur')
       ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
       ->join('users', 'cur.user_id', '=', 'users.id')
       ->join('branches', 'users.branch_id', '=', 'branches.id')
-      ->select(DB::raw('COUNT(DISTINCT reg.patient_id) as total_patient'), 'branches.branch_name')
+      ->join('detail_service_patients as dsp', 'dsp.check_up_result_id', '=', 'cur.id')
+      ->join('price_services as ps', 'dsp.price_service_id', '=', 'ps.id')
+      ->join('list_of_services as los', 'ps.list_of_services_id', '=', 'los.id')
+      ->select(DB::raw('SUM(dsp.quantity) as total_patient'), 'branches.branch_name')
       ->where('reg.isDeleted', '=', 0)
-      ->where('cur.status_outpatient_inpatient', '=', 1)
-      ->where('cur.status_finish', '=', 0);
+      ->where('los.service_name', 'like', '%inap%');
+
+    if ($request->user()->role !== 'admin') {
+      $data = $data->where('branches.id', '=', $request->user()->branch_id);
+    }
 
     $periode = $request->periode ?? 'bulanan';
 
@@ -92,13 +88,6 @@ class DashboardController extends Controller
 
   public function PasienTidakPengabaran(Request $request)
   {
-    if ($request->user()->role == 'resepsionis' || $request->user()->role == 'dokter') {
-      return response()->json([
-        'message' => 'The user role was invalid.',
-        'errors' => ['Akses User tidak diizinkan!'],
-      ], 403);
-    }
-
     $periode = $request->periode ?? 'bulanan';
 
     $base = DB::table('check_up_results as cur')
@@ -108,9 +97,14 @@ class DashboardController extends Controller
       ->join('users', 'cur.user_id', '=', 'users.id')
       ->join('branches', 'users.branch_id', '=', 'branches.id')
       ->where('reg.isDeleted', '=', 0)
-      ->where('cur.status_pengabaran', '=', 0);
+      ->where(function ($q) {
+        $q->where('cur.status_pengabaran', '=', 0)
+          ->orWhereNull('cur.status_pengabaran');
+      });
 
-    if ($request->branch_id) {
+    if ($request->user()->role !== 'admin') {
+      $base->where('branches.id', '=', $request->user()->branch_id);
+    } elseif ($request->branch_id) {
       $base->where('branches.id', $request->branch_id);
     }
 

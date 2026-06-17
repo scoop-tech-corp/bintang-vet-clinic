@@ -36,6 +36,7 @@
             <th class="onOrdering" data='basic_sallary' orderby="none">Pokok <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='accomodation' orderby="none">Akomodasi <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='eat' orderby="none">Makan <span class="fa fa-sort"></span></th>
+            <th class="onOrdering" data='count_eat' orderby="none">Jml Hadir <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='fine' orderby="none">Denda <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='total_turnover' orderby="none">Omzet <span class="fa fa-sort"></span></th>
             <th class="onOrdering" data='total_inpatient' orderby="none">Inap <span class="fa fa-sort"></span></th>

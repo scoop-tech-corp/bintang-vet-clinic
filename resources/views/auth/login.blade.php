@@ -163,6 +163,7 @@
           <div class="status-lokasi" id="status-lokasi">
             <i class="fa fa-spinner fa-spin"></i> Mendeteksi lokasi...
           </div>
+          <div class="status-lokasi" id="status-jarak" style="display:none;"></div>
         </div>
 
         <!-- Keterangan -->

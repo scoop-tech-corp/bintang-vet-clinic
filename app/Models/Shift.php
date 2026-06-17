@@ -13,6 +13,7 @@ class Shift extends Model
         'jam_keluar',
         'toleransi_menit',
         'status',
+        'for_role',
         'created_by',
         'updated_by',
     ];

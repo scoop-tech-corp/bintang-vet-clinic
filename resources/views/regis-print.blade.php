@@ -129,7 +129,7 @@
 
   {{-- ── Header ── --}}
   <div class="header-wrap">
-    <div class="header-clinic">Bintang Vet</div>
+    <div class="header-clinic">{{ $data->branch_name }}</div>
   </div>
   <hr class="header-divider">
 
@@ -229,10 +229,6 @@
             <td class="val">{{ $data->registrant }}</td>
           </tr>
           <tr>
-            <td class="lbl">Dokter yang Menangani</td>
-            <td class="val">{{ $data->username_doctor }}</td>
-          </tr>
-          <tr>
             <td class="lbl">Status</td>
             <td class="val">
               @php
@@ -250,7 +246,7 @@
     </div>
 
     <div class="page-footer">
-      Dokumen ini dicetak secara otomatis oleh sistem Bintang Vet Clinic &bull; {{ $data->created_at }}
+      {{ $data->created_at }}
     </div>
 
   </div>

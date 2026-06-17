@@ -14,12 +14,10 @@ $(document).ready(function () {
     getAuthUser = JSON.parse(getAuthUser);
     role = getAuthUser.role.toLowerCase();
 
-    if (role != "admin") {
+    if (role !== "admin" && role !== "dokter" && role !== "resepsionis" && role !== "paramedis") {
       $(".pasien").hide();
       $(".rawat-inap").hide();
       $(".tidak-pengabaran").hide();
-    }
-    if (role === "paramedis") {
       $(".daftar-barang-limit-expired").hide();
     }
   }
@@ -1050,7 +1048,7 @@ $(document).ready(function () {
     $(".tidak-pengabaran").hide();
   });
   $('a[href="#clinic"]').on("shown.bs.tab", function () {
-    if (role === "admin") {
+    if (role === "admin" || role === "dokter" || role === "resepsionis" || role === "paramedis") {
       $(".tidak-pengabaran").show();
     }
   });

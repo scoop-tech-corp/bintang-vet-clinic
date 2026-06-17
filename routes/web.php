@@ -260,3 +260,15 @@ Route::get('/shift', function () {
 Route::get('/absensi', function () {
 	return view('absensi.index');
 });
+
+Route::get('/absensi-radius-exception', function () {
+	return view('absensi.radius-exception');
+});
+
+Route::get('/pengabaran/nomor-wa', function () {
+	return view('pengabaran.nomor-wa');
+});
+
+Route::get('/pengabaran/template', function () {
+	return view('pengabaran.template');
+});

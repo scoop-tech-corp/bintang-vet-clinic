@@ -37,11 +37,6 @@
 							<div id="akomodasiErr1" class="validate-error"></div>
 						</div>
             <div class="form-group">
-							<label for="eat">Uang Makan</label>
-							<input id="eat" type="text" class="form-control" min="0" placeholder="Masukan Nominal Uang Makan">
-							<div id="eatErr1" class="validate-error"></div>
-						</div>
-            <div class="form-group">
 							<label for="fine">Denda</label>
 							<input id="fine" type="text" class="form-control" min="0" placeholder="Masukan Nominal Denda">
 							<div id="fineErr1" class="validate-error"></div>
@@ -66,6 +61,22 @@
               </tr>
               <tr>
                 <td><div id="omsetErr1" class="validate-error"></div></td>
+              </tr>
+              <tr>
+                <td class="p-top-10px"><label for="uangMakan">Uang Makan</label></td>
+              </tr>
+              <tr>
+                <td class="d-flex">
+                  <div class="p-top-5px p-right-5px">Rp</div><input id="inputEat" type="number" class="form-control" min="0">
+                </td>
+                <td></td>
+                <td class="p-left-15px">X</td>
+                <td class="p-left-15px"><input id="eat-karyawan" type="number" class="form-control" min="0" style="width:80px;"></td>
+                <td class="p-left-15px">=</td>
+                <td class="p-left-15px"><span id="totalEat"></span></td>
+              </tr>
+              <tr>
+                <td><div id="eatErr1" class="validate-error"></div></td>
               </tr>
               <tr>
                 <td class="p-top-10px"><label for="inap">Inap</label></td>

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Exports\AbsensiExport;
+use App\Models\AbsensiRadiusException;
 use App\Models\Attendance;
+use App\Models\Branch;
 use App\Models\Shift;
 use Carbon\Carbon;
 use DB;
@@ -21,10 +23,26 @@ class AbsensiController extends Controller
             ->where('tanggal', $today)
             ->first();
 
+        $branch = Branch::where('id', $request->user()->branch_id)
+            ->select('latitude', 'longitude')
+            ->first();
+
+        $isBypassed = AbsensiRadiusException::where('username', $request->user()->username)->exists();
+
+        $shiftJamKeluar = null;
+        if ($attendance && !$attendance->jam_keluar && $attendance->shift_id) {
+            $shift = Shift::find($attendance->shift_id);
+            $shiftJamKeluar = $shift ? $shift->jam_keluar : null;
+        }
+
         return response()->json([
-            'sudah_absen' => $attendance ? true : false,
-            'sudah_keluar' => $attendance && $attendance->jam_keluar ? true : false,
-            'data' => $attendance,
+            'sudah_absen'        => $attendance ? true : false,
+            'sudah_keluar'       => $attendance && $attendance->jam_keluar ? true : false,
+            'data'               => $attendance,
+            'branch_latitude'    => $branch ? $branch->latitude : null,
+            'branch_longitude'   => $branch ? $branch->longitude : null,
+            'is_radius_bypassed' => $isBypassed,
+            'shift_jam_keluar'   => $shiftJamKeluar,
         ], 200);
     }
 
@@ -78,14 +96,39 @@ class AbsensiController extends Controller
 
         $fotoPath = $this->simpanFoto($request->foto, 'absensi/masuk');
 
+        $jarakMeter = null;
+        if ($request->latitude && $request->longitude) {
+            $branch = Branch::where('id', $request->user()->branch_id)->first();
+            if ($branch && $branch->latitude && $branch->longitude) {
+                $jarakMeter = $this->hitungJarak(
+                    (float) $request->latitude,
+                    (float) $request->longitude,
+                    (float) $branch->latitude,
+                    (float) $branch->longitude
+                );
+
+                if ($jarakMeter > 500) {
+                    $isBypassed = AbsensiRadiusException::where('username', $request->user()->username)->exists();
+                    if (!$isBypassed) {
+                        return response()->json([
+                            'message'     => "Absensi gagal. Anda berada {$jarakMeter} meter dari klinik. Maksimal jarak yang diizinkan adalah 500 meter.",
+                            'errors'      => ["Jarak terlalu jauh ({$jarakMeter} m). Anda harus berada dalam radius 500 meter dari klinik."],
+                            'jarak_meter' => $jarakMeter,
+                        ], 422);
+                    }
+                }
+            }
+        }
+
         Attendance::create([
-            'user_id'    => $request->user()->id,
-            'shift_id'   => $request->shift_id,
-            'tanggal'    => $today,
-            'jam_masuk'  => $sekarang->format('H:i:s'),
+            'user_id'     => $request->user()->id,
+            'shift_id'    => $request->shift_id,
+            'tanggal'     => $today,
+            'jam_masuk'   => $sekarang->format('H:i:s'),
             'latitude'    => $request->latitude,
             'longitude'   => $request->longitude,
             'alamat'      => $request->alamat,
+            'jarak_meter' => $jarakMeter,
             'keterangan'  => $request->keterangan,
             'foto_masuk'  => $fotoPath,
             'status'      => $status,
@@ -99,7 +142,8 @@ class AbsensiController extends Controller
     public function keluar(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'foto' => 'required|string',
+            'foto'                    => 'required|string',
+            'alasan_terlambat_pulang' => 'nullable|string|max:500',
         ]);
 
         if ($validator->fails()) {
@@ -122,11 +166,32 @@ class AbsensiController extends Controller
 
         $fotoPath = $this->simpanFoto($request->foto, 'absensi/keluar');
 
-        $attendance->jam_keluar  = Carbon::now()->format('H:i:s');
-        $attendance->foto_keluar = $fotoPath;
+        $jamKeluar         = Carbon::now();
+        $shift             = Shift::find($attendance->shift_id);
+        $shiftSelesai      = Carbon::today()->setTimeFromTimeString($shift->jam_keluar);
+        $batasLambatPulang = $shiftSelesai->copy()->addHour();
+
+        if ($jamKeluar->gt($batasLambatPulang) && !$request->alasan_terlambat_pulang) {
+            return response()->json([
+                'message' => 'Anda pulang lebih dari 1 jam setelah jam shift selesai. Mohon isi alasan terlebih dahulu.',
+                'errors'  => ['Alasan wajib diisi jika pulang lebih dari 1 jam setelah jam shift.'],
+                'perlu_alasan' => true,
+            ], 422);
+        }
+
+        $attendance->jam_keluar              = $jamKeluar->format('H:i:s');
+        $attendance->foto_keluar             = $fotoPath;
+        $attendance->alasan_terlambat_pulang = $request->alasan_terlambat_pulang ?: null;
+        if ($jamKeluar->lt($shiftSelesai)) {
+            $attendance->status = 'tidak_sesuai';
+        }
         $attendance->save();
 
-        return response()->json(['message' => 'Absen keluar berhasil!'], 200);
+        $pesan = $jamKeluar->lt($shiftSelesai)
+            ? 'Absen keluar berhasil. Anda pulang sebelum jam shift selesai (Absensi Tidak Sesuai).'
+            : 'Absen keluar berhasil!';
+
+        return response()->json(['message' => $pesan], 200);
     }
 
     public function index(Request $request)
@@ -151,8 +216,19 @@ class AbsensiController extends Controller
                 'a.latitude',
                 'a.longitude',
                 'a.alamat',
+                'a.jarak_meter',
                 'a.keterangan',
-                'a.status'
+                DB::raw("
+                    CASE
+                        WHEN a.status = 'tidak_sesuai' THEN 'tidak_sesuai'
+                        WHEN a.jam_keluar IS NOT NULL AND a.jam_keluar < shifts.jam_keluar THEN 'tidak_sesuai'
+                        WHEN a.jam_keluar IS NULL AND (
+                            a.tanggal < CURDATE()
+                            OR (a.tanggal = CURDATE() AND TIME(NOW()) > shifts.jam_keluar)
+                        ) THEN 'tidak_sesuai'
+                        ELSE a.status
+                    END as status
+                ")
             );
 
         if ($request->user()->role !== 'admin') {
@@ -177,7 +253,9 @@ class AbsensiController extends Controller
         }
 
         if ($request->status) {
-            $query->where('a.status', '=', $request->status);
+            // HAVING dipakai karena 'status' adalah alias CASE expression di SELECT,
+            // alias tidak bisa dipakai di WHERE di MySQL
+            $query->havingRaw('status = ?', [$request->status]);
         }
 
         if ($request->keyword) {
@@ -211,6 +289,17 @@ class AbsensiController extends Controller
         $filename = 'Laporan Absensi ' . $dari . ' sd ' . $sampai . '.xlsx';
 
         return Excel::download(new AbsensiExport($filters), $filename);
+    }
+
+    private function hitungJarak(float $lat1, float $lon1, float $lat2, float $lon2): int
+    {
+        $R = 6371000;
+        $phi1 = deg2rad($lat1);
+        $phi2 = deg2rad($lat2);
+        $dphi = deg2rad($lat2 - $lat1);
+        $dlambda = deg2rad($lon2 - $lon1);
+        $a = sin($dphi / 2) ** 2 + cos($phi1) * cos($phi2) * sin($dlambda / 2) ** 2;
+        return (int) round($R * 2 * atan2(sqrt($a), sqrt(1 - $a)));
     }
 
     private function simpanFoto(string $base64, string $folder): string
