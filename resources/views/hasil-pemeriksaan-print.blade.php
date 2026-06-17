@@ -309,9 +309,6 @@
       <tbody>
         @php $noItem = 1; @endphp
         @foreach ($item as $group)
-        <tr class="group-header">
-          <td colspan="6">{{ $group->group_name }}</td>
-        </tr>
         @foreach ($group->list_of_medicine as $med)
         <tr>
           <td class="no">{{ $noItem++ }}</td>
