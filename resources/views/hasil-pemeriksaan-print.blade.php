@@ -316,7 +316,7 @@
         <tr>
           <td class="no">{{ $noItem++ }}</td>
           <td>{{ $med->created_at }}</td>
-          <td>{{ $group->remark ?: $med->item_name }}</td>
+          <td>{{ ($group->remark && (stripos($med->item_name, 'sample') !== false || stripos($med->item_name, 'sampel') !== false)) ? $group->remark : $med->item_name }}</td>
           <td>{{ $med->category_name }}</td>
           <td>{{ $med->unit_name }}</td>
           <td style="text-align:center">{{ $med->quantity }}</td>
