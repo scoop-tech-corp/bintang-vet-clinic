@@ -20,6 +20,10 @@ Route::group(['middleware' => ['api']], function () {
 
     Route::post('masuk', 'UserController@login');
 
+    Route::post('lupa-password/kirim-otp',    'ForgotPasswordController@sendOtp')->middleware('throttle:3,1');
+    Route::post('lupa-password/verifikasi-otp', 'ForgotPasswordController@verifyOtp')->middleware('throttle:5,1');
+    Route::post('lupa-password/reset',        'ForgotPasswordController@reset')->middleware('throttle:5,1');
+
     Route::group(['middleware' => ['jwt.auth']], function () {
 
         Route::post('keluar', 'UserController@logout');
@@ -42,6 +46,8 @@ Route::group(['middleware' => ['api']], function () {
         Route::post('user/upload-image', 'ProfileController@upload_photo_profile');
         Route::get('user/profile', 'ProfileController@get_data_user');
         Route::put('user/profile', 'ProfileController@update_data_user');
+        Route::put('user/change-password', 'ProfileController@change_password')->middleware('throttle:5,1');
+        Route::put('user/reset-password', 'UserController@reset_password')->middleware('throttle:10,1');
 
         //pasien
         Route::get('pasien', 'PasienController@index');
