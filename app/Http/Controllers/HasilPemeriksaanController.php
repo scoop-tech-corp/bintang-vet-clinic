@@ -37,6 +37,7 @@ class HasilPemeriksaanController extends Controller
             ->leftJoin('complaints', 'registrations.complaint_id', '=', 'complaints.id')
             ->select(
                 'check_up_results.id',
+                'check_up_results.user_id',
                 'registrations.id_number as registration_number',
                 'patients.id as patient_id',
                 'patients.id_member as patient_number',
@@ -748,6 +749,13 @@ class HasilPemeriksaanController extends Controller
                 'message' => 'The data was invalid.',
                 'errors' => ['Data Hasil Pemeriksaan tidak ada!'],
             ], 404);
+        }
+
+        if ($request->user()->role === 'dokter' && $check_up_result->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Anda tidak memiliki akses untuk mengubah data hasil pemeriksaan dokter lain!'],
+            ], 403);
         }
 
         //validasi data jasa

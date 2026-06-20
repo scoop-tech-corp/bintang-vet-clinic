@@ -111,8 +111,9 @@ $(document).ready(function() {
 
         if (getData.length) {
           $.each(getData, function(idx, v) {
-            const isOver24h    = (new Date() - new Date(v.created_at)) > 24 * 60 * 60 * 1000;
-            const editDisabled = role.toLowerCase() === 'dokter' && isOver24h;
+            const isOver24h       = (new Date() - new Date(v.created_at)) > 24 * 60 * 60 * 1000;
+            const isOthersDokter  = role.toLowerCase() === 'dokter' && String(v.user_id) !== String(userId);
+            const editDisabled    = isOthersDokter || (role.toLowerCase() === 'dokter' && isOver24h);
 
             listHasilPemeriksaan += `<tr>`
               + `<td>${++idx}</td>`
@@ -128,7 +129,7 @@ $(document).ready(function() {
               + `<td>
                   <button type="button" class="btn btn-info openDetail" ${v.status_finish == 0 && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-info onCetak  m-r-3px" value=${v.id}><i class="fa fa-print" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-warning openFormEdit" ${editDisabled ? 'disabled title="Waktu edit sudah melebihi 24 jam"' : ''} value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-warning openFormEdit" ${isOthersDokter ? 'disabled title="Anda tidak bisa mengedit hasil pemeriksaan dokter lain"' : (editDisabled ? 'disabled title="Waktu edit sudah melebihi 24 jam"' : '')} value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-danger openFormDelete" ${v.status_finish == 1 && role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 </td>`
               + `</tr>`;

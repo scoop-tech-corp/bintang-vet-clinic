@@ -110,6 +110,11 @@
               class="btn btn-primary btn-block btn-flat m-b-15px" @click="onSubmit">Masuk</button>
           </div>
         </div>
+        <div class="row">
+          <div class="col-md-12 text-center">
+            <a href="{{ url('/lupa-password') }}" style="font-size:13px; color:#3c8dbc;">Lupa Password?</a>
+          </div>
+        </div>
       </form>
     </div>
   </div>
