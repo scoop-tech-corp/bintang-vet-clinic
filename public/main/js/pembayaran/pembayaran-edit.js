@@ -54,7 +54,7 @@ $(document).ready(function() {
       getCheckUpResultId = data.check_up_result_id;
       $('#nomorPasienTxt').text(data.registration.patient_number); $('#jenisHewanTxt').text(data.registration.pet_category);
       $('#namaHewanTxt').text(data.registration.pet_name); $('#jenisKelaminTxt').text(data.registration.pet_gender);
-      $('#usiaHewanTahunTxt').text(`${data.registration.pet_year_age} Tahun`); $('#usiaHewanBulanTxt').text(`${data.registration.pet_month_age} Bulan`);
+      $('#usiaHewanTahunTxt').text(`${data.registration.pet_year_age} Tahun `); $('#usiaHewanBulanTxt').text(`${data.registration.pet_month_age} Bulan `); $('#usiaHewanHariTxt').text(`${data.registration.pet_day_age} Hari`);
       $('#namaPemilikTxt').text(data.registration.owner_name); $('#alamatPemilikTxt').text(data.registration.owner_address);
       $('#nomorHpPemilikTxt').text(data.registration.owner_phone_number); $('#nomorRegistrasiTxt').text(data.registration.registration_number);
       $('#keluhanTxt').text(data.registration.complaint); $('#namaPendaftarTxt').text(data.registration.registrant);
@@ -418,10 +418,14 @@ $(document).ready(function() {
       beforeSend: function() { $('#loading-screen').show(); },
       success: function(resp) {
 
-        $("#msg-box .modal-body").text('Berhasil Merubah Data');
-        $('#msg-box').modal('show');
-
-        processPrint(datas.check_up_result_id, JSON.stringify(datas.service_payment), JSON.stringify(datas.item_payment));
+        if (resp.is_paid_off) {
+          $("#msg-box .modal-body").text('Berhasil Merubah Data. Mengunduh invoice...');
+          $('#msg-box').modal('show');
+          processPrint(datas.check_up_result_id, JSON.stringify(datas.service_payment), JSON.stringify(datas.item_payment));
+        } else {
+          $("#msg-box .modal-body").text('Berhasil Merubah Data. Invoice belum bisa diunduh karena pembayaran belum lunas.');
+          $('#msg-box').modal('show');
+        }
 
         setTimeout(() => {
           window.location.href = $('.baseUrl').val() + '/pembayaran';

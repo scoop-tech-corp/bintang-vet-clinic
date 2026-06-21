@@ -1,44 +1,63 @@
 $(document).ready(function () {
   let optCabang = "";
-  let getCurrentPage = 1;
+  const isNoBranch = role.toLowerCase() === "dokter" || role.toLowerCase() === "resepsionis";
+
   let paramUrlSetup = {
-    date_from: "",
-    date_to: "",
-    branchId: "",
+    periode   : "",
+    branchId  : "",
     connection: "",
+    startDate : "",
+    endDate   : "",
+    bulan     : "",
+    tahun     : "",
   };
 
-  widgetRekapOmset({ date_from: null, date_to: null });
+  // Populate year select (tahunan)
+  const currentYear = new Date().getFullYear();
+  let yearOpts = '<option value="">-- Tahun --</option>';
+  for (let y = currentYear; y >= currentYear - 10; y--) {
+    yearOpts += `<option value="${y}">${y}</option>`;
+  }
+  $("#selectTahun").html(yearOpts);
 
-  // if (role.toLowerCase() == 'resepsionis') {
-  // 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
-  // } else {
-  if (role.toLowerCase() == "dokter" || role.toLowerCase() == "resepsionis") {
+  // Bootstrap datepicker – month picker untuk bulanan
+  $("#inputBulan").datepicker({
+    format      : "mm-yyyy",
+    startView   : "months",
+    minViewMode : "months",
+    autoclose   : true,
+  });
+  $("#inputBulan, #filter-bulanan .input-group-addon").on("click", function () {
+    $("#inputBulan").datepicker("show");
+  });
+  $("#inputBulan").on("changeDate", function () {
+    const d = $(this).datepicker("getDate");
+    if (d) {
+      paramUrlSetup.bulan = String(d.getMonth() + 1).padStart(2, "0");
+      paramUrlSetup.tahun = String(d.getFullYear());
+      tryLoad();
+    }
+  });
+
+  if (isNoBranch) {
     $("#filterCabang").hide();
     $(".section-right-box-title").css("width", "unset");
-    $(".section-right-box-title .btn-download-excel").css(
-      "margin-right",
-      "unset"
-    );
   } else {
     $("#filterCabang").select2({ placeholder: "Cabang", allowClear: true });
     loadCabang();
   }
 
-  const openDatePicker = window.innerWidth < 768 ? "left" : "right";
-
-  $("#datepicker").daterangepicker({
-    autoUpdateInput: false,
-    opens: openDatePicker,
-    applyClass: "btn-info",
-    // showDropdowns: true,
-    dateLimit: { days: 31 },
-    drops: "auto",
-    locale: { format: "YYYY-MM-DD", cancelLabel: "Clear" },
+  // Tombol filter periode
+  $("#periode-omset-group button").on("click", function () {
+    $("#periode-omset-group button").removeClass("btn-info active").addClass("btn-default");
+    $(this).removeClass("btn-default").addClass("btn-info active");
+    paramUrlSetup.periode = $(this).data("periode");
+    resetDateParams();
+    showDateFilter(paramUrlSetup.periode);
+    tryLoad();
   });
 
-  loadLaporanKeuanganOmset();
-
+  // Filter cabang
   $("#filterCabang").on("select2:select", function () {
     onFilterCabang($(this).val());
   });
@@ -46,233 +65,166 @@ $(document).ready(function () {
     onFilterCabang($(this).val());
   });
 
-  $('input[id="datepicker"]').on(
-    "apply.daterangepicker",
-    function (ev, picker) {
-      const getStartDate = picker.startDate.format("YYYY-MM-DD");
-      const getEndDate = picker.endDate.format("YYYY-MM-DD");
-      $(this).val(getStartDate + " - " + getEndDate);
-
-      paramUrlSetup.date_from = getStartDate;
-      paramUrlSetup.date_to = getEndDate;
-      loadLaporanKeuanganOmset();
-      widgetRekapOmset();
-    }
-  );
-
-  $('input[id="datepicker"]').on(
-    "cancel.daterangepicker",
-    function (ev, picker) {
-      $(this).val("");
-      paramUrlSetup.date_from = "";
-      paramUrlSetup.date_to = "";
-      loadLaporanKeuanganOmset();
-      widgetRekapOmset();
-    }
-  );
-
-  $(".btn-download-excel").click(function () {
-    const getBranchId = paramUrlSetup.branchId;
-    const getMonth = paramUrlSetup.month;
-    const getYear = paramUrlSetup.year;
-
-    if (getBranchId && getMonth && getYear) {
-      $.ajax({
-        url: $(".baseUrl").val() + "/api/laporan-keuangan/rekap/download",
-        headers: { Authorization: `Bearer ${token}` },
-        type: "GET",
-        data: {
-          month: paramUrlSetup.month,
-          year: paramUrlSetup.year,
-          branch_id: getBranchId,
-        },
-        xhrFields: { responseType: "blob" },
-        beforeSend: function () {
-          $("#loading-screen").show();
-        },
-        success: function (data, status, xhr) {
-          let disposition = xhr.getResponseHeader("content-disposition");
-          let matches = /"([^"]*)"/.exec(disposition);
-          let filename =
-            matches != null && matches[1] ? matches[1] : "file.xlsx";
-          let blob = new Blob([data], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-          let downloadUrl = URL.createObjectURL(blob);
-          let a = document.createElement("a");
-
-          a.href = downloadUrl;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-        },
-        complete: function () {
-          $("#loading-screen").hide();
-        },
-        error: function (err) {
-          if (err.status == 401) {
-            localStorage.removeItem("vet-clinic");
-            location.href = $(".baseUrl").val() + "/masuk";
-          }
-        },
-      });
-    } else {
-      $("#msg-box .modal-body").text("Pilih cabang dan tanggal dahulu!");
-      $("#msg-box").modal("show");
-    }
+  // Mingguan: date range
+  $("#startDate, #endDate").on("change", function () {
+    paramUrlSetup.startDate = $("#startDate").val();
+    paramUrlSetup.endDate   = $("#endDate").val();
+    tryLoad();
   });
 
-  $(".onOrdering").click(function () {
-    const column = $(this).attr("data");
-    const orderBy = $(this).attr("orderby");
-    $('.onOrdering[data="' + column + '"]')
-      .children()
-      .remove();
-
-    if (orderBy == "none" || orderBy == "asc") {
-      $(this).attr("orderby", "desc");
-      $(this).append('<span class="fa fa-sort-desc"></span>');
-    } else if (orderBy == "desc") {
-      $(this).attr("orderby", "asc");
-      $(this).append('<span class="fa fa-sort-asc"></span>');
-    }
-
-    paramUrlSetup.orderby = $(this).attr("orderby");
-    paramUrlSetup.column = column;
-
-    loadLaporanKeuanganOmset();
+  // Tahunan: tahun
+  $("#selectTahun").on("change", function () {
+    paramUrlSetup.tahun = $(this).val();
+    tryLoad();
   });
 
   function onFilterCabang(value) {
-    let text = value;
-    paramUrlSetup.branchId = text.split("-")[0];
-    paramUrlSetup.connection = text.split("-")[1];
-    widgetRekapOmset();
+    paramUrlSetup.branchId   = value ? value.split("-")[0] : "";
+    paramUrlSetup.connection = value ? value.split("-")[1] : "";
+    tryLoad();
+  }
+
+  function showDateFilter(periode) {
+    $(".filter-periode-input").css("display", "none");
+    if (periode === "mingguan") {
+      $("#filter-mingguan").css("display", "flex");
+    } else if (periode === "bulanan") {
+      $("#filter-bulanan").css("display", "flex");
+    } else if (periode === "tahunan") {
+      $("#filter-tahunan").css("display", "flex");
+    }
+  }
+
+  function resetDateParams() {
+    paramUrlSetup.startDate = "";
+    paramUrlSetup.endDate   = "";
+    paramUrlSetup.bulan     = "";
+    paramUrlSetup.tahun     = "";
+    $("#startDate").val("");
+    $("#endDate").val("");
+    $("#inputBulan").val("").datepicker("update", "");
+    $("#selectTahun").val("");
+  }
+
+  function isDateReady() {
+    const p = paramUrlSetup.periode;
+    if (p === "mingguan")    return !!(paramUrlSetup.startDate && paramUrlSetup.endDate);
+    if (p === "bulanan")     return !!(paramUrlSetup.bulan && paramUrlSetup.tahun);
+    if (p === "tahunan")     return !!paramUrlSetup.tahun;
+    if (p === "sejak_dibuka") return true;
+    return false;
+  }
+
+  function canLoad() {
+    if (!isDateReady()) return false;
+    if (!isNoBranch && !paramUrlSetup.branchId) return false;
+    return true;
+  }
+
+  function tryLoad() {
+    if (canLoad()) loadAll();
+  }
+
+  function buildParam() {
+    const p    = paramUrlSetup.periode;
+    const base = {
+      periode   : p,
+      branch_id : paramUrlSetup.branchId,
+      connection: paramUrlSetup.connection,
+    };
+    if (p === "mingguan") {
+      base.start_date = paramUrlSetup.startDate;
+      base.end_date   = paramUrlSetup.endDate;
+    } else if (p === "bulanan") {
+      base.bulan = paramUrlSetup.bulan;
+      base.tahun = paramUrlSetup.tahun;
+    } else if (p === "tahunan") {
+      base.tahun = paramUrlSetup.tahun;
+    }
+    return base;
+  }
+
+  function loadAll() {
     loadLaporanKeuanganOmset();
+    widgetRekapOmset();
   }
 
   function loadLaporanKeuanganOmset() {
     $.ajax({
-      url: $(".baseUrl").val() + "/api/laporan-keuangan/rekap-all",
+      url    : $(".baseUrl").val() + "/api/laporan-keuangan/rekap-all",
       headers: { Authorization: `Bearer ${token}` },
-      type: "GET",
-      data: {
-        branch_id: paramUrlSetup.branchId,
-        connection: paramUrlSetup.connection,
-        date_from: paramUrlSetup.date_from,
-        date_to: paramUrlSetup.date_to,
-      },
-      beforeSend: function () {
-        $("#loading-screen").show();
-      },
+      type   : "GET",
+      data   : buildParam(),
+      beforeSend: function () { $("#loading-screen").show(); },
       success: function (resp) {
         const getData = resp.datas;
         const headers = resp.branches;
-        let loadLaporanKeuanganOmset = "";
-        let headLaporanKeuanganOmset = "";
-        let thHTML = "";
-        // console.log(resp.branches);
+        let bodyHTML  = "";
+        let headHTML  = "";
+
         $("#list-laporan-keuangan-omset tr").remove();
         $("#head-laporan-keuangan-omset tr").remove();
 
         if (paramUrlSetup.branchId) {
-          headLaporanKeuanganOmset +=
+          headHTML =
             `<tr>` +
             `<th>No</th>` +
-            `<th class="onOrdering" data='dates' orderby="none">Periode <span class="fa fa-sort"></span></th>` +
-            `<th class="onOrdering" data='total_omset' orderby="none">Total Omset (Rp) <span class="fa fa-sort"></span></th>` +
-            `` +
+            `<th>Periode</th>` +
+            `<th>Total Omset (Rp)</th>` +
             `</tr>`;
 
           if (getData.length) {
             $.each(getData, function (idx, v) {
-              loadLaporanKeuanganOmset +=
+              bodyHTML +=
                 `<tr>` +
                 `<td>${++idx}</td>` +
                 `<td>${v.dates}</td>` +
-                `<td>${Number(v.total_omset || 0).toLocaleString(
-                  "id-ID"
-                )}</td>` +
+                `<td>${Number(v.total_omset || 0).toLocaleString("id-ID")}</td>` +
                 `</tr>`;
             });
           } else {
-            loadLaporanKeuanganOmset += `<tr class="text-center"><td colspan="3">Tidak ada data.</td></tr>`;
+            bodyHTML = `<tr class="text-center"><td colspan="3">Tidak ada data.</td></tr>`;
           }
         } else {
+          let thHTML = "";
           headers.forEach((branch) => {
-            thHTML += `<th class="onOrdering" data='${branch.branch_slug}' orderby="none">${branch.branch_name} <span class="fa fa-sort"></span></th>`;
+            thHTML += `<th>${branch.branch_name}</th>`;
           });
 
-          headLaporanKeuanganOmset +=
+          headHTML =
             `<tr>` +
             `<th>No</th>` +
-            `<th class="onOrdering" data='dates' orderby="none">Periode <span class="fa fa-sort"></span></th>` +
-            `<th class="onOrdering" data='total_omset' orderby="none">Total Omset (Rp) <span class="fa fa-sort"></span></th>
-            '${thHTML}' </tr>`;
+            `<th>Periode</th>` +
+            `<th>Total Omset (Rp)</th>` +
+            thHTML +
+            `</tr>`;
 
           if (getData.length) {
-            // ambil semua key dari object pertama
-            const keys = Object.keys(getData[0]);
-
-            // pastikan urutannya sesuai: dates → total_omset → sisanya
-            const fixedKeys = ["dates", "total_omset"];
-            const branchKeys = keys.filter((k) => !fixedKeys.includes(k)); // ambil selain dates & total_omset
+            const fixedKeys  = ["dates", "total_omset"];
+            const branchKeys = Object.keys(getData[0]).filter((k) => !fixedKeys.includes(k));
 
             $.each(getData, function (idx, v) {
               let row = `<tr>`;
               row += `<td>${++idx}</td>`;
               row += `<td>${v.dates}</td>`;
-              row += `<td>${Number(v.total_omset || 0).toLocaleString(
-                "id-ID"
-              )}</td>`;
-
+              row += `<td>${Number(v.total_omset || 0).toLocaleString("id-ID")}</td>`;
               branchKeys.forEach((key) => {
-                row += `<td>${Number(v[key] || 0).toLocaleString(
-                  "id-ID"
-                )}</td>`;
+                row += `<td>${Number(v[key] || 0).toLocaleString("id-ID")}</td>`;
               });
-
               row += `</tr>`;
-              loadLaporanKeuanganOmset += row;
+              bodyHTML += row;
             });
           } else {
-            loadLaporanKeuanganOmset += `<tr class="text-center"><td colspan="3">Tidak ada data.</td></tr>`;
+            bodyHTML = `<tr class="text-center"><td colspan="3">Tidak ada data.</td></tr>`;
           }
         }
 
-        $("#head-laporan-keuangan-omset").append(headLaporanKeuanganOmset);
-        $("#list-laporan-keuangan-omset").append(loadLaporanKeuanganOmset);
-
-        generatePagination(getCurrentPage, resp.total_paging);
-
-        $(".pagination > li > a").click(function () {
-          const getClassName = this.className;
-          const getNumber = parseFloat($(this).text());
-
-          if (
-            (getCurrentPage === 1 && getClassName.includes("arrow-left")) ||
-            (getCurrentPage === resp.total_paging &&
-              getClassName.includes("arrow-right"))
-          ) {
-            return;
-          }
-
-          if (getClassName.includes("arrow-left")) {
-            getCurrentPage = getCurrentPage - 1;
-          } else if (getClassName.includes("arrow-right")) {
-            getCurrentPage = getCurrentPage + 1;
-          } else {
-            getCurrentPage = getNumber;
-          }
-
-          loadLaporanKeuanganOmset();
-        });
+        $("#head-laporan-keuangan-omset").append(headHTML);
+        $("#list-laporan-keuangan-omset").append(bodyHTML);
       },
-      complete: function () {
-        $("#loading-screen").hide();
-      },
+      complete: function () { $("#loading-screen").hide(); },
       error: function (err) {
-        if (err.status == 401) {
+        if (err.status === 401) {
           localStorage.removeItem("vet-clinic");
           location.href = $(".baseUrl").val() + "/masuk";
         }
@@ -282,27 +234,22 @@ $(document).ready(function () {
 
   function loadCabang() {
     $.ajax({
-      url: $(".baseUrl").val() + "/api/cabang/all",
+      url    : $(".baseUrl").val() + "/api/cabang/all",
       headers: { Authorization: `Bearer ${token}` },
-      type: "GET",
-      beforeSend: function () {
-        $("#loading-screen").show();
-      },
+      type   : "GET",
+      beforeSend: function () { $("#loading-screen").show(); },
       success: function (data) {
         optCabang += `<option value=''>Cabang</option>`;
-
         if (data.length) {
-          for (let i = 0; i < data.length; i++) {
-            optCabang += `<option value=${data[i].id}-${data[i].connection}>${data[i].branch_name}</option>`;
-          }
+          data.forEach(function (item) {
+            optCabang += `<option value="${item.id}-${item.connection}">${item.branch_name}</option>`;
+          });
         }
         $("#filterCabang").append(optCabang);
       },
-      complete: function () {
-        $("#loading-screen").hide();
-      },
+      complete: function () { $("#loading-screen").hide(); },
       error: function (err) {
-        if (err.status == 401) {
+        if (err.status === 401) {
           localStorage.removeItem("vet-clinic");
           location.href = $(".baseUrl").val() + "/masuk";
         }
@@ -312,49 +259,36 @@ $(document).ready(function () {
 
   function widgetRekapOmset() {
     $.ajax({
-      url: $(".baseUrl").val() + "/api/laporan-keuangan/rekap-all-chart",
+      url    : $(".baseUrl").val() + "/api/laporan-keuangan/rekap-all-chart",
       headers: { Authorization: `Bearer ${token}` },
-      type: "GET",
-      data: {
-        branch_id: paramUrlSetup.branchId,
-        connection: paramUrlSetup.connection,
-        date_from: paramUrlSetup.date_from,
-        date_to: paramUrlSetup.date_to,
-      },
-      beforeSend: function () {
-        $("#loading-screen").show();
-      },
+      type   : "GET",
+      data   : buildParam(),
+      beforeSend: function () { $("#loading-screen").show(); },
       success: function (resp) {
-        const getData = resp;
-        const tempDataSeries = [];
+        const tempDataSeries  = [];
         const categoriesXAxis = [];
 
-        getData.forEach((dt) => {
+        resp.forEach((dt) => {
           categoriesXAxis.push(dt.dates);
           tempDataSeries.push({ name: dt.dates, y: dt.total_omset });
         });
 
-        const finalSeries = [{ name: "Omset", data: tempDataSeries }];
-
         Highcharts.chart("rekapWidgetOmset", {
-          title: { text: "" },
-          xAxis: { categories: categoriesXAxis },
-          legend: { enabled: false },
+          chart  : { type: "column" },
+          title  : { text: "" },
+          xAxis  : { categories: categoriesXAxis },
+          yAxis  : { title: { text: "Nominal (Rp)" } },
+          legend : { enabled: false },
           credits: { enabled: false },
           plotOptions: {
-            column: {
-              dataLabels: { enabled: true },
-            },
+            column: { dataLabels: { enabled: true } },
           },
-          yAxis: { title: { text: "Nominal (Rp)" } },
-          series: finalSeries,
+          series: [{ name: "Omset", data: tempDataSeries }],
         });
       },
-      complete: function () {
-        $("#loading-screen").hide();
-      },
+      complete: function () { $("#loading-screen").hide(); },
       error: function (err) {
-        if (err.status == 401) {
+        if (err.status === 401) {
           localStorage.removeItem("vet-clinic");
           location.href = $(".baseUrl").val() + "/masuk";
         }
