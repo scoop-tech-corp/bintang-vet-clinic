@@ -10,567 +10,371 @@ use Illuminate\Support\Str;
 
 class RekapKeseluruhanController extends Controller
 {
-  public function index(Request $request)
-  {
-    $lastPeriods = collect();
-    $listDates = [];
+    private function getFirstTransactionDate(Request $request = null): string
+    {
+        // Jika branch tertentu dipilih, cari tanggal transaksi pertama branch itu saja
+        if ($request && $request->branch_id && $request->connection) {
+            try {
+                $row = DB::connection($request->connection)
+                    ->table('list_of_payments as lop')
+                    ->join('users', 'lop.user_id', '=', 'users.id')
+                    ->join('branches', 'users.branch_id', '=', 'branches.id')
+                    ->selectRaw('MIN(DATE(lop.created_at)) as min_date')
+                    ->where('branches.id', $request->branch_id)
+                    ->first();
 
-    if ($request->date_from && $request->date_to) {
+                if ($row && $row->min_date) {
+                    return $row->min_date;
+                }
+            } catch (\Exception) {}
 
-      $date_from = $request->date_from;
-      $date_to = $request->date_to;
-
-      $listDates = new Collection();
-      $currentDate = Carbon::parse($date_from);
-
-      while ($currentDate->lte(Carbon::parse($date_to))) {
-        $listDates->push([
-          'days' => $currentDate->translatedFormat('l, j M Y')
-        ]);
-        $currentDate->addDay();
-      }
-
-
-      $lastPeriods = new Collection();
-      $currentDate = Carbon::parse($date_from);
-
-      while ($currentDate->lte(Carbon::parse($date_to))) {
-        $lastPeriods->push([
-          'days' => $currentDate->format('Y-m-d')
-        ]);
-        $currentDate->addDay();
-      }
-    } else {
-      $days = Carbon::now()->addDay(-7);
-
-      for ($i = 0; $i < 7; $i++) {
-
-        $days = $days->addDay();
-
-        $lastPeriods->push([
-          'days' => $days->format('Y-m-d'),  // Month number (e.g., 1 for January)
-        ]);
-      }
-
-      Carbon::setLocale('id');
-
-      $startDate = Carbon::now()->addDay(-7);
-
-      for ($i = 0; $i < 7; $i++) {
-        // Get the month and year for the current iteration (starting from now)
-        $day = $startDate->addDay();
-
-        $listDates[] = [
-          'days' => $day->translatedFormat('l, j M Y'),  // Month name in Indonesian (e.g., Januari, Februari)
-        ];
-      }
-    }
-
-    $datas = collect();
-
-    $i = 0;
-
-    if ($request->branch_id) {
-
-      $branches = DB::connection($request->connection)->table('branches')
-        ->select('id', 'branch_name', DB::raw("'$request->connection' as connection"))
-        ->where('isDeleted', '=', 0)
-        ->where('id', '=', $request->branch_id)
-        ->get()
-        ->map(function ($item) {
-          $item->branch_slug = Str::slug($item->branch_name, '_');
-          return $item;
-        });
-
-      foreach ($lastPeriods as $val) {
-
-        $totalOverall = 0;
-
-        foreach ($branches as $valBrc) {
-
-          $price_overall_item = DB::connection($valBrc->connection)->table('list_of_payments as lop')
-            ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-              DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall")
-            );
-
-
-          $price_overall_item = $price_overall_item->where('branches.id', '=', $valBrc->id);
-
-
-          $price_overall_item = $price_overall_item->whereDate('lopm.updated_at', $val['days'])->first();
-
-
-          $price_overall_service = DB::connection($valBrc->connection)->table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-              DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall")
-            );
-
-
-          $price_overall_service = $price_overall_service->where('branches.id', '=', $valBrc->id);
-
-
-          $price_overall_service = $price_overall_service->whereDate('list_of_payment_services.updated_at', $val['days'])->first();
-          //
-
-          $price_overall_shop_clinic = DB::connection($valBrc->connection)->table('payment_petshop_with_clinics as ppwc')
-            ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', 'pip.id')
-            ->join('users', 'ppwc.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(DB::raw("TRIM(SUM(pip.selling_price * ppwc.total_item))+0 as price_overall"));
-
-          $price_overall_shop_clinic = $price_overall_shop_clinic->where('branches.id', '=', $valBrc->id);
-
-
-          $price_overall_shop_clinic = $price_overall_shop_clinic->whereDate('ppwc.created_at', $val['days'])->first();
-          //=============================
-
-          $price_overall_shop = DB::connection($valBrc->connection)->table('payment_petshops as pp')
-            ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', 'pip.id')
-            ->join('users', 'pp.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(DB::raw("TRIM(SUM(pip.selling_price * pp.total_item))+0 as price_overall"));
-
-          $price_overall_shop = $price_overall_shop->where('branches.id', '=', $valBrc->id);
-
-
-          $price_overall_shop = $price_overall_shop->whereDate('pp.created_at', $val['days'])->first();
-
-          $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall
-            + $price_overall_shop_clinic->price_overall + $price_overall_shop->price_overall;
-
-
-          //discount
-          $amount_discount_item = DB::connection($valBrc->connection)->table('list_of_payments as lop')
-            ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
-            ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
-            ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-            ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
-            ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
-            ->join('users', 'lop.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-              DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount")
-            )
-            ->where('branches.id', '=', $valBrc->id)
-            ->whereDate('lopm.updated_at', $val['days'])->first();
-          // if ($request->periode == 2) {
-          //   $amount_discount_item = $amount_discount_item->where(DB::raw("YEAR(lopm.updated_at)"), $val['year']);
-          // } else {
-          //   $amount_discount_item = $amount_discount_item->where(DB::raw("MONTH(lopm.updated_at)"), $val['month'])
-          //     ->where(DB::raw("YEAR(lopm.updated_at)"), $val['year']);
-          // }
-
-          $amount_discount_service = DB::connection($valBrc->connection)->table('list_of_payments')
-            ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-            ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-            ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-            ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-            ->join('users', 'check_up_results.user_id', '=', 'users.id')
-            ->join('branches', 'users.branch_id', '=', 'branches.id')
-            ->select(
-              DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount")
-            )
-            ->where('branches.id', '=', $valBrc->id)
-            ->whereDate('list_of_payment_services.updated_at', $val['days'])->first();
-
-          $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
-
-          $total_clean = $price_overall - $amount_discount;
-
-          $totalOverall += $total_clean;
+            return Carbon::now()->subYear()->format('Y-m-d');
         }
 
+        // Semua branch → global minimum dari semua koneksi
+        $conns   = ['mysql', 'mysql_second', 'mysql_third', 'mysql_forth'];
+        $minDate = null;
 
-        $datas->push([
-          'dates' => $listDates[$i]['days'],
-          'total_omset' => $totalOverall,
-        ]);
+        foreach ($conns as $conn) {
+            try {
+                $row = DB::connection($conn)
+                    ->table('list_of_payments')
+                    ->selectRaw('MIN(DATE(created_at)) as min_date')
+                    ->first();
 
-        $i++;
-      }
-    } else {
+                if ($row && $row->min_date) {
+                    if (!$minDate || $row->min_date < $minDate) {
+                        $minDate = $row->min_date;
+                    }
+                }
+            } catch (\Exception) {
+                // skip connection jika tidak tersedia
+            }
+        }
 
-      $admin = DB::connection('mysql')->table('branches')
-        ->select('id', 'branch_name', DB::raw("'mysql' as connection"))
-        ->where('id', '!=', 4)
-        ->where('isDeleted', '=', 0)->get();
-
-      $tj = DB::connection('mysql_second')->table('branches')
-        ->select('id', 'branch_name',  DB::raw("'mysql_second' as connection"))
-        ->where('id', '!=', 1)
-        ->where('isDeleted', '=', 0)->get();
-
-      $hello = DB::connection('mysql_third')->table('branches')
-        ->select('id', 'branch_name',  DB::raw("'mysql_third' as connection"))
-        ->where('isDeleted', '=', 0)->get();
-
-      $helloKahfi = DB::connection('mysql_forth')->table('branches')
-        ->select('id', 'branch_name', DB::raw("'mysql_forth' as connection"))
-        ->where('isDeleted', '=', 0)->get();
-
-      $stella = DB::connection('mysql_fifth')->table('branches')
-        ->select('id', 'branch_name',  DB::raw("'mysql_fifth' as connection"))
-        ->where('isDeleted', '=', 0)->get();
-
-      $branches = $admin->merge($tj)->merge($hello)->merge($helloKahfi)->merge($stella)
-        ->map(function ($item) {
-          // tambahkan kolom baru tanpa mengubah branch_name asli
-          $item->branch_slug = Str::slug($item->branch_name, '_');
-          return $item;
-        })
-        ->values();
-
-      $i = 0;
-      foreach ($lastPeriods as $val) {
-
-        $datas->push(
-          [
-            'dates' => $listDates[$i]['days'],
-          ]
-        );
-
-        $updatedCollection = $datas->map(function ($item, $key) use ($branches, $lastPeriods) {
-
-          $date_specified = $lastPeriods[$key]['days'];
-          $newItem = $item;
-          $total_omset = 0;
-          $total_clean = 0;
-
-          foreach ($branches as $valBrc) {
-
-            $price_overall_item = DB::connection($valBrc->connection)->table('list_of_payments as lop')
-              ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-              ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-              ->join('users', 'lop.user_id', '=', 'users.id')
-              ->join('branches', 'users.branch_id', '=', 'branches.id')
-              ->select(
-                DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall")
-              )
-              ->where('branches.id', '=', $valBrc->id)
-              ->whereDate('lopm.updated_at', $date_specified)->first();
-
-            $price_overall_service = DB::connection($valBrc->connection)->table('list_of_payments')
-              ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-              ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-              ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-              ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-              ->join('users', 'check_up_results.user_id', '=', 'users.id')
-              ->join('branches', 'users.branch_id', '=', 'branches.id')
-              ->select(
-                DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall")
-              )
-              ->where('branches.id', '=', $valBrc->id)
-              ->whereDate('list_of_payment_services.updated_at', $date_specified)->first();
-
-            $price_overall_shop_clinic = DB::connection($valBrc->connection)->table('payment_petshop_with_clinics as ppwc')
-              ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', 'pip.id')
-              ->join('users', 'ppwc.user_id', '=', 'users.id')
-              ->join('branches', 'users.branch_id', '=', 'branches.id')
-              ->select(DB::raw("TRIM(SUM(pip.selling_price * ppwc.total_item))+0 as price_overall"))
-              ->where('branches.id', '=', $valBrc->id)
-              ->whereDate('ppwc.created_at', $date_specified)->first();
-            //=============================
-
-            $price_overall_shop = DB::connection($valBrc->connection)->table('payment_petshops as pp')
-              ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', 'pip.id')
-              ->join('users', 'pp.user_id', '=', 'users.id')
-              ->join('branches', 'users.branch_id', '=', 'branches.id')
-              ->select(DB::raw("TRIM(SUM(pip.selling_price * pp.total_item))+0 as price_overall"))
-              ->where('branches.id', '=', $valBrc->id)
-              ->whereDate('pp.created_at', $date_specified)->first();
-
-            $total = ($price_overall_service->price_overall ?? 0) +
-              ($price_overall_item->price_overall ?? 0) +
-              ($price_overall_shop_clinic->price_overall ?? 0) +
-              ($price_overall_shop->price_overall ?? 0);
-
-            //discount
-            $amount_discount_item = DB::connection($valBrc->connection)->table('list_of_payments as lop')
-              ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
-              ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
-              ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-              ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
-              ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
-              ->join('users', 'lop.user_id', '=', 'users.id')
-              ->join('branches', 'users.branch_id', '=', 'branches.id')
-              ->select(
-                DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount")
-              )
-              ->where('branches.id', '=', $valBrc->id)
-              ->whereDate('lopm.updated_at', $date_specified)->first();
-
-
-            $amount_discount_service = DB::connection($valBrc->connection)->table('list_of_payments')
-              ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-              ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-              ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-              ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-              ->join('users', 'check_up_results.user_id', '=', 'users.id')
-              ->join('branches', 'users.branch_id', '=', 'branches.id')
-              ->select(
-                DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount")
-              )
-              ->where('branches.id', '=', $valBrc->id)
-              ->whereDate('list_of_payment_services.updated_at', $date_specified)->first();
-
-            $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
-
-            $total_clean = $total - $amount_discount;
-
-            $total_omset += $total_clean;
-
-            $newItem[Str::slug($valBrc->branch_name, '_')] = $total_clean;
-          }
-
-          $newItem['total_omset'] = $total_omset;
-          //info($item);
-          return $newItem;
-          // Return the modified item
-        });
-
-        $i++;
-      }
-      // return 'test';
-      //return $updatedCollection;
-      return response()->json([
-        'datas' => $updatedCollection->toArray(),
-        'branches' => $branches
-      ], 200);
+        return $minDate ?? Carbon::now()->subYear()->format('Y-m-d');
     }
-  }
 
-  public function chart(Request $request)
-  {
-    $lastPeriods = collect();
-    $listDates = [];
+    /**
+     * Build period list based on filter type.
+     *
+     * Returns: [$periods, $groupBy, $dateFrom, $dateTo]
+     *   $periods  — array of ['key' => ..., 'label' => ...]
+     *   $groupBy  — 'day' | 'month'
+     *   $dateFrom — SQL-safe date string for WHERE
+     *   $dateTo   — SQL-safe date string for WHERE
+     */
+    private function buildPeriods(Request $request): array
+    {
+        Carbon::setLocale('id');
+        $periode = $request->periode ?? 'mingguan';
+        $periods = [];
+        $groupBy = 'day';
 
-    if ($request->date_from && $request->date_to) {
+        switch ($periode) {
+            case 'bulanan':
+                $cur = Carbon::now()->startOfMonth();
+                $end = Carbon::now()->endOfMonth();
+                while ($cur->lte($end)) {
+                    $periods[] = [
+                        'key'   => $cur->format('Y-m-d'),
+                        'label' => $cur->translatedFormat('j M Y'),
+                    ];
+                    $cur->addDay();
+                }
+                $groupBy = 'day';
+                break;
 
-      $date_from = $request->date_from;
-      $date_to = $request->date_to;
+            case 'tahunan':
+                $year = Carbon::now()->year;
+                for ($m = 1; $m <= 12; $m++) {
+                    $month = Carbon::createFromDate($year, $m, 1);
+                    $periods[] = [
+                        'key'   => $month->format('Y-m'),
+                        'label' => $month->translatedFormat('F Y'),
+                    ];
+                }
+                $groupBy = 'month';
+                break;
 
-      $listDates = new Collection();
-      $currentDate = Carbon::parse($date_from);
+            case 'sejak_dibuka':
+                $firstDate = $this->getFirstTransactionDate($request);
+                $cur = Carbon::parse($firstDate)->startOfMonth();
+                $end = Carbon::now()->startOfMonth();
+                while ($cur->lte($end)) {
+                    $periods[] = [
+                        'key'   => $cur->format('Y-m'),
+                        'label' => $cur->translatedFormat('F Y'),
+                    ];
+                    $cur->addMonth();
+                }
+                $groupBy = 'month';
+                break;
 
-      while ($currentDate->lte(Carbon::parse($date_to))) {
-        $listDates->push([
-          'days' => $currentDate->translatedFormat('l, j M Y')
-        ]);
-        $currentDate->addDay();
-      }
+            default: // mingguan
+                $cur = Carbon::now()->startOfWeek();
+                $end = Carbon::now()->endOfWeek();
+                while ($cur->lte($end)) {
+                    $periods[] = [
+                        'key'   => $cur->format('Y-m-d'),
+                        'label' => $cur->translatedFormat('l, j M Y'),
+                    ];
+                    $cur->addDay();
+                }
+                $groupBy = 'day';
+                break;
+        }
 
+        $keys     = array_column($periods, 'key');
+        $dateFrom = $groupBy === 'day'
+            ? $keys[0]
+            : Carbon::createFromFormat('Y-m', $keys[0])->startOfMonth()->format('Y-m-d');
+        $dateTo   = $groupBy === 'day'
+            ? $keys[count($keys) - 1]
+            : Carbon::createFromFormat('Y-m', $keys[count($keys) - 1])->endOfMonth()->format('Y-m-d');
 
-      $lastPeriods = new Collection();
-      $currentDate = Carbon::parse($date_from);
+        return [$periods, $groupBy, $dateFrom, $dateTo];
+    }
 
-      while ($currentDate->lte(Carbon::parse($date_to))) {
-        $lastPeriods->push([
-          'days' => $currentDate->format('Y-m-d')
-        ]);
-        $currentDate->addDay();
-      }
-    } else {
-      $days = Carbon::now()->addDay(-7);
+    // Load branches from all connections, adding branch_slug to each
+    private function getBranches(Request $request): Collection
+    {
+        if ($request->branch_id) {
+            return DB::connection($request->connection)->table('branches')
+                ->select('id', 'branch_name', DB::raw("'{$request->connection}' as connection"))
+                ->where('isDeleted', 0)
+                ->where('id', $request->branch_id)
+                ->get()
+                ->map(function ($b) {
+                    $b->branch_slug = Str::slug($b->branch_name, '_');
+                    return $b;
+                });
+        }
 
-      for ($i = 0; $i < 7; $i++) {
-
-        $days = $days->addDay();
-
-        $lastPeriods->push([
-          'days' => $days->format('Y-m-d'),  // Month number (e.g., 1 for January)
-        ]);
-      }
-
-      Carbon::setLocale('id');
-
-      $startDate = Carbon::now()->addDay(-7);
-
-      for ($i = 0; $i < 7; $i++) {
-        // Get the month and year for the current iteration (starting from now)
-        $day = $startDate->addDay();
-
-        $listDates[] = [
-          'days' => $day->translatedFormat('l, j M Y'),  // Month name in Indonesian (e.g., Januari, Februari)
+        $sources = [
+            'mysql'        => 4,
+            'mysql_second' => 1,
+            'mysql_third'  => null,
+            'mysql_forth'  => null,
         ];
-      }
+
+        $all = collect();
+        foreach ($sources as $conn => $excludeId) {
+            $q = DB::connection($conn)->table('branches')
+                ->select('id', 'branch_name', DB::raw("'{$conn}' as connection"))
+                ->where('isDeleted', 0);
+            if ($excludeId !== null) {
+                $q->where('id', '!=', $excludeId);
+            }
+            $all = $all->merge($q->get());
+        }
+
+        return $all->map(function ($b) {
+            $b->branch_slug = Str::slug($b->branch_name, '_');
+            return $b;
+        })->values();
     }
 
-    $datas = collect();
+    /**
+     * Fetch net omset per branch per period in bulk.
+     *
+     * $groupBy 'day'   → groups by DATE(column),           key format Y-m-d
+     * $groupBy 'month' → groups by DATE_FORMAT(column,'%Y-%m'), key format Y-m
+     */
+    private function fetchNetByBranchAndPeriod(
+        Collection $branches,
+        array $periods,
+        string $groupBy,
+        string $dateFrom,
+        string $dateTo
+    ): array {
+        $keys   = array_column($periods, 'key');
+        $netMap = [];
 
-    $i = 0;
+        $grpDay  = $groupBy === 'day';
+        $grpExpr = $grpDay ? "DATE(%s)" : "DATE_FORMAT(%s, '%%Y-%%m')";
 
-    if ($request->branch_id) {
+        foreach ($branches->groupBy('connection') as $conn => $connBranches) {
+            $branchIds = $connBranches->pluck('id')->toArray();
 
-      $branches = DB::connection($request->connection)->table('branches')
-        ->select('id', 'branch_name', DB::raw("'$request->connection' as connection"))
-        ->where('isDeleted', '=', 0)
-        ->where('id', '=', $request->branch_id)
-        ->get();
-    } else {
+            $g = fn(string $col) => DB::raw(sprintf($grpExpr, $col));
 
-      $admin = DB::connection('mysql')->table('branches')
-        ->select('id', 'branch_name', DB::raw("'mysql' as connection"))
-        ->where('id', '!=', 4)
-        ->where('isDeleted', '=', 0)->get();
+            // --- revenue: medicine items ---
+            $itemRows = DB::connection($conn)->table('list_of_payments as lop')
+                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    'branches.id as branch_id',
+                    DB::raw(sprintf($grpExpr, 'lopm.updated_at') . ' as period'),
+                    DB::raw("SUM(CASE WHEN lopm.quantity = 0 THEN pmg.selling_price ELSE pmg.selling_price * lopm.quantity END) as total")
+                )
+                ->whereIn('branches.id', $branchIds)
+                ->whereBetween(DB::raw("DATE(lopm.updated_at)"), [$dateFrom, $dateTo])
+                ->groupBy('branches.id', $g('lopm.updated_at'))
+                ->get();
 
-      $tj = DB::connection('mysql_second')->table('branches')
-        ->select('id', 'branch_name',  DB::raw("'mysql_second' as connection"))
-        ->where('id', '!=', 1)
-        ->where('isDeleted', '=', 0)->get();
+            // --- revenue: services ---
+            $svcRows = DB::connection($conn)->table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    'branches.id as branch_id',
+                    DB::raw(sprintf($grpExpr, 'list_of_payment_services.updated_at') . ' as period'),
+                    DB::raw("SUM(detail_service_patients.price_overall) as total")
+                )
+                ->whereIn('branches.id', $branchIds)
+                ->whereBetween(DB::raw("DATE(list_of_payment_services.updated_at)"), [$dateFrom, $dateTo])
+                ->groupBy('branches.id', $g('list_of_payment_services.updated_at'))
+                ->get();
 
-      $hello = DB::connection('mysql_third')->table('branches')
-        ->select('id', 'branch_name',  DB::raw("'mysql_third' as connection"))
-        ->where('isDeleted', '=', 0)->get();
+            // --- revenue: petshop + clinic ---
+            $shopClinicRows = DB::connection($conn)->table('payment_petshop_with_clinics as ppwc')
+                ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', '=', 'pip.id')
+                ->join('users', 'ppwc.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    'branches.id as branch_id',
+                    DB::raw(sprintf($grpExpr, 'ppwc.created_at') . ' as period'),
+                    DB::raw("SUM(pip.selling_price * ppwc.total_item) as total")
+                )
+                ->whereIn('branches.id', $branchIds)
+                ->whereBetween(DB::raw("DATE(ppwc.created_at)"), [$dateFrom, $dateTo])
+                ->groupBy('branches.id', $g('ppwc.created_at'))
+                ->get();
 
-      $helloKahfi = DB::connection('mysql_forth')->table('branches')
-        ->select('id', 'branch_name', DB::raw("'mysql_forth' as connection"))
-        ->where('isDeleted', '=', 0)->get();
+            // --- revenue: petshop only ---
+            $shopRows = DB::connection($conn)->table('payment_petshops as pp')
+                ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', '=', 'pip.id')
+                ->join('users', 'pp.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    'branches.id as branch_id',
+                    DB::raw(sprintf($grpExpr, 'pp.created_at') . ' as period'),
+                    DB::raw("SUM(pip.selling_price * pp.total_item) as total")
+                )
+                ->whereIn('branches.id', $branchIds)
+                ->whereBetween(DB::raw("DATE(pp.created_at)"), [$dateFrom, $dateTo])
+                ->groupBy('branches.id', $g('pp.created_at'))
+                ->get();
 
-      $stella = DB::connection('mysql_fifth')->table('branches')
-        ->select('id', 'branch_name',  DB::raw("'mysql_fifth' as connection"))
-        ->where('isDeleted', '=', 0)->get();
+            // --- discount: medicine items ---
+            $discItemRows = DB::connection($conn)->table('list_of_payments as lop')
+                ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+                ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
+                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+                ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
+                ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
+                ->join('users', 'lop.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    'branches.id as branch_id',
+                    DB::raw(sprintf($grpExpr, 'lopm.updated_at') . ' as period'),
+                    DB::raw("SUM(lopm.amount_discount) as total")
+                )
+                ->whereIn('branches.id', $branchIds)
+                ->whereBetween(DB::raw("DATE(lopm.updated_at)"), [$dateFrom, $dateTo])
+                ->groupBy('branches.id', $g('lopm.updated_at'))
+                ->get();
 
-      $branches = $admin->merge($tj)->merge($hello)->merge($helloKahfi)->merge($stella)->values();
+            // --- discount: services ---
+            $discSvcRows = DB::connection($conn)->table('list_of_payments')
+                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
+                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
+                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
+                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
+                ->join('users', 'check_up_results.user_id', '=', 'users.id')
+                ->join('branches', 'users.branch_id', '=', 'branches.id')
+                ->select(
+                    'branches.id as branch_id',
+                    DB::raw(sprintf($grpExpr, 'list_of_payment_services.updated_at') . ' as period'),
+                    DB::raw("SUM(list_of_payment_services.amount_discount) as total")
+                )
+                ->whereIn('branches.id', $branchIds)
+                ->whereBetween(DB::raw("DATE(list_of_payment_services.updated_at)"), [$dateFrom, $dateTo])
+                ->groupBy('branches.id', $g('list_of_payment_services.updated_at'))
+                ->get();
+
+            // Build in-memory lookup maps
+            $rev  = [];
+            $disc = [];
+
+            foreach ([$itemRows, $svcRows, $shopClinicRows, $shopRows] as $rows) {
+                foreach ($rows as $row) {
+                    $rev[$row->branch_id][$row->period] = ($rev[$row->branch_id][$row->period] ?? 0) + (float) $row->total;
+                }
+            }
+            foreach ([$discItemRows, $discSvcRows] as $rows) {
+                foreach ($rows as $row) {
+                    $disc[$row->branch_id][$row->period] = ($disc[$row->branch_id][$row->period] ?? 0) + (float) $row->total;
+                }
+            }
+
+            foreach ($connBranches as $branch) {
+                foreach ($keys as $key) {
+                    $netMap[$branch->id][$key] = ($rev[$branch->id][$key] ?? 0) - ($disc[$branch->id][$key] ?? 0);
+                }
+            }
+        }
+
+        return $netMap;
     }
 
-    //    return $branches;
-    foreach ($lastPeriods as $val) {
+    public function index(Request $request)
+    {
+        [$periods, $groupBy, $dateFrom, $dateTo] = $this->buildPeriods($request);
+        $branches = $this->getBranches($request);
+        $netMap   = $this->fetchNetByBranchAndPeriod($branches, $periods, $groupBy, $dateFrom, $dateTo);
 
-      $totalOverall = 0;
+        $datas = collect();
 
-      foreach ($branches as $valBrc) {
+        if ($request->branch_id) {
+            foreach ($periods as $period) {
+                $total = 0;
+                foreach ($branches as $b) {
+                    $total += $netMap[$b->id][$period['key']] ?? 0;
+                }
+                $datas->push(['dates' => $period['label'], 'total_omset' => $total]);
+            }
 
-        $price_overall_item = DB::connection($valBrc->connection)->table('list_of_payments as lop')
-          ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-          ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-          ->join('users', 'lop.user_id', '=', 'users.id')
-          ->join('branches', 'users.branch_id', '=', 'branches.id')
-          ->select(
-            DB::raw("(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall")
-          );
+            return response()->json(['datas' => $datas->toArray(), 'branches' => $branches], 200);
+        }
 
-        $price_overall_item = $price_overall_item->where('branches.id', '=', $valBrc->id);
+        foreach ($periods as $period) {
+            $row   = ['dates' => $period['label']];
+            $total = 0;
+            foreach ($branches as $b) {
+                $net                  = $netMap[$b->id][$period['key']] ?? 0;
+                $row[$b->branch_slug] = $net;
+                $total               += $net;
+            }
+            $row['total_omset'] = $total;
+            $datas->push($row);
+        }
 
-
-        $price_overall_item = $price_overall_item->whereDate('lopm.updated_at', $val['days'])->first();
-
-
-        $price_overall_service = DB::connection($valBrc->connection)->table('list_of_payments')
-          ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-          ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-          ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-          ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-          ->join('users', 'check_up_results.user_id', '=', 'users.id')
-          ->join('branches', 'users.branch_id', '=', 'branches.id')
-          ->select(
-            DB::raw("TRIM(SUM(detail_service_patients.price_overall))+0 as price_overall")
-          );
-
-        $price_overall_service = $price_overall_service->where('branches.id', '=', $valBrc->id);
-
-
-        $price_overall_service = $price_overall_service->whereDate('list_of_payment_services.updated_at', $val['days'])->first();
-        //
-
-        $price_overall_shop_clinic = DB::connection($valBrc->connection)->table('payment_petshop_with_clinics as ppwc')
-          ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', 'pip.id')
-          ->join('users', 'ppwc.user_id', '=', 'users.id')
-          ->join('branches', 'users.branch_id', '=', 'branches.id')
-          ->select(DB::raw("TRIM(SUM(pip.selling_price * ppwc.total_item))+0 as price_overall"));
-
-        $price_overall_shop_clinic = $price_overall_shop_clinic->where('branches.id', '=', $valBrc->id);
-
-
-        $price_overall_shop_clinic = $price_overall_shop_clinic->whereDate('ppwc.created_at', $val['days'])->first();
-        //=============================
-
-        $price_overall_shop = DB::connection($valBrc->connection)->table('payment_petshops as pp')
-          ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', 'pip.id')
-          ->join('users', 'pp.user_id', '=', 'users.id')
-          ->join('branches', 'users.branch_id', '=', 'branches.id')
-          ->select(DB::raw("TRIM(SUM(pip.selling_price * pp.total_item))+0 as price_overall"));
-
-
-        $price_overall_shop = $price_overall_shop->where('branches.id', '=', $valBrc->id);
-
-
-        $price_overall_shop = $price_overall_shop->whereDate('pp.created_at', $val['days'])->first();
-
-        $price_overall = $price_overall_service->price_overall + $price_overall_item->price_overall
-          + $price_overall_shop_clinic->price_overall + $price_overall_shop->price_overall;
-
-        //discount
-        $amount_discount_item = DB::connection($valBrc->connection)->table('list_of_payments as lop')
-          ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
-          ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
-          ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-          ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
-          ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
-          ->join('users', 'lop.user_id', '=', 'users.id')
-          ->join('branches', 'users.branch_id', '=', 'branches.id')
-          ->select(
-            DB::raw("TRIM(SUM(lopm.amount_discount))+0 as amount_discount")
-          );
-
-
-        $amount_discount_item = $amount_discount_item->where('branches.id', '=', $valBrc->id);
-
-
-        $amount_discount_item = $amount_discount_item->whereDate('lopm.updated_at', $val['days'])->first();
-        // if ($request->periode == 2) {
-        //   $amount_discount_item = $amount_discount_item->where(DB::raw("YEAR(lopm.updated_at)"), $val['year']);
-        // } else {
-        //   $amount_discount_item = $amount_discount_item->where(DB::raw("MONTH(lopm.updated_at)"), $val['month'])
-        //     ->where(DB::raw("YEAR(lopm.updated_at)"), $val['year']);
-        // }
-
-        $amount_discount_service = DB::connection($valBrc->connection)->table('list_of_payments')
-          ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-          ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-          ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-          ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-          ->join('users', 'check_up_results.user_id', '=', 'users.id')
-          ->join('branches', 'users.branch_id', '=', 'branches.id')
-          ->select(
-            DB::raw("TRIM(SUM(list_of_payment_services.amount_discount))+0 as amount_discount")
-          );
-
-
-        $amount_discount_service = $amount_discount_service->where('branches.id', '=', $valBrc->id);
-
-
-        $amount_discount_service = $amount_discount_service->whereDate('list_of_payment_services.updated_at', $val['days'])->first();
-        // if ($request->periode == 2) {
-        //   $amount_discount_service = $amount_discount_service->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $val['year']);
-        // } else {
-        //   $amount_discount_service = $amount_discount_service->where(DB::raw("MONTH(list_of_payment_services.updated_at)"), $val['month'])
-        //     ->where(DB::raw("YEAR(list_of_payment_services.updated_at)"), $val['year']);
-        // }
-
-        $amount_discount = $amount_discount_item->amount_discount + $amount_discount_service->amount_discount;
-
-        $totalOverall += $price_overall - $amount_discount;
-      }
-
-
-      $datas->push([
-        'dates' => $listDates[$i]['days'],
-        'total_omset' => $totalOverall,
-      ]);
-
-      $i++;
+        return response()->json(['datas' => $datas->toArray(), 'branches' => $branches], 200);
     }
 
-    return response()->json($datas, 200);
-  }
+    public function chart(Request $request)
+    {
+        [$periods, $groupBy, $dateFrom, $dateTo] = $this->buildPeriods($request);
+        $branches = $this->getBranches($request);
+        $netMap   = $this->fetchNetByBranchAndPeriod($branches, $periods, $groupBy, $dateFrom, $dateTo);
+
+        $datas = collect();
+        foreach ($periods as $period) {
+            $total = 0;
+            foreach ($branches as $b) {
+                $total += $netMap[$b->id][$period['key']] ?? 0;
+            }
+            $datas->push(['dates' => $period['label'], 'total_omset' => $total]);
+        }
+
+        return response()->json($datas, 200);
+    }
 }
