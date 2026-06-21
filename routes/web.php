@@ -25,6 +25,10 @@ Route::get('/masuk', function () {
 	return view('auth.login');
 });
 
+Route::get('/lupa-password', function () {
+	return view('auth.lupa-password');
+});
+
 Route::get('/user', function () {
 	return view('user.index');
 });
