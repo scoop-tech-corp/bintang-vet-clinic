@@ -7,15 +7,29 @@
     <div class="inner-box-title">
 
       <div class="section-left-box-title">
-        <label class="label-date">Pilih Tanggal</label>
-        <div class="input-group date section-daterangepicker">
-          <div class="input-group-addon">
-            <i class="fa fa-calendar"></i>
-          </div>
-          <input type="text" class="form-control" id="datepicker" placeholder="yyyy-mm-dd - yyyy-mm-dd"
-            autocomplete="off">
+        <div class="btn-group" id="periode-omset-group">
+          <button class="btn btn-sm btn-default" data-periode="mingguan">Mingguan</button>
+          <button class="btn btn-sm btn-default" data-periode="bulanan">Bulanan</button>
+          <button class="btn btn-sm btn-default" data-periode="tahunan">Tahunan</button>
+          <button class="btn btn-sm btn-default" data-periode="sejak_dibuka">Sejak Dibuka</button>
         </div>
 
+        <div id="filter-mingguan" class="filter-periode-input" style="display:none;">
+          <input type="date" id="startDate" class="form-control input-sm">
+          <span class="filter-sep">s/d</span>
+          <input type="date" id="endDate" class="form-control input-sm">
+        </div>
+
+        <div id="filter-bulanan" class="filter-periode-input" style="display:none;">
+          <div class="input-group input-group-sm filter-bulanan-group">
+            <input type="text" id="inputBulan" class="form-control" placeholder="mm-yyyy" readonly style="cursor:pointer;">
+            <span class="input-group-addon" style="cursor:pointer;"><i class="fa fa-calendar"></i></span>
+          </div>
+        </div>
+
+        <div id="filter-tahunan" class="filter-periode-input" style="display:none;">
+          <select id="selectTahun" class="form-control input-sm filter-tahun-select"></select>
+        </div>
       </div>
 
       <div class="section-right-box-title">
@@ -25,35 +39,17 @@
   </div>
 
   <div class="box-body">
-
-    <div class="box-header with-border">
-      <div style="display: flex; justify-content: space-between">
-
-      </div>
-    </div>
     <div class="box-body">
       <div id="rekapWidgetOmset" style="width:100%; height:100%"></div>
     </div>
-
   </div>
 
   <div class="box-body">
     <div class="table-responsive">
       <table class="table table-striped text-nowrap">
-      <thead id="head-laporan-keuangan-omset"></thead>
-        <!-- <thead>
-          <tr>
-            <th>No</th>
-            <th class="onOrdering" data='dates' orderby="none">Periode <span
-                class="fa fa-sort"></span></th>
-            <th class="onOrdering" data='total_omset' orderby="none">Total Omset (Rp) <span
-                class="fa fa-sort"></span></th>
-          </tr>
-        </thead> -->
+        <thead id="head-laporan-keuangan-omset"></thead>
         <tbody id="list-laporan-keuangan-omset"></tbody>
       </table>
-
-      <ul class="pagination pagination-sm m-t-10px pull-left"></ul>
     </div>
   </div>
 </div>
@@ -63,13 +59,12 @@
 @endsection
 @section('script-content')
 <script src="{{ asset('plugins/highcharts/highstock.js') }}"></script>
+<script src="{{ asset('bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js') }}"></script>
 <script src="{{ asset('main/js/laporan-keuangan/omset/omset.js') }}"></script>
-<script src="{{ asset('bower_components/moment/min/moment.min.js') }}"></script>
-    <script src="{{ asset('bower_components/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
 @endsection
 @section('css-content')
 <link rel="stylesheet" type='text/css' href="{{ asset('main/css/rekap.css') }}">
-<link rel="stylesheet" href="{{ asset('bower_components/bootstrap-daterangepicker/daterangepicker.css') }}"
-  @endsection
-  @section('vue-content')
-  @endsection
+<link rel="stylesheet" href="{{ asset('bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
+@endsection
+@section('vue-content')
+@endsection
