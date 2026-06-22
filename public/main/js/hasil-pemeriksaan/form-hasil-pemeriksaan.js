@@ -231,7 +231,7 @@ $(document).ready(function() {
         }, 1000);
       }, complete: function() { $('#loading-screen').hide(); }
       , error: function(err) {
-        if (err.status === 422) {
+        if (err.status === 422 || err.status === 403) {
           let errText = ''; $('#beErr').empty(); $('#btnSubmitHasilPemeriksaan').attr('disabled', true);
           $.each(err.responseJSON.errors, function(idx, v) {
             errText += v + ((idx !== err.responseJSON.errors.length - 1) ? '<br/>' : '');
@@ -365,7 +365,7 @@ $(document).ready(function() {
 
       }, complete: function() { $('#loading-screen').hide(); }
       , error: function(err) {
-        if (err.status === 422) {
+        if (err.status === 422 || err.status === 403) {
           let errText = ''; $('#beErr').empty(); $('#btnSubmitHasilPemeriksaan').attr('disabled', true);
           $.each(err.responseJSON.errors, function(idx, v) {
             errText += v + ((idx !== err.responseJSON.errors.length - 1) ? '<br/>' : '');

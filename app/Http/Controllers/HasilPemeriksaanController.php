@@ -758,7 +758,7 @@ class HasilPemeriksaanController extends Controller
             ], 404);
         }
 
-        if ($request->user()->role === 'dokter' && $check_up_result->user_id !== $request->user()->id) {
+        if ($request->user()->role === 'dokter' && (int)$check_up_result->user_id !== (int)$request->user()->id) {
             return response()->json([
                 'message' => 'The user role was invalid.',
                 'errors' => ['Anda tidak memiliki akses untuk mengubah data hasil pemeriksaan dokter lain!'],
