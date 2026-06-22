@@ -115,8 +115,8 @@ $(document).ready(function() {
             const isOver24h   = (new Date() - new Date(v.created_at)) > 24 * 60 * 60 * 1000;
             const isCreator   = String(v.user_id) === String(userId);
 
-            // Print: kasir dan admin saja
-            const printDisabled = (roleLower !== 'kasir' && roleLower !== 'admin');
+            // Print: resepsionis dan admin saja
+            const printDisabled = (roleLower !== 'resepsionis' && roleLower !== 'admin');
 
             // Edit: admin bebas; dokter hanya milik sendiri & dalam 24 jam; role lain tidak bisa
             let editDisabled = true;
@@ -147,7 +147,7 @@ $(document).ready(function() {
               + `<td>${v.created_by}</td>`
               + `<td>
                   <button type="button" class="btn btn-info openDetail" value=${v.id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-info onCetak m-r-3px" ${printDisabled ? 'disabled title="Hanya kasir dan admin yang dapat mencetak"' : ''} value=${v.id}><i class="fa fa-print" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-info onCetak m-r-3px" ${printDisabled ? 'disabled title="Hanya resepsionis dan admin yang dapat mencetak"' : ''} value=${v.id}><i class="fa fa-print" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-warning openFormEdit" ${editDisabled ? `disabled title="${editTitle}"` : ''} value=${v.id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-danger openFormDelete" ${deleteDisabled ? 'disabled title="Hanya admin yang dapat menghapus"' : ''} value=${v.id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 </td>`
