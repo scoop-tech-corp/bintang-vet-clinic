@@ -107,7 +107,7 @@ $(document).ready(function() {
     modalState = 'add';
     $('.modal-title').text('Tambah Pembayaran');
 
-    if (role.toLowerCase() == 'kasir') {
+    if (role.toLowerCase() == 'resepsionis') {
       loadBarang(branchId);
     }
 
@@ -207,11 +207,11 @@ $(document).ready(function() {
             const roleLower  = role.toLowerCase();
             const isPaidOff  = v.status_paid_off == 1;
 
-            // Print: kasir dan admin saja
-            const printDisabled = (roleLower !== 'kasir' && roleLower !== 'admin');
+            // Print: resepsionis dan admin saja
+            const printDisabled = (roleLower !== 'resepsionis' && roleLower !== 'admin');
 
-            // Edit: kasir dan admin saja
-            const editDisabled = (roleLower !== 'kasir' && roleLower !== 'admin');
+            // Edit: resepsionis dan admin saja
+            const editDisabled = (roleLower !== 'resepsionis' && roleLower !== 'admin');
 
             // Delete: hanya admin
             const deleteDisabled = (roleLower !== 'admin');
@@ -229,8 +229,8 @@ $(document).ready(function() {
               + `<td>${v.created_by}</td>`
               + `<td>
                   <button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-info onCetak m-r-3px" ${printDisabled ? 'disabled title="Hanya kasir dan admin yang dapat mencetak"' : ''} value=${v.list_of_payment_id}><i class="fa fa-print" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-warning openFormEdit" ${editDisabled ? 'disabled title="Hanya kasir dan admin yang dapat mengedit"' : ''} value=${v.list_of_payment_id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-info onCetak m-r-3px" ${printDisabled ? 'disabled title="Hanya resepsionis dan admin yang dapat mencetak"' : ''} value=${v.list_of_payment_id}><i class="fa fa-print" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-warning openFormEdit" ${editDisabled ? 'disabled title="Hanya resepsionis dan admin yang dapat mengedit"' : ''} value=${v.list_of_payment_id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
                   <button type="button" class="btn btn-danger openFormDelete" ${deleteDisabled ? 'disabled title="Hanya admin yang dapat menghapus"' : ''} value=${v.list_of_payment_id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 </td>`
               + `</tr>`;
