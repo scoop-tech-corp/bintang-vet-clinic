@@ -204,9 +204,27 @@ $(document).ready(function() {
 
         if (getData.length) {
           $.each(getData, function(idx, v) {
-            const isOver24h    = (new Date() - new Date(v.created_at)) > 24 * 60 * 60 * 1000;
-            const editDisabled = role.toLowerCase() === 'dokter' && isOver24h;
-            const isPaidOff    = v.status_paid_off == 1;
+            const roleLower  = role.toLowerCase();
+            const isOver24h  = (new Date() - new Date(v.created_at)) > 24 * 60 * 60 * 1000;
+            const isCreator  = String(v.user_id) === String(userId);
+            const isPaidOff  = v.status_paid_off == 1;
+
+            // Print: kasir dan admin saja
+            const printDisabled = (roleLower !== 'kasir' && roleLower !== 'admin');
+
+            // Edit: admin bebas; pembuat dalam 24 jam; role lain tidak bisa
+            let editDisabled = true;
+            let editTitle = 'Anda tidak memiliki akses untuk mengedit';
+            if (roleLower === 'admin') {
+              editDisabled = false; editTitle = '';
+            } else if (isCreator && !isOver24h) {
+              editDisabled = false; editTitle = '';
+            } else if (isCreator && isOver24h) {
+              editTitle = 'Waktu edit sudah melebihi 24 jam';
+            }
+
+            // Delete: hanya admin
+            const deleteDisabled = (roleLower !== 'admin');
 
             listPembayaran += `<tr>`
               + `<td>${++idx}</td>`
@@ -221,15 +239,14 @@ $(document).ready(function() {
               + `<td>${v.created_by}</td>`
               + `<td>
                   <button type="button" class="btn btn-info openDetail" value=${v.list_of_payment_id} title="Detail"><i class="fa fa-eye" aria-hidden="true"></i></button>
-                  ${isPaidOff ? `<button type="button" class="btn btn-info onCetak m-r-3px" value=${v.list_of_payment_id}><i class="fa fa-print" aria-hidden="true"></i></button>` : ''}
-                  <button type="button" class="btn btn-warning openFormEdit" ${editDisabled ? 'disabled title="Waktu edit sudah melebihi 24 jam"' : ''} value=${v.list_of_payment_id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
-                  <button type="button" class="btn btn-danger openFormDelete"
-                    ${role.toLowerCase() != 'admin' ? 'disabled' : ''} value=${v.list_of_payment_id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-info onCetak m-r-3px" ${printDisabled ? 'disabled title="Hanya kasir dan admin yang dapat mencetak"' : ''} value=${v.list_of_payment_id}><i class="fa fa-print" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-warning openFormEdit" ${editDisabled ? `disabled title="${editTitle}"` : ''} value=${v.list_of_payment_id}><i class="fa fa-pencil" aria-hidden="true"></i></button>
+                  <button type="button" class="btn btn-danger openFormDelete" ${deleteDisabled ? 'disabled title="Hanya admin yang dapat menghapus"' : ''} value=${v.list_of_payment_id}><i class="fa fa-trash-o" aria-hidden="true"></i></button>
                 </td>`
               + `</tr>`;
           });
         } else {
-          listPembayaran += `<tr class="text-center"><td colspan="10">Tidak ada data.</td></tr>`;
+          listPembayaran += `<tr class="text-center"><td colspan="11">Tidak ada data.</td></tr>`;
         }
 
 				$('#list-pembayaran').append(listPembayaran);
@@ -274,12 +291,9 @@ $(document).ready(function() {
 
 				$('.openFormDelete').click(function() {
           getId = $(this).val();
-
-					if (role.toLowerCase() == 'admin') {
-            $('#modal-confirmation .modal-title').text('Peringatan');
-						$('#modal-confirmation .box-body').text('Anda yakin ingin menghapus data ini?');
-						$('#modal-confirmation').modal('show');
-          }
+          $('#modal-confirmation .modal-title').text('Peringatan');
+          $('#modal-confirmation .box-body').text('Anda yakin ingin menghapus data ini?');
+          $('#modal-confirmation').modal('show');
 				});
 
         $('.openFormDeletePetShop').click(function() {
@@ -677,7 +691,7 @@ $(document).ready(function() {
 
         const getMasterPaymentId = resp.master_payment_petshop_id;
 
-        processPrint(getMasterPaymentId);
+        processPrintPetShop(getMasterPaymentId);
 
         setTimeout(() => {
           $('#modal-tambah-pembayaran').modal('toggle');
@@ -700,7 +714,7 @@ $(document).ready(function() {
 
   });
 
-  function processPrint(master_payment_id) {
+  function processPrintPetShop(master_payment_id) {
     let url = '/pembayaranpetshop/printreceipt/' + master_payment_id + '?token=' + token;
     window.open($('.baseUrl').val() + url, '_blank');
   }
