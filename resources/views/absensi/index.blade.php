@@ -38,19 +38,19 @@
       <!-- Filter Dari — semua role -->
       <div class="filter-item">
         <label>Dari</label>
-        <input type="date" class="form-control input-sm" v-model="filter.tanggal_dari" @change="loadAbsensi">
+        <input type="date" class="form-control input-sm" v-model="filter.tanggal_dari" @change="onFilter">
       </div>
 
       <!-- Filter Sampai — semua role -->
       <div class="filter-item">
         <label>Sampai</label>
-        <input type="date" class="form-control input-sm" v-model="filter.tanggal_sampai" @change="loadAbsensi">
+        <input type="date" class="form-control input-sm" v-model="filter.tanggal_sampai" @change="onFilter">
       </div>
 
       <!-- Filter Shift — hanya admin -->
       <div class="filter-item" v-if="isAdmin">
         <label>Shift</label>
-        <select class="form-control input-sm" v-model="filter.shift_id" @change="loadAbsensi" style="min-width:160px;">
+        <select class="form-control input-sm" v-model="filter.shift_id" @change="onFilter" style="min-width:160px;">
           <option value="">Semua Shift</option>
           <option v-for="s in listShift" :key="s.id" :value="s.id">@{{ s.nama_shift }}</option>
         </select>
@@ -59,7 +59,7 @@
       <!-- Filter Status — semua role -->
       <div class="filter-item">
         <label>Status</label>
-        <select class="form-control input-sm" v-model="filter.status" @change="loadAbsensi" style="min-width:140px;">
+        <select class="form-control input-sm" v-model="filter.status" @change="onFilter" style="min-width:140px;">
           <option value="">Semua Status</option>
           <option value="hadir">Hadir</option>
           <option value="terlambat">Terlambat</option>
@@ -71,7 +71,7 @@
       <!-- Filter Cabang — hanya admin -->
       <div class="filter-item" v-if="isAdmin">
         <label>Cabang</label>
-        <select class="form-control input-sm" v-model="filter.branch_id" @change="loadAbsensi" style="min-width:180px;">
+        <select class="form-control input-sm" v-model="filter.branch_id" @change="onFilter" style="min-width:180px;">
           <option value="">Semua Cabang</option>
           <option v-for="c in listCabang" :key="c.id" :value="c.id">@{{ c.branch_name }}</option>
         </select>
@@ -81,12 +81,12 @@
       <div class="filter-item" v-if="isAdmin">
         <label>Cari Nama</label>
         <input type="text" class="form-control input-sm" v-model="filter.keyword"
-          @keyup.enter="loadAbsensi" placeholder="Nama karyawan..." style="min-width:160px;">
+          @keyup.enter="onFilter" placeholder="Nama karyawan..." style="min-width:160px;">
       </div>
 
       <div class="filter-item">
         <label>&nbsp;</label>
-        <button class="btn btn-primary btn-sm" @click="loadAbsensi">
+        <button class="btn btn-primary btn-sm" @click="onFilter">
           <i class="fa fa-search"></i> Cari
         </button>
       </div>
@@ -98,19 +98,33 @@
         <thead>
           <tr>
             <th>No</th>
-            <th v-if="isAdmin">Nama</th>
-            <th v-if="isAdmin">Cabang</th>
-            <th>Shift</th>
-            <th>Tanggal</th>
-            <th>Jam Masuk</th>
-            <th>Jam Pulang</th>
+            <th v-if="isAdmin" @click="sortBy('fullname')" style="cursor:pointer;">
+              Nama <i :class="sortIcon('fullname')"></i>
+            </th>
+            <th v-if="isAdmin" @click="sortBy('branch_name')" style="cursor:pointer;">
+              Cabang <i :class="sortIcon('branch_name')"></i>
+            </th>
+            <th @click="sortBy('nama_shift')" style="cursor:pointer;">
+              Shift <i :class="sortIcon('nama_shift')"></i>
+            </th>
+            <th @click="sortBy('tanggal')" style="cursor:pointer;">
+              Tanggal <i :class="sortIcon('tanggal')"></i>
+            </th>
+            <th @click="sortBy('jam_masuk')" style="cursor:pointer;">
+              Jam Masuk <i :class="sortIcon('jam_masuk')"></i>
+            </th>
+            <th @click="sortBy('jam_keluar')" style="cursor:pointer;">
+              Jam Pulang <i :class="sortIcon('jam_keluar')"></i>
+            </th>
             <th>Jam Shift</th>
             <th>Foto Masuk</th>
             <th>Foto Pulang</th>
             <th>Lokasi</th>
             <th>Jarak</th>
             <th>Keterangan</th>
-            <th>Status</th>
+            <th @click="sortBy('status')" style="cursor:pointer;">
+              Status <i :class="sortIcon('status')"></i>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -157,6 +171,30 @@
         </tbody>
       </table>
     </div>
+
+    <ul class="pagination pagination-sm m-t-10px pull-left" v-if="listAbsensi.length > 0">
+      <li :class="{ disabled: currentPage === 1 }">
+        <a style="cursor:pointer;" @click="goToPage(currentPage - 1)">
+          <i class="fa fa-chevron-left"></i>
+        </a>
+      </li>
+      <li v-if="pageNumbers[0] > 1">
+        <a style="cursor:pointer;" @click="goToPage(1)">1</a>
+      </li>
+      <li v-if="pageNumbers[0] > 2" class="disabled"><a>...</a></li>
+      <li v-for="p in pageNumbers" :key="p" :class="{ active: p === currentPage }">
+        <a style="cursor:pointer;" @click="goToPage(p)">@{{ p }}</a>
+      </li>
+      <li v-if="pageNumbers[pageNumbers.length - 1] < totalPage - 1" class="disabled"><a>...</a></li>
+      <li v-if="pageNumbers[pageNumbers.length - 1] < totalPage">
+        <a style="cursor:pointer;" @click="goToPage(totalPage)">@{{ totalPage }}</a>
+      </li>
+      <li :class="{ disabled: currentPage === totalPage }">
+        <a style="cursor:pointer;" @click="goToPage(currentPage + 1)">
+          <i class="fa fa-chevron-right"></i>
+        </a>
+      </li>
+    </ul>
   </div>
 
   <!-- Modal Lihat Foto -->

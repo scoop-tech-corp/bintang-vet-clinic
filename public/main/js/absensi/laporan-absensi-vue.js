@@ -14,11 +14,24 @@ const absensiApp = new Vue({
       status: '',
       keyword: '',
     },
+    sort: { column: 'tanggal', order: 'desc' },
+    currentPage: 1,
+    totalPage: 1,
     baseUrl: '',
     token: '',
     role: '',
     branchId: '',
     isAdmin: false,
+  },
+  computed: {
+    pageNumbers() {
+      const delta = 2;
+      const left  = Math.max(1, this.currentPage - delta);
+      const right = Math.min(this.totalPage, this.currentPage + delta);
+      const pages = [];
+      for (let i = left; i <= right; i++) pages.push(i);
+      return pages;
+    },
   },
   mounted() {
     const stored = localStorage.getItem('vet-clinic');
@@ -30,7 +43,6 @@ const absensiApp = new Vue({
     this.baseUrl  = document.querySelector('.baseUrl').value;
     this.isAdmin  = auth.role === 'admin';
 
-    // Set default filter bulan ini
     const now = new Date();
     const y = now.getFullYear();
     const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -49,13 +61,40 @@ const absensiApp = new Vue({
         .map(([k, v]) => k + '=' + encodeURIComponent(v))
         .join('&');
 
-      axios.get(this.baseUrl + '/api/absensi?' + params, {
+      const sortParams = 'column=' + this.sort.column + '&orderby=' + this.sort.order + '&page=' + this.currentPage;
+
+      axios.get(this.baseUrl + '/api/absensi?' + params + '&' + sortParams, {
         headers: { Authorization: 'Bearer ' + this.token }
       }).then(res => {
-        this.listAbsensi = res.data;
+        this.listAbsensi = res.data.data;
+        this.totalPage   = res.data.total_paging || 1;
       }).catch(() => {
         this.listAbsensi = [];
+        this.totalPage   = 1;
       }).finally(() => { this.loading = false; });
+    },
+    sortBy(column) {
+      if (this.sort.column === column) {
+        this.sort.order = this.sort.order === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sort.column = column;
+        this.sort.order  = 'asc';
+      }
+      this.currentPage = 1;
+      this.loadAbsensi();
+    },
+    sortIcon(column) {
+      if (this.sort.column !== column) return 'fa fa-sort';
+      return this.sort.order === 'asc' ? 'fa fa-sort-asc' : 'fa fa-sort-desc';
+    },
+    goToPage(page) {
+      if (page < 1 || page > this.totalPage) return;
+      this.currentPage = page;
+      this.loadAbsensi();
+    },
+    onFilter() {
+      this.currentPage = 1;
+      this.loadAbsensi();
     },
     loadCabang() {
       axios.get(this.baseUrl + '/api/cabang', {
