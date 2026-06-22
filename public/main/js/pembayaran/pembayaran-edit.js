@@ -64,6 +64,20 @@ $(document).ready(function() {
       data.item.forEach(it => { it.isRevert = false; it.new_price_overall = it.price_overall; it.discount = 0; });
 
       selectedListJasa = data.services; selectedListBarang = data.item;
+
+      selectedListJasa.forEach(sr => {
+        if (sr.status_paid_off) {
+          const paidSr = data.paid_services.find(ps => ps.detail_service_patient_id == sr.detail_service_patient_id);
+          if (paidSr) sr.discount = paidSr.discount || 0;
+        }
+      });
+      selectedListBarang.forEach(it => {
+        if (it.status_paid_off) {
+          const paidIt = data.paid_item.find(pi => pi.detail_medicine_group_check_up_result_id == it.id);
+          if (paidIt) it.discount = paidIt.discount || 0;
+        }
+      });
+
       processAppendListSelectedJasa(); processAppendListSelectedBarang();
 
       data.paid_services.forEach(sr => { sr.isRevert = false; sr.new_price_overall = sr.price_overall_after_discount });
@@ -135,6 +149,7 @@ $(document).ready(function() {
             <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px"
             class="form-control diskon-list-jasa ${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
             <span class="${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">%</span>
+            <span class="${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-none' : ''}">${lj.discount || 0}&nbsp;%</span>
           </td>`
         + `<td>
             <span id="totalJasa-${idx}">${
@@ -265,6 +280,7 @@ $(document).ready(function() {
             <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px"
             class="form-control diskon-list-barang ${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
             <span class="${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">%</span>
+            <span class="${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-none' : ''}">${lb.discount || 0}&nbsp;%</span>
           </td>`
         + `<td>
             <span id="totalBarang-${idx}">${
