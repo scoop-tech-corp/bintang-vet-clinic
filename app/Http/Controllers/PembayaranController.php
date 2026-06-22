@@ -81,6 +81,7 @@ class PembayaranController extends Controller
         DB::raw('CASE WHEN registrations.complaint_id = 11 AND registrations.other_complaint IS NOT NULL THEN registrations.other_complaint ELSE COALESCE(complaints.name, registrations.complaint) END AS complaint'),
         'check_up_results.status_outpatient_inpatient',
         'check_up_results.status_paid_off',
+        'list_of_payments.user_id',
         'users.fullname as created_by',
         DB::raw("DATE_FORMAT(list_of_payments.created_at, '%d %b %Y %H:%i:%s') as created_at")
       );
