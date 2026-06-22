@@ -17,7 +17,9 @@ class AbsensiController extends Controller
 {
     public function cekHariIni(Request $request)
     {
-        $today = Carbon::now()->toDateString();
+        $today = Carbon::now()->lt(Carbon::today()->setTime(5, 30))
+            ? Carbon::yesterday()->toDateString()
+            : Carbon::today()->toDateString();
         $attendance = DB::table('attendances')
             ->where('user_id', $request->user()->id)
             ->where('tanggal', $today)
@@ -61,7 +63,9 @@ class AbsensiController extends Controller
             return response()->json(['message' => 'Data tidak valid!', 'errors' => $validator->errors()->all()], 422);
         }
 
-        $today = Carbon::now()->toDateString();
+        $today = Carbon::now()->lt(Carbon::today()->setTime(5, 30))
+            ? Carbon::yesterday()->toDateString()
+            : Carbon::today()->toDateString();
 
         $existing = DB::table('attendances')
             ->where('user_id', $request->user()->id)
@@ -150,7 +154,9 @@ class AbsensiController extends Controller
             return response()->json(['message' => 'Data tidak valid!', 'errors' => $validator->errors()->all()], 422);
         }
 
-        $today = Carbon::now()->toDateString();
+        $today = Carbon::now()->lt(Carbon::today()->setTime(5, 30))
+            ? Carbon::yesterday()->toDateString()
+            : Carbon::today()->toDateString();
 
         $attendance = Attendance::where('user_id', $request->user()->id)
             ->where('tanggal', $today)
@@ -196,6 +202,9 @@ class AbsensiController extends Controller
 
     public function index(Request $request)
     {
+        $items_per_page = 50;
+        $page           = max(1, (int) ($request->page ?? 1));
+
         $query = DB::table('attendances as a')
             ->join('users', 'a.user_id', '=', 'users.id')
             ->join('shifts', 'a.shift_id', '=', 'shifts.id')
@@ -234,7 +243,6 @@ class AbsensiController extends Controller
         if ($request->user()->role !== 'admin') {
             $query->where('a.user_id', '=', $request->user()->id);
         }
-        // admin sees all branches — branch_id filter applied below if provided via request
 
         if ($request->branch_id) {
             $query->where('users.branch_id', '=', $request->branch_id);
@@ -253,8 +261,6 @@ class AbsensiController extends Controller
         }
 
         if ($request->status) {
-            // HAVING dipakai karena 'status' adalah alias CASE expression di SELECT,
-            // alias tidak bisa dipakai di WHERE di MySQL
             $query->havingRaw('status = ?', [$request->status]);
         }
 
@@ -262,9 +268,38 @@ class AbsensiController extends Controller
             $query->where('users.fullname', 'like', '%' . $request->keyword . '%');
         }
 
-        $query->orderBy('a.tanggal', 'desc')->orderBy('a.id', 'desc');
+        // Order by
+        $allowedColumns = [
+            'fullname'    => 'users.fullname',
+            'branch_name' => 'branches.branch_name',
+            'nama_shift'  => 'shifts.nama_shift',
+            'tanggal'     => 'a.tanggal',
+            'jam_masuk'   => 'a.jam_masuk',
+            'jam_keluar'  => 'a.jam_keluar',
+            'status'      => 'status',
+        ];
 
-        return response()->json($query->get(), 200);
+        $orderColumn = $allowedColumns[$request->column ?? ''] ?? 'a.tanggal';
+        $orderDir    = strtolower($request->orderby ?? '') === 'asc' ? 'asc' : 'desc';
+
+        if ($orderColumn === 'status') {
+            $query->orderByRaw("status {$orderDir}");
+        } else {
+            $query->orderBy($orderColumn, $orderDir);
+        }
+        $query->orderBy('a.id', 'desc');
+
+        // Ambil semua data yang sesuai filter (termasuk HAVING), lalu paginate manual
+        $allResults   = $query->get();
+        $count_data   = $allResults->count();
+        $total_paging = $count_data > 0 ? (int) ceil($count_data / $items_per_page) : 1;
+        $offset       = ($page - 1) * $items_per_page;
+        $data         = $allResults->slice($offset, $items_per_page)->values();
+
+        return response()->json([
+            'total_paging' => $total_paging,
+            'data'         => $data,
+        ], 200);
     }
 
     public function export(Request $request)
