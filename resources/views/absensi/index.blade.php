@@ -170,30 +170,31 @@
           </tr>
         </tbody>
       </table>
-      <ul class="pagination pagination-sm m-t-10px pull-left" v-if="totalPage > 1">
-        <li :class="{ disabled: currentPage === 1 }">
-          <a style="cursor:pointer;" @click="goToPage(currentPage - 1)">
-            <i class="fa fa-chevron-left arrow-left"></i>
-          </a>
-        </li>
-        <li v-if="pageNumbers[0] > 1">
-          <a style="cursor:pointer;" @click="goToPage(1)">1</a>
-        </li>
-        <li v-if="pageNumbers[0] > 2" class="disabled"><a>...</a></li>
-        <li v-for="p in pageNumbers" :key="p" :class="{ active: p === currentPage }">
-          <a style="cursor:pointer;" @click="goToPage(p)">@{{ p }}</a>
-        </li>
-        <li v-if="pageNumbers[pageNumbers.length - 1] < totalPage - 1" class="disabled"><a>...</a></li>
-        <li v-if="pageNumbers[pageNumbers.length - 1] < totalPage">
-          <a style="cursor:pointer;" @click="goToPage(totalPage)">@{{ totalPage }}</a>
-        </li>
-        <li :class="{ disabled: currentPage === totalPage }">
-          <a style="cursor:pointer;" @click="goToPage(currentPage + 1)">
-            <i class="fa fa-chevron-right arrow-right"></i>
-          </a>
-        </li>
-      </ul>
     </div>
+
+    <ul class="pagination pagination-sm m-t-10px pull-left" v-if="listAbsensi.length > 0">
+      <li :class="{ disabled: currentPage === 1 }">
+        <a style="cursor:pointer;" @click="goToPage(currentPage - 1)">
+          <i class="fa fa-chevron-left"></i>
+        </a>
+      </li>
+      <li v-if="pageNumbers[0] > 1">
+        <a style="cursor:pointer;" @click="goToPage(1)">1</a>
+      </li>
+      <li v-if="pageNumbers[0] > 2" class="disabled"><a>...</a></li>
+      <li v-for="p in pageNumbers" :key="p" :class="{ active: p === currentPage }">
+        <a style="cursor:pointer;" @click="goToPage(p)">@{{ p }}</a>
+      </li>
+      <li v-if="pageNumbers[pageNumbers.length - 1] < totalPage - 1" class="disabled"><a>...</a></li>
+      <li v-if="pageNumbers[pageNumbers.length - 1] < totalPage">
+        <a style="cursor:pointer;" @click="goToPage(totalPage)">@{{ totalPage }}</a>
+      </li>
+      <li :class="{ disabled: currentPage === totalPage }">
+        <a style="cursor:pointer;" @click="goToPage(currentPage + 1)">
+          <i class="fa fa-chevron-right"></i>
+        </a>
+      </li>
+    </ul>
   </div>
 
   <!-- Modal Lihat Foto -->
