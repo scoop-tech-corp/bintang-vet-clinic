@@ -147,9 +147,9 @@ $(document).ready(function() {
         }</td>`
         + `<td class="d-flex align-item-c">
             <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px"
-            class="form-control diskon-list-jasa ${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
-            <span class="${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-block' : 'd-none'}">%</span>
-            <span class="${role.toLowerCase() == 'admin' && !lj.status_paid_off ? 'd-none' : ''}">${lj.discount || 0}&nbsp;%</span>
+            class="form-control diskon-list-jasa ${!lj.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
+            <span class="${!lj.status_paid_off ? 'd-block' : 'd-none'}">%</span>
+            <span class="${!lj.status_paid_off ? 'd-none' : ''}">${lj.discount || 0}&nbsp;%</span>
           </td>`
         + `<td>
             <span id="totalJasa-${idx}">${
@@ -278,9 +278,9 @@ $(document).ready(function() {
         }</td>`
         + `<td class="d-flex align-item-c">
             <input type="number" min="0" max="100" maxlength="3" index=${idx} style="width:65px"
-            class="form-control diskon-list-barang ${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
-            <span class="${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-block' : 'd-none'}">%</span>
-            <span class="${role.toLowerCase() == 'admin' && !lb.status_paid_off ? 'd-none' : ''}">${lb.discount || 0}&nbsp;%</span>
+            class="form-control diskon-list-barang ${!lb.status_paid_off ? 'd-block' : 'd-none'}">&nbsp;
+            <span class="${!lb.status_paid_off ? 'd-block' : 'd-none'}">%</span>
+            <span class="${!lb.status_paid_off ? 'd-none' : ''}">${lb.discount || 0}&nbsp;%</span>
           </td>`
         + `<td>
             <span id="totalBarang-${idx}">${
