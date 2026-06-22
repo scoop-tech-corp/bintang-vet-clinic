@@ -758,11 +758,19 @@ class HasilPemeriksaanController extends Controller
             ], 404);
         }
 
-        if ($request->user()->role === 'dokter' && (int)$check_up_result->user_id !== (int)$request->user()->id) {
-            return response()->json([
-                'message' => 'The user role was invalid.',
-                'errors' => ['Anda tidak memiliki akses untuk mengubah data hasil pemeriksaan dokter lain!'],
-            ], 403);
+        if ($request->user()->role === 'dokter') {
+            if ((int)$check_up_result->user_id !== (int)$request->user()->id) {
+                return response()->json([
+                    'message' => 'The user role was invalid.',
+                    'errors' => ['Anda tidak memiliki akses untuk mengubah data hasil pemeriksaan dokter lain!'],
+                ], 403);
+            }
+            if (\Carbon\Carbon::parse($check_up_result->created_at)->diffInHours(\Carbon\Carbon::now()) >= 24) {
+                return response()->json([
+                    'message' => 'The user role was invalid.',
+                    'errors' => ['Waktu edit sudah melebihi 24 jam sejak pembuatan!'],
+                ], 403);
+            }
         }
 
         //validasi data jasa
@@ -1749,13 +1757,12 @@ class HasilPemeriksaanController extends Controller
 
     public function delete(Request $request)
     {
-
-        // if ($request->user()->role == 'resepsionis') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
+        if ($request->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Hanya admin yang dapat menghapus data hasil pemeriksaan!'],
+            ], 403);
+        }
 
         $check_up_result = CheckUpResult::find($request->id);
 
