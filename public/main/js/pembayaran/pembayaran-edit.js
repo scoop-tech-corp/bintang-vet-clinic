@@ -101,7 +101,7 @@ $(document).ready(function() {
   $('#list-selected-jasa').on('input', '.diskon-list-jasa', function() {
     const idx = $(this).attr('index');
     const getPriceOverall = selectedListJasa[idx].price_overall;
-    const getValue        = parseFloat($(this).val());
+    const getValue        = parseFloat($(this).val()) || 0;
     let newPriceOverall   = selectedListJasa[idx].price_overall;
 
     selectedListJasa[idx].discount = getValue;
@@ -111,12 +111,21 @@ $(document).ready(function() {
     selectedListJasa[idx].new_price_overall = newPriceOverall;
 
     $(`#totalJasa-${idx}`).text(newPriceOverall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+
+    const getDetailJasa = selectedListJasa[idx];
+    const getIdxCalculation = calculationPay.findIndex(i => i.type == 'jasa' && i.id == getDetailJasa.detail_service_patient_id);
+    if (getIdxCalculation !== -1) {
+      calculationPay[getIdxCalculation].price = newPriceOverall;
+      calculationPay[getIdxCalculation].discount = getValue;
+      calculationPay[getIdxCalculation].amount_discount = getDetailJasa.amount_discount;
+    }
+    processCalculationTagihan();
   });
 
   $('#list-selected-barang').on('input', '.diskon-list-barang', function() {
     const idx = $(this).attr('index');
     const getPriceOverall = selectedListBarang[idx].price_overall;
-    const getValue        = parseFloat($(this).val());
+    const getValue        = parseFloat($(this).val()) || 0;
     let newPriceOverall   = selectedListBarang[idx].price_overall;
 
     selectedListBarang[idx].discount = getValue;
@@ -126,6 +135,15 @@ $(document).ready(function() {
     selectedListBarang[idx].new_price_overall = newPriceOverall;
 
     $(`#totalBarang-${idx}`).text(newPriceOverall.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'));
+
+    const getDetailBarang = selectedListBarang[idx];
+    const getIdxCalculation = calculationPay.findIndex(i => i.type == 'barang' && i.id == getDetailBarang.id);
+    if (getIdxCalculation !== -1) {
+      calculationPay[getIdxCalculation].price = newPriceOverall;
+      calculationPay[getIdxCalculation].discount = getValue;
+      calculationPay[getIdxCalculation].amount_discount = getDetailBarang.amount_discount;
+    }
+    processCalculationTagihan();
   });
 
   function processAppendListSelectedJasa() {
