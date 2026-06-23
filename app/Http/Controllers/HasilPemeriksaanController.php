@@ -1254,15 +1254,6 @@ class HasilPemeriksaanController extends Controller
         $check_up_result->updated_at = \Carbon\Carbon::now();
         $check_up_result->save();
 
-        if ($request->status_pengabaran == true) {
-
-            $registration = Registration::find($request->patient_registration_id);
-            $registration->user_update_id = $request->user()->id;
-            $registration->acceptance_status = 3;
-            $registration->updated_at = \Carbon\Carbon::now();
-            $registration->save();
-        }
-
         // Batalkan follow-up pending jika status pengabaran diubah ke tidak
         if (!$request->status_pengabaran) {
             CheckUpFollowUp::where('check_up_result_id', $check_up_result->id)
