@@ -124,6 +124,10 @@ $(document).ready(function() {
     validationForm();
   });
 
+  $('#alasanTidakPengabaran').on('input', function() {
+    validationForm();
+  });
+
   $('#testUpload').click(function() {
     // dropzone.processQueue();
     let tempFile = [];
