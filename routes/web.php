@@ -192,6 +192,7 @@ Route::middleware(['jwt.print'])->group(function () {
     Route::get('pembayaran/print/{check_up_result_id}/{service_payment}/{item_payment}', 'PembayaranController@print_pdf');
     Route::get('penggajian/generate/{id}', 'PenggajianController@generate');
     Route::get('pembayaranpetshop/printreceipt/{master_payment_id}', 'PembayaranPetShopController@print_receipt');
+    Route::get('pembayaranpetshop/printinvoice/{master_payment_id}', 'PembayaranPetShopController@print_invoice');
 });
 
 Route::post('/print', function(Request $request) {

@@ -460,14 +460,14 @@ class HasilPemeriksaanController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        if ($request->status_pengabaran == true) {
+        // if ($request->status_pengabaran == true) {
 
             $registration = Registration::find($request->patient_registration_id);
             $registration->user_update_id = $request->user()->id;
             $registration->acceptance_status = 3;
             $registration->updated_at = \Carbon\Carbon::now();
             $registration->save();
-        }
+        // }
 
         $services = $request->service;
         $result_item = json_decode($services, true);
@@ -720,12 +720,12 @@ class HasilPemeriksaanController extends Controller
     public function update(Request $request)
     {
 
-        // if ($request->user()->role == 'resepsionis') {
-        //     return response()->json([
-        //         'message' => 'The user role was invalid.',
-        //         'errors' => ['Akses User tidak diizinkan!'],
-        //     ], 403);
-        // }
+        if ($request->user()->role == 'resepsionis') {
+            return response()->json([
+                'message' => 'The user role was invalid.',
+                'errors' => ['Akses User tidak diizinkan!'],
+            ], 403);
+        }
 
         //validasi data hasil pemeriksaaan
         $validate = Validator::make($request->all(), [
@@ -1260,15 +1260,6 @@ class HasilPemeriksaanController extends Controller
         $check_up_result->user_update_id = $request->user()->id;
         $check_up_result->updated_at = \Carbon\Carbon::now();
         $check_up_result->save();
-
-        if ($request->status_pengabaran == true) {
-
-            $registration = Registration::find($request->patient_registration_id);
-            $registration->user_update_id = $request->user()->id;
-            $registration->acceptance_status = 3;
-            $registration->updated_at = \Carbon\Carbon::now();
-            $registration->save();
-        }
 
         // Batalkan follow-up pending jika status pengabaran diubah ke tidak
         if (!$request->status_pengabaran) {
@@ -1898,14 +1889,14 @@ class HasilPemeriksaanController extends Controller
             }
         }
 
-        if ($check_up_result->status_pengabaran == true) {
+        // if ($check_up_result->status_pengabaran == true) {
 
             $registration = Registration::find($check_up_result->patient_registration_id);
             $registration->user_update_id = $request->user()->id;
             $registration->acceptance_status = 1;
             $registration->updated_at = \Carbon\Carbon::now();
             $registration->save();
-        }
+        // }
 
         $check_up_result = CheckUpResult::find($request->id);
         $check_up_result->delete();

@@ -106,6 +106,10 @@ const absensiApp = new Vue({
         headers: { Authorization: 'Bearer ' + this.token }
       }).then(res => { this.listShift = res.data; }).catch(() => {});
     },
+    formatAlamat(alamat) {
+      if (!alamat) return '-';
+      return alamat.split(',')[0].trim();
+    },
     formatJarak(meter) {
       if (meter === null || meter === undefined) return '-';
       if (meter >= 1000) return (meter / 1000).toFixed(1) + ' km';
