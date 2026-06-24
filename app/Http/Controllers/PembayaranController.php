@@ -22,25 +22,23 @@ class PembayaranController extends Controller
   public function DropDownPatient(Request $request)
   {
     $data = DB::table('check_up_results')
-      ->join('registrations',          'check_up_results.patient_registration_id', '=', 'registrations.id')
-      ->join('users',                  'registrations.user_id',                    '=', 'users.id')
-      ->join('users as user_doctor',   'registrations.doctor_user_id',             '=', 'user_doctor.id')
-      ->join('branches',               'user_doctor.branch_id',                    '=', 'branches.id')
-      ->join('patients',               'registrations.patient_id',                 '=', 'patients.id')
+      ->join('registrations', function ($join) {
+        $join->on('check_up_results.patient_registration_id', '=', 'registrations.id')
+          ->where('check_up_results.status_paid_off', '=', 0);
+      })
+      ->join('users',                  'registrations.user_id',        '=', 'users.id')
+      ->join('users as user_doctor',   'registrations.doctor_user_id', '=', 'user_doctor.id')
+      ->join('branches',               'user_doctor.branch_id',        '=', 'branches.id')
+      ->join('patients',               'registrations.patient_id',     '=', 'patients.id')
       ->select(
-        'check_up_results.id  as check_up_result_id',
+        'check_up_results.id as check_up_result_id',
         'registrations.id_number as registration_number',
         'patients.pet_name'
       )
-      ->where(function ($query) {
-        // Show if not yet paid (status_paid_off = 0)
-        $query->where('check_up_results.status_paid_off', '=', 0)
-          // OR show if no payment record exists yet
-          ->orWhereNotExists(function ($sub) {
-            $sub->select(DB::raw(1))
-              ->from('list_of_payments')
-              ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
-          });
+      ->whereNotExists(function ($sub) {
+        $sub->select(DB::raw(1))
+          ->from('list_of_payments')
+          ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
       })
       ->whereNotBetween(
         DB::raw('DATE(check_up_results.created_at)'),
@@ -1712,53 +1710,53 @@ class PembayaranController extends Controller
 
   private function createFollowUpOnPayment(int $checkUpResultId, int $userId): void
   {
-      $checkUpResult = CheckUpResult::find($checkUpResultId);
+    $checkUpResult = CheckUpResult::find($checkUpResultId);
 
-      if (!$checkUpResult || !$checkUpResult->status_pengabaran) {
-          return;
-      }
+    if (!$checkUpResult || !$checkUpResult->status_pengabaran) {
+      return;
+    }
 
-      // Ambil data registrasi + pemilik + branch dokter
-      $reg = DB::table('registrations')
-          ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-          ->join('owners', 'patients.owner_id', '=', 'owners.id')
-          ->join('users as doc', 'registrations.doctor_user_id', '=', 'doc.id')
-          ->select(
-              DB::raw('TRIM(COALESCE(NULLIF(patients.owner_phone_number,""), owners.owner_phone_number, "")) as phone'),
-              DB::raw('TRIM(COALESCE(NULLIF(patients.owner_name,""), owners.owner_name, "")) as owner_name'),
-              'patients.pet_name',
-              'registrations.complaint_id',
-              'doc.branch_id'
-          )
-          ->where('registrations.id', $checkUpResult->patient_registration_id)
-          ->first();
+    // Ambil data registrasi + pemilik + branch dokter
+    $reg = DB::table('registrations')
+      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+      ->join('owners', 'patients.owner_id', '=', 'owners.id')
+      ->join('users as doc', 'registrations.doctor_user_id', '=', 'doc.id')
+      ->select(
+        DB::raw('TRIM(COALESCE(NULLIF(patients.owner_phone_number,""), owners.owner_phone_number, "")) as phone'),
+        DB::raw('TRIM(COALESCE(NULLIF(patients.owner_name,""), owners.owner_name, "")) as owner_name'),
+        'patients.pet_name',
+        'registrations.complaint_id',
+        'doc.branch_id'
+      )
+      ->where('registrations.id', $checkUpResult->patient_registration_id)
+      ->first();
 
-      if (!$reg || empty($reg->phone)) {
-          return;
-      }
+    if (!$reg || empty($reg->phone)) {
+      return;
+    }
 
-      $complaintId = (int) ($reg->complaint_id ?? 11);
-      $branchId    = (int) ($reg->branch_id ?? 0);
+    $complaintId = (int) ($reg->complaint_id ?? 11);
+    $branchId    = (int) ($reg->branch_id ?? 0);
 
-      $tpl     = NotificationTemplate::getByComplaint($complaintId, $branchId);
-      $message = $tpl['message'];
-      $days    = $tpl['days'];
+    $tpl     = NotificationTemplate::getByComplaint($complaintId, $branchId);
+    $message = $tpl['message'];
+    $days    = $tpl['days'];
 
-      // Batalkan follow-up pending sebelumnya jika ada
-      CheckUpFollowUp::where('check_up_result_id', $checkUpResultId)
-          ->where('status', 'pending')
-          ->update(['status' => 'cancelled']);
+    // Batalkan follow-up pending sebelumnya jika ada
+    CheckUpFollowUp::where('check_up_result_id', $checkUpResultId)
+      ->where('status', 'pending')
+      ->update(['status' => 'cancelled']);
 
-      CheckUpFollowUp::create([
-          'check_up_result_id' => $checkUpResultId,
-          'branch_id'          => $branchId,
-          'owner_phone'        => $reg->phone,
-          'owner_name'         => $reg->owner_name,
-          'pet_name'           => $reg->pet_name,
-          'message'            => $message,
-          'scheduled_date'     => now()->addDays($days)->toDateString(),
-          'status'             => 'pending',
-          'user_id'            => $userId,
-      ]);
+    CheckUpFollowUp::create([
+      'check_up_result_id' => $checkUpResultId,
+      'branch_id'          => $branchId,
+      'owner_phone'        => $reg->phone,
+      'owner_name'         => $reg->owner_name,
+      'pet_name'           => $reg->pet_name,
+      'message'            => $message,
+      'scheduled_date'     => now()->addDays($days)->toDateString(),
+      'status'             => 'pending',
+      'user_id'            => $userId,
+    ]);
   }
 }

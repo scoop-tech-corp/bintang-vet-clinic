@@ -150,9 +150,8 @@
                 class="foto-thumb" @click="lihatFoto(baseUrl + '/' + item.foto_keluar)" title="Foto Pulang">
               <span v-else>-</span>
             </td>
-            <td style="max-width:200px; white-space:normal; font-size:12px;">
-              <span v-if="item.alamat">@{{ item.alamat }}</span>
-              <span v-else>-</span>
+            <td style="max-width:180px; white-space:normal; font-size:12px;" :title="item.alamat || ''">
+              @{{ formatAlamat(item.alamat) }}
             </td>
             <td style="font-size:12px; white-space:nowrap;">
               <span v-if="item.jarak_meter !== null && item.jarak_meter !== undefined">@{{ formatJarak(item.jarak_meter) }}</span>
