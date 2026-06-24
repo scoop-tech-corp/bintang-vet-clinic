@@ -207,8 +207,8 @@ $(document).ready(function() {
             const roleLower  = role.toLowerCase();
             const isPaidOff  = v.status_paid_off == 1;
 
-            // Print: resepsionis dan admin saja
-            const printDisabled = (roleLower !== 'resepsionis' && roleLower !== 'admin');
+            // Print: resepsionis, dokter, dan admin
+            const printDisabled = (roleLower !== 'resepsionis' && roleLower !== 'admin' && roleLower !== 'dokter');
 
             // Edit: resepsionis dan admin saja
             const editDisabled = (roleLower !== 'resepsionis' && roleLower !== 'admin');
@@ -705,8 +705,32 @@ $(document).ready(function() {
   });
 
   function processPrintPetShop(master_payment_id) {
-    let url = '/pembayaranpetshop/printreceipt/' + master_payment_id + '?token=' + token;
-    window.open($('.baseUrl').val() + url, '_blank');
+    let downloadUrl = $('.baseUrl').val() + '/pembayaranpetshop/printinvoice/' + master_payment_id + '?token=' + token;
+    $.ajax({
+      url      : downloadUrl,
+      type     : 'GET',
+      xhrFields: { responseType: 'blob' },
+      beforeSend: function() { $('#loading-screen').show(); },
+      success: function(data, status, xhr) {
+        let disposition = xhr.getResponseHeader('content-disposition');
+        let matches  = /"([^"]*)"/.exec(disposition);
+        let filename = (matches != null && matches[1]) ? matches[1] : `invoice-petshop-${master_payment_id}.pdf`;
+        let blob = new Blob([data], { type: 'application/pdf' });
+        let url  = URL.createObjectURL(blob);
+        let a    = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      },
+      complete: function() { $('#loading-screen').hide(); },
+      error: function(err) {
+        console.error('Gagal mengunduh invoice pet shop:', err);
+        alert('Gagal mengunduh invoice pembayaran pet shop.');
+      }
+    });
   }
 
   function processPrint(check_up_result_id, service_payment, item_payment) {
