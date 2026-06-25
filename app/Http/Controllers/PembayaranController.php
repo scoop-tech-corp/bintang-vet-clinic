@@ -22,31 +22,33 @@ class PembayaranController extends Controller
   public function DropDownPatient(Request $request)
   {
     $data = DB::table('check_up_results')
-      ->join('registrations', function ($join) {
-        $join->on('check_up_results.patient_registration_id', '=', 'registrations.id')
-          ->where('check_up_results.status_paid_off', '=', 0);
-      })
-      ->join('users',                  'registrations.user_id',        '=', 'users.id')
-      ->join('users as user_doctor',   'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('branches',               'user_doctor.branch_id',        '=', 'branches.id')
-      ->join('patients',               'registrations.patient_id',     '=', 'patients.id')
+      ->join('registrations',          'check_up_results.patient_registration_id', '=', 'registrations.id')
+      ->join('users',                  'registrations.user_id',                    '=', 'users.id')
+      ->join('users as user_doctor',   'registrations.doctor_user_id',             '=', 'user_doctor.id')
+      ->join('branches',               'user_doctor.branch_id',                    '=', 'branches.id')
+      ->join('patients',               'registrations.patient_id',                 '=', 'patients.id')
       ->select(
-        'check_up_results.id as check_up_result_id',
+        'check_up_results.id  as check_up_result_id',
         'registrations.id_number as registration_number',
         'patients.pet_name'
       )
-      ->whereNotExists(function ($sub) {
-        $sub->select(DB::raw(1))
-          ->from('list_of_payments')
-          ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
-      })
+      ->where(function ($query) {
+        // Show if not yet paid (status_paid_off = 0)
+        $query->where('check_up_results.status_paid_off', '=', 0)
+          // OR show if no payment record exists yet
+          ->orWhereNotExists(function ($sub) {
+            $sub->select(DB::raw(1))
+              ->from('list_of_payments')
+              ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
+          });
+
+          })
       ->whereNotBetween(
         DB::raw('DATE(check_up_results.created_at)'),
         ['2021-07-01', '2023-12-31']
       );
 
-    // Branch filter only applies to receptionist / doctor roles
-    if (in_array($request->user()->role, ['resepsionis', 'dokter'])) {
+      if (in_array($request->user()->role, ['resepsionis', 'dokter'])) {
       $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
     }
 
