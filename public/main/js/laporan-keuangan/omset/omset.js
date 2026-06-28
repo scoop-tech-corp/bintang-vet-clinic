@@ -122,6 +122,7 @@ $(document).ready(function () {
   }
 
   function tryLoad() {
+    $("#btn-export-omset").hide();
     if (canLoad()) loadAll();
   }
 
@@ -148,6 +149,41 @@ $(document).ready(function () {
     loadLaporanKeuanganOmset();
     widgetRekapOmset();
   }
+
+  // Tombol Generate Excel
+  $("#btn-export-omset").on("click", function () {
+    $.ajax({
+      url      : $(".baseUrl").val() + "/api/laporan-keuangan/rekap-all/export",
+      headers  : { Authorization: `Bearer ${token}` },
+      type     : "GET",
+      data     : buildParam(),
+      xhrFields: { responseType: "blob" },
+      beforeSend: function () { $("#loading-screen").show(); },
+      success: function (data, status, xhr) {
+        const disposition = xhr.getResponseHeader("content-disposition");
+        const matches     = /"([^"]*)"/.exec(disposition);
+        const filename    = matches != null && matches[1] ? matches[1] : "rekap-omset.xlsx";
+        const blob        = new Blob([data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        const downloadUrl = URL.createObjectURL(blob);
+        const a           = document.createElement("a");
+        a.href            = downloadUrl;
+        a.download        = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+      },
+      complete: function () { $("#loading-screen").hide(); },
+      error: function (err) {
+        if (err.status === 401) {
+          localStorage.removeItem("vet-clinic");
+          location.href = $(".baseUrl").val() + "/masuk";
+        }
+      },
+    });
+  });
 
   function loadLaporanKeuanganOmset() {
     $.ajax({
@@ -221,6 +257,7 @@ $(document).ready(function () {
 
         $("#head-laporan-keuangan-omset").append(headHTML);
         $("#list-laporan-keuangan-omset").append(bodyHTML);
+        $("#btn-export-omset").show();
       },
       complete: function () { $("#loading-screen").hide(); },
       error: function (err) {

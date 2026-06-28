@@ -35,11 +35,11 @@ class PembayaranController extends Controller
         'registrations.id_number as registration_number',
         'patients.pet_name'
       )
-      ->whereNotExists(function ($sub) {
-        $sub->select(DB::raw(1))
-          ->from('list_of_payments')
-          ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
-      })
+      // ->whereNotExists(function ($sub) {
+      //   $sub->select(DB::raw(1))
+      //     ->from('list_of_payments')
+      //     ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
+      // })
       ->whereNotBetween(
         DB::raw('DATE(check_up_results.created_at)'),
         ['2021-07-01', '2023-12-31']
