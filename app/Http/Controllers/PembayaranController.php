@@ -21,38 +21,44 @@ class PembayaranController extends Controller
 {
   public function DropDownPatient(Request $request)
   {
-    // Recalculate status_paid_off untuk records yang sudah lunas tapi flag belum ter-update
-    // Menggunakan status_paid_off per service/item karena field tersebut selalu diupdate dengan benar
+    // Sinkronisasi status_paid_off berdasarkan perbandingan jumlah item yang dibayar
+    // vs jumlah item yang diinput dokter — berlaku dua arah (fix flag yang salah ke 0 maupun ke 1)
     $candidates = DB::table('check_up_results')
-      ->where('status_paid_off', 0)
       ->whereExists(function ($q) {
         $q->select(DB::raw(1))
           ->from('list_of_payments')
           ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
       })
-      ->pluck('id');
+      ->select('id', 'status_paid_off')
+      ->get();
 
-    foreach ($candidates as $id) {
+    foreach ($candidates as $record) {
+      $id = $record->id;
+
+      // Jumlah layanan & obat yang diinput dokter di hasil pemeriksaan
       $total_service = DB::table('detail_service_patients')
         ->where('check_up_result_id', $id)->count();
       $total_item = DB::table('detail_medicine_group_check_up_results')
         ->where('check_up_result_id', $id)->count();
 
-      // Jika tidak ada service dan tidak ada item, skip — tidak ada yang bisa dijadikan acuan lunas
+      // Tidak ada layanan maupun obat = tidak ada acuan → skip
       if ($total_service === 0 && $total_item === 0) {
         continue;
       }
 
-      $paid_service = DB::table('detail_service_patients')
-        ->where('check_up_result_id', $id)
-        ->where('status_paid_off', 1)->count();
-      $paid_item = DB::table('detail_medicine_group_check_up_results')
-        ->where('check_up_result_id', $id)
-        ->where('status_paid_off', 1)->count();
+      // Jumlah layanan & obat yang sudah dibayar (dari tabel pembayaran)
+      $paid_service = DB::table('list_of_payment_services')
+        ->where('check_up_result_id', $id)->count();
+      $paid_item = DB::table('list_of_payment_medicine_groups as lopm')
+        ->join('detail_medicine_group_check_up_results as dmg', 'lopm.detail_medicine_group_check_up_result_id', 'dmg.id')
+        ->where('dmg.check_up_result_id', $id)->count();
 
-      if ($paid_service === $total_service && $paid_item === $total_item) {
+      $should_be_paid_off = ($paid_service === $total_service && $paid_item === $total_item) ? 1 : 0;
+
+      // Hanya update jika flag saat ini tidak sesuai dengan kondisi aktual
+      if ((int) $record->status_paid_off !== $should_be_paid_off) {
         CheckUpResult::where('id', $id)->update([
-          'status_paid_off' => 1,
+          'status_paid_off' => $should_be_paid_off,
           'updated_at'      => \Carbon\Carbon::now(),
         ]);
       }
