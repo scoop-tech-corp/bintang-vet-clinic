@@ -97,54 +97,76 @@ $(document).ready(function () {
   });
 
   $(".btn-download-excel").click(function () {
-    const getBranchId = paramUrlSetup.branchId;
-    const getMonth = paramUrlSetup.month;
-    const getYear = paramUrlSetup.year;
+    const getBranchId  = paramUrlSetup.branchId;
+    const getPeriodeId = paramUrlSetup.periodeId;
 
-    if (getBranchId && getMonth && getYear) {
-      $.ajax({
-        url: $(".baseUrl").val() + "/api/laporan-keuangan/rekap/download",
-        headers: { Authorization: `Bearer ${token}` },
-        type: "GET",
-        data: {
-          month: paramUrlSetup.month,
-          year: paramUrlSetup.year,
-          branch_id: getBranchId,
-        },
-        xhrFields: { responseType: "blob" },
-        beforeSend: function () {
-          $("#loading-screen").show();
-        },
-        success: function (data, status, xhr) {
-          let disposition = xhr.getResponseHeader("content-disposition");
-          let matches = /"([^"]*)"/.exec(disposition);
-          let filename =
-            matches != null && matches[1] ? matches[1] : "file.xlsx";
-          let blob = new Blob([data], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          });
-          let downloadUrl = URL.createObjectURL(blob);
-          let a = document.createElement("a");
-
-          a.href = downloadUrl;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-        },
-        complete: function () {
-          $("#loading-screen").hide();
-        },
-        error: function (err) {
-          if (err.status == 401) {
-            localStorage.removeItem("vet-clinic");
-            location.href = $(".baseUrl").val() + "/masuk";
-          }
-        },
-      });
-    } else {
-      $("#msg-box .modal-body").text("Pilih cabang dan tanggal dahulu!");
+    if (!getBranchId) {
+      $("#msg-box .modal-body").text("Pilih cabang dulu!");
       $("#msg-box").modal("show");
+      return;
     }
+
+    if (!getPeriodeId) {
+      $("#msg-box .modal-body").text("Pilih periode dulu!");
+      $("#msg-box").modal("show");
+      return;
+    }
+
+    // Periode Bulanan: butuh rentang bulan
+    if (getPeriodeId == 1 && (!paramUrlSetup.monthFrom || !paramUrlSetup.yearFrom || !paramUrlSetup.monthTo || !paramUrlSetup.yearTo)) {
+      $("#msg-box .modal-body").text("Pilih rentang bulan dulu!");
+      $("#msg-box").modal("show");
+      return;
+    }
+
+    // Periode Tahunan: butuh tahun
+    if (getPeriodeId == 2 && !paramUrlSetup.year) {
+      $("#msg-box .modal-body").text("Pilih tahun dulu!");
+      $("#msg-box").modal("show");
+      return;
+    }
+
+    $.ajax({
+      url: $(".baseUrl").val() + "/api/laporan-keuangan/rekap/download",
+      headers: { Authorization: `Bearer ${token}` },
+      type: "GET",
+      data: {
+        branch_id:  getBranchId,
+        periode:    getPeriodeId,
+        month_from: paramUrlSetup.monthFrom,
+        year_from:  paramUrlSetup.yearFrom,
+        month_to:   paramUrlSetup.monthTo,
+        year_to:    paramUrlSetup.yearTo,
+        year:       paramUrlSetup.year,
+      },
+      xhrFields: { responseType: "blob" },
+      beforeSend: function () {
+        $("#loading-screen").show();
+      },
+      success: function (data, status, xhr) {
+        let disposition = xhr.getResponseHeader("content-disposition");
+        let matches = /"([^"]*)"/.exec(disposition);
+        let filename = matches != null && matches[1] ? matches[1] : "file.xlsx";
+        let blob = new Blob([data], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        let downloadUrl = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+      },
+      complete: function () {
+        $("#loading-screen").hide();
+      },
+      error: function (err) {
+        if (err.status == 401) {
+          localStorage.removeItem("vet-clinic");
+          location.href = $(".baseUrl").val() + "/masuk";
+        }
+      },
+    });
   });
 
   $(".onOrdering").click(function () {

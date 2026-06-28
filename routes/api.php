@@ -259,6 +259,7 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::get('laporan-keuangan/rekap-all', 'RekapKeseluruhanController@index');
         Route::get('laporan-keuangan/rekap-all-chart', 'RekapKeseluruhanController@chart');
+        Route::get('laporan-keuangan/rekap-all/export', 'RekapKeseluruhanController@export');
 
         //dashboard
         Route::get('dashboard/barchart', 'DashboardController@BarChartPatient');
