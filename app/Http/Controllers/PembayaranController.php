@@ -21,68 +21,47 @@ class PembayaranController extends Controller
 {
   public function DropDownPatient(Request $request)
   {
-    // Sinkronisasi status_paid_off berdasarkan perbandingan jumlah item yang dibayar
-    // vs jumlah item yang diinput dokter — berlaku dua arah (fix flag yang salah ke 0 maupun ke 1)
-    $candidates = DB::table('check_up_results')
-      ->whereExists(function ($q) {
-        $q->select(DB::raw(1))
-          ->from('list_of_payments')
-          ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
-      })
-      ->select('id', 'status_paid_off')
-      ->get();
-
-    foreach ($candidates as $record) {
-      $id = $record->id;
-
-      // Jumlah layanan & obat yang diinput dokter di hasil pemeriksaan
-      $total_service = DB::table('detail_service_patients')
-        ->where('check_up_result_id', $id)->count();
-      $total_item = DB::table('detail_medicine_group_check_up_results')
-        ->where('check_up_result_id', $id)->count();
-
-      // Tidak ada layanan maupun obat = tidak ada acuan → skip
-      if ($total_service === 0 && $total_item === 0) {
-        continue;
-      }
-
-      // Jumlah layanan & obat yang sudah dibayar (dari tabel pembayaran)
-      $paid_service = DB::table('list_of_payment_services')
-        ->where('check_up_result_id', $id)->count();
-      $paid_item = DB::table('list_of_payment_medicine_groups as lopm')
-        ->join('detail_medicine_group_check_up_results as dmg', 'lopm.detail_medicine_group_check_up_result_id', 'dmg.id')
-        ->where('dmg.check_up_result_id', $id)->count();
-
-      $should_be_paid_off = ($paid_service === $total_service && $paid_item === $total_item) ? 1 : 0;
-
-      // Hanya update jika flag saat ini tidak sesuai dengan kondisi aktual
-      if ((int) $record->status_paid_off !== $should_be_paid_off) {
-        CheckUpResult::where('id', $id)->update([
-          'status_paid_off' => $should_be_paid_off,
-          'updated_at'      => \Carbon\Carbon::now(),
-        ]);
-      }
-    }
-
     $data = DB::table('check_up_results')
-      ->join('registrations', function ($join) {
-        $join->on('check_up_results.patient_registration_id', '=', 'registrations.id')
-          ->where('check_up_results.status_paid_off', '=', 0);
-      })
-      ->join('users',                  'registrations.user_id',        '=', 'users.id')
-      ->join('users as user_doctor',   'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('branches',               'user_doctor.branch_id',        '=', 'branches.id')
-      ->join('patients',               'registrations.patient_id',     '=', 'patients.id')
+      ->join('registrations',          'check_up_results.patient_registration_id', '=', 'registrations.id')
+      ->join('users',                  'registrations.user_id',                    '=', 'users.id')
+      ->join('users as user_doctor',   'registrations.doctor_user_id',             '=', 'user_doctor.id')
+      ->join('branches',               'user_doctor.branch_id',                    '=', 'branches.id')
+      ->join('patients',               'registrations.patient_id',                 '=', 'patients.id')
       ->select(
         'check_up_results.id as check_up_result_id',
         'registrations.id_number as registration_number',
         'patients.pet_name'
       )
-      // ->whereNotExists(function ($sub) {
-      //   $sub->select(DB::raw(1))
-      //     ->from('list_of_payments')
-      //     ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
-      // })
+      ->where(function ($q) {
+        // Belum pernah diproses pembayaran sama sekali
+        $q->whereNotExists(function ($sub) {
+          $sub->select(DB::raw(1))
+            ->from('list_of_payments as lop')
+            ->whereColumn('lop.check_up_result_id', 'check_up_results.id');
+        })
+        // Atau sudah diproses tapi belum semua layanan/obat terbayar
+        ->orWhere(function ($q2) {
+          $q2->whereExists(function ($sub) {
+            $sub->select(DB::raw(1))
+              ->from('list_of_payments as lop')
+              ->whereColumn('lop.check_up_result_id', 'check_up_results.id');
+          })
+          ->where(function ($q3) {
+            // Jumlah layanan yang dibayar < jumlah layanan yang diinput dokter
+            $q3->whereRaw(
+              '(SELECT COUNT(*) FROM list_of_payment_services lps WHERE lps.check_up_result_id = check_up_results.id)
+              < (SELECT COUNT(*) FROM detail_service_patients dsp WHERE dsp.check_up_result_id = check_up_results.id)'
+            )
+            // Atau jumlah obat yang dibayar < jumlah obat yang diinput dokter
+            ->orWhereRaw(
+              '(SELECT COUNT(*) FROM list_of_payment_medicine_groups lopm
+                INNER JOIN detail_medicine_group_check_up_results dmg ON lopm.detail_medicine_group_check_up_result_id = dmg.id
+                WHERE dmg.check_up_result_id = check_up_results.id)
+              < (SELECT COUNT(*) FROM detail_medicine_group_check_up_results dmg2 WHERE dmg2.check_up_result_id = check_up_results.id)'
+            );
+          });
+        });
+      })
       ->whereNotBetween(
         DB::raw('DATE(check_up_results.created_at)'),
         ['2021-07-01', '2023-12-31']

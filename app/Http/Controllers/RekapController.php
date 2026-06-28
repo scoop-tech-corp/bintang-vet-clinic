@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
-use App\Models\Payroll;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use DB;
@@ -259,192 +258,228 @@ class RekapController extends Controller
 
     Carbon::setLocale('id');
 
-    $periode     = (int) ($request->periode ?? 1);
-    $branchId    = $request->branch_id;
-    $branches    = Branch::find($branchId);
+    $periode    = (int) ($request->periode ?? 1);
+    $branchId   = $request->branch_id;
+    $branch     = Branch::find($branchId);
+    $branchName = $branch->branch_name ?? 'Cabang';
 
-    // ── Bangun date range berdasarkan periode ────────────────────────────
+    // ── Bangun daftar bulan yang akan di-export ───────────────────────────
+    $months        = [];
+    $filenameRange = '';
+
     if ($periode === 2) {
-      // Tahunan
-      $year     = (int) ($request->year ?? Carbon::now()->year);
-      $dateFrom = Carbon::createFromDate($year, 1, 1)->startOfYear()->format('Y-m-d');
-      $dateTo   = Carbon::createFromDate($year, 12, 31)->endOfYear()->format('Y-m-d');
-      $periodLabel = (string) $year;
+      // Tahunan — semua 12 bulan dalam tahun yang dipilih
+      $year = (int) ($request->year ?? Carbon::now()->year);
+      for ($m = 1; $m <= 12; $m++) {
+        $d = Carbon::createFromDate($year, $m, 1);
+        $months[] = [
+          'dateFrom' => $d->copy()->startOfMonth()->format('Y-m-d'),
+          'dateTo'   => $d->copy()->endOfMonth()->format('Y-m-d'),
+          'label'    => $d->isoFormat('MMM YYYY'),
+        ];
+      }
+      $filenameRange = (string) $year;
+
     } elseif ($periode === 3) {
-      // Sejak awal klinik buka — cari tanggal transaksi pertama cabang ini
+      // Sejak awal klinik buka
       $firstRow = DB::table('list_of_payments as lop')
         ->join('users', 'lop.user_id', '=', 'users.id')
         ->join('branches', 'users.branch_id', '=', 'branches.id')
         ->where('branches.id', $branchId)
         ->selectRaw('MIN(DATE(lop.created_at)) as min_date')
         ->first();
-      $dateFrom    = $firstRow->min_date ?? Carbon::now()->subYear()->format('Y-m-d');
-      $dateTo      = Carbon::now()->format('Y-m-d');
-      $fromCarbon  = Carbon::parse($dateFrom);
-      $toCarbon    = Carbon::now();
-      $periodLabel = $fromCarbon->isoFormat('MMM YYYY') . ' - ' . $toCarbon->isoFormat('MMM YYYY');
+      $cur = Carbon::parse($firstRow->min_date ?? now()->subYear())->startOfMonth();
+      $end = Carbon::now()->startOfMonth();
+      while ($cur->lte($end)) {
+        $months[] = [
+          'dateFrom' => $cur->copy()->startOfMonth()->format('Y-m-d'),
+          'dateTo'   => $cur->copy()->endOfMonth()->format('Y-m-d'),
+          'label'    => $cur->isoFormat('MMM YYYY'),
+        ];
+        $cur->addMonth();
+      }
+      $filenameRange = ($months[0]['label'] ?? '') . ' - ' . (end($months)['label'] ?? '');
+
     } else {
-      // Bulanan (default)
+      // Bulanan — iterasi setiap bulan dalam range yang dipilih
       $monthFrom = (int) ($request->month_from ?? $request->month ?? Carbon::now()->month);
       $yearFrom  = (int) ($request->year_from  ?? $request->year  ?? Carbon::now()->year);
       $monthTo   = (int) ($request->month_to   ?? $monthFrom);
       $yearTo    = (int) ($request->year_to    ?? $yearFrom);
-      $dateFrom  = Carbon::createFromDate($yearFrom, $monthFrom, 1)->startOfMonth()->format('Y-m-d');
-      $dateTo    = Carbon::createFromDate($yearTo,   $monthTo,   1)->endOfMonth()->format('Y-m-d');
-
-      $fromCarbon  = Carbon::createFromDate($yearFrom, $monthFrom, 1);
-      $toCarbon    = Carbon::createFromDate($yearTo,   $monthTo,   1);
-      $periodLabel = $fromCarbon->isoFormat('MMM YYYY');
-      if ($dateFrom !== $dateTo && $monthFrom !== $monthTo || $yearFrom !== $yearTo) {
-        $periodLabel .= ' - ' . $toCarbon->isoFormat('MMM YYYY');
+      $cur       = Carbon::createFromDate($yearFrom, $monthFrom, 1)->startOfMonth();
+      $end       = Carbon::createFromDate($yearTo,   $monthTo,   1)->startOfMonth();
+      while ($cur->lte($end)) {
+        $months[] = [
+          'dateFrom' => $cur->copy()->startOfMonth()->format('Y-m-d'),
+          'dateTo'   => $cur->copy()->endOfMonth()->format('Y-m-d'),
+          'label'    => $cur->isoFormat('MMM YYYY'),
+        ];
+        $cur->addMonth();
+      }
+      $first         = Carbon::createFromDate($yearFrom, $monthFrom, 1);
+      $last          = Carbon::createFromDate($yearTo,   $monthTo,   1);
+      $filenameRange = $first->isoFormat('MMM YYYY');
+      if ($monthFrom !== $monthTo || $yearFrom !== $yearTo) {
+        $filenameRange .= ' - ' . $last->isoFormat('MMM YYYY');
       }
     }
 
-    // ── 1. Items ──────────────────────────────────────────────────────────
-    $items = DB::table('list_of_payments as lop')
-      ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-      ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-      ->join('users', 'lop.user_id', '=', 'users.id')
-      ->join('branches', 'users.branch_id', '=', 'branches.id')
-      ->selectRaw('(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall, TRIM(SUM(lopm.amount_discount))+0 as amount_discount')
-      ->where('branches.id', $branchId)
-      ->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$dateFrom, $dateTo])
-      ->first();
+    // ── Load template — simpan clone asli sebelum dimodifikasi ───────────
+    $templatePath  = public_path() . '/template/report/Template_Rekap.xlsx';
+    $spreadsheet   = IOFactory::load($templatePath);
+    $templateSheet = clone $spreadsheet->getSheet(0); // referensi bersih untuk clone berikutnya
 
-    // ── 2. Services ───────────────────────────────────────────────────────
-    $services = DB::table('list_of_payments as lop')
-      ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
-      ->join('list_of_payment_services as lops', 'cur.id', '=', 'lops.check_up_result_id')
-      ->join('detail_service_patients as dsp', 'lops.detail_service_patient_id', '=', 'dsp.id')
-      ->join('users', 'cur.user_id', '=', 'users.id')
-      ->join('branches', 'users.branch_id', '=', 'branches.id')
-      ->selectRaw('TRIM(SUM(dsp.price_overall))+0 as price_overall, TRIM(SUM(lops.amount_discount))+0 as amount_discount')
-      ->where('branches.id', $branchId)
-      ->whereBetween(DB::raw('DATE(lops.updated_at)'), [$dateFrom, $dateTo])
-      ->first();
+    foreach ($months as $idx => $monthData) {
+      $dateFrom = $monthData['dateFrom'];
+      $dateTo   = $monthData['dateTo'];
 
-    // ── 3. Shops ──────────────────────────────────────────────────────────
-    $shops = DB::selectOne("
-      SELECT COALESCE(SUM(t.amount), 0)+0 AS price_overall FROM (
-        SELECT pip.selling_price * ppwc.total_item AS amount
-        FROM payment_petshop_with_clinics ppwc
-        INNER JOIN price_item_pet_shops pip ON ppwc.price_item_pet_shop_id = pip.id
-        INNER JOIN users ON ppwc.user_id = users.id
-        INNER JOIN branches ON users.branch_id = branches.id
-        WHERE branches.id = ? AND DATE(ppwc.created_at) BETWEEN ? AND ?
-        UNION ALL
-        SELECT pip.selling_price * pp.total_item
-        FROM payment_petshops pp
-        INNER JOIN price_item_pet_shops pip ON pp.price_item_pet_shop_id = pip.id
-        INNER JOIN users ON pp.user_id = users.id
-        INNER JOIN branches ON users.branch_id = branches.id
-        WHERE branches.id = ? AND DATE(pp.created_at) BETWEEN ? AND ?
-      ) t
-    ", [$branchId, $dateFrom, $dateTo, $branchId, $dateFrom, $dateTo]);
+      // ── Query data bulan ini ─────────────────────────────────────────
+      $items = DB::table('list_of_payments as lop')
+        ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
+        ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
+        ->join('users', 'lop.user_id', '=', 'users.id')
+        ->join('branches', 'users.branch_id', '=', 'branches.id')
+        ->selectRaw('(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall, TRIM(SUM(lopm.amount_discount))+0 as amount_discount')
+        ->where('branches.id', $branchId)
+        ->whereBetween(DB::raw('DATE(lopm.updated_at)'), [$dateFrom, $dateTo])
+        ->first();
 
-    $price_overall   = ($items->price_overall ?? 0) + ($services->price_overall ?? 0) + ($shops->price_overall ?? 0);
-    $amount_discount = ($items->amount_discount ?? 0) + ($services->amount_discount ?? 0);
+      $services = DB::table('list_of_payments as lop')
+        ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
+        ->join('list_of_payment_services as lops', 'cur.id', '=', 'lops.check_up_result_id')
+        ->join('detail_service_patients as dsp', 'lops.detail_service_patient_id', '=', 'dsp.id')
+        ->join('users', 'cur.user_id', '=', 'users.id')
+        ->join('branches', 'users.branch_id', '=', 'branches.id')
+        ->selectRaw('TRIM(SUM(dsp.price_overall))+0 as price_overall, TRIM(SUM(lops.amount_discount))+0 as amount_discount')
+        ->where('branches.id', $branchId)
+        ->whereBetween(DB::raw('DATE(lops.updated_at)'), [$dateFrom, $dateTo])
+        ->first();
 
-    // ── 4. Payroll — dijumlahkan per karyawan lintas bulan ────────────────
-    $sallaryUser = DB::table('payrolls as py')
-      ->join('users as u', 'py.user_employee_id', '=', 'u.id')
-      ->join('branches', 'u.branch_id', '=', 'branches.id')
-      ->selectRaw('u.id as user_id, u.fullname,
-        TRIM(SUM(py.total_overall))+0   as total_overall,
-        TRIM(SUM(py.basic_sallary))+0   as basic_sallary,
-        TRIM(SUM(py.accomodation))+0    as accomodation,
-        TRIM(SUM(py.total_turnover))+0  as total_turnover,
-        TRIM(SUM(py.total_inpatient))+0 as total_inpatient,
-        TRIM(SUM(py.total_surgery))+0   as total_surgery,
-        TRIM(SUM(py.total_grooming))+0  as total_grooming')
-      ->where('py.isDeleted', 0)
-      ->where('branches.id', $branchId)
-      ->whereBetween(DB::raw('DATE(py.date_payed)'), [$dateFrom, $dateTo])
-      ->groupBy('u.id', 'u.fullname')
-      ->orderBy('u.id')
-      ->get();
+      $shops = DB::selectOne("
+        SELECT COALESCE(SUM(t.amount), 0)+0 AS price_overall FROM (
+          SELECT pip.selling_price * ppwc.total_item AS amount
+          FROM payment_petshop_with_clinics ppwc
+          INNER JOIN price_item_pet_shops pip ON ppwc.price_item_pet_shop_id = pip.id
+          INNER JOIN users ON ppwc.user_id = users.id
+          INNER JOIN branches ON users.branch_id = branches.id
+          WHERE branches.id = ? AND DATE(ppwc.created_at) BETWEEN ? AND ?
+          UNION ALL
+          SELECT pip.selling_price * pp.total_item
+          FROM payment_petshops pp
+          INNER JOIN price_item_pet_shops pip ON pp.price_item_pet_shop_id = pip.id
+          INNER JOIN users ON pp.user_id = users.id
+          INNER JOIN branches ON users.branch_id = branches.id
+          WHERE branches.id = ? AND DATE(pp.created_at) BETWEEN ? AND ?
+        ) t
+      ", [$branchId, $dateFrom, $dateTo, $branchId, $dateFrom, $dateTo]);
 
-    // ── 5. Expenses ───────────────────────────────────────────────────────
-    $expenses = DB::table('expenses as e')
-      ->join('users as u', 'e.user_id_spender', '=', 'u.id')
-      ->join('branches as b', 'u.branch_id', '=', 'b.id')
-      ->selectRaw('TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall')
-      ->where('b.id', $branchId)
-      ->whereBetween(DB::raw('DATE(e.date_spend)'), [$dateFrom, $dateTo])
-      ->first();
+      $price_overall   = ($items->price_overall ?? 0) + ($services->price_overall ?? 0) + ($shops->price_overall ?? 0);
+      $amount_discount = ($items->amount_discount ?? 0) + ($services->amount_discount ?? 0);
 
-    $total_expenses = $expenses->amount_overall ?? 0;
+      $sallaryUser = DB::table('payrolls as py')
+        ->join('users as u', 'py.user_employee_id', '=', 'u.id')
+        ->join('branches', 'u.branch_id', '=', 'branches.id')
+        ->selectRaw('u.id as user_id, u.fullname,
+          TRIM(SUM(py.total_overall))+0   as total_overall,
+          TRIM(SUM(py.basic_sallary))+0   as basic_sallary,
+          TRIM(SUM(py.accomodation))+0    as accomodation,
+          TRIM(SUM(py.total_turnover))+0  as total_turnover,
+          TRIM(SUM(py.total_inpatient))+0 as total_inpatient,
+          TRIM(SUM(py.total_surgery))+0   as total_surgery,
+          TRIM(SUM(py.total_grooming))+0  as total_grooming')
+        ->where('py.isDeleted', 0)
+        ->where('branches.id', $branchId)
+        ->whereBetween(DB::raw('DATE(py.date_payed)'), [$dateFrom, $dateTo])
+        ->groupBy('u.id', 'u.fullname')
+        ->orderBy('u.id')
+        ->get();
 
-    // ── Isi template Excel ────────────────────────────────────────────────
-    $spreadsheet = IOFactory::load(public_path() . '/template/report/Template_Rekap.xlsx');
-    $sheet       = $spreadsheet->getSheet(0);
+      $expenses = DB::table('expenses as e')
+        ->join('users as u', 'e.user_id_spender', '=', 'u.id')
+        ->join('branches as b', 'u.branch_id', '=', 'b.id')
+        ->selectRaw('TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall')
+        ->where('b.id', $branchId)
+        ->whereBetween(DB::raw('DATE(e.date_spend)'), [$dateFrom, $dateTo])
+        ->first();
 
-    $sheet->setCellValue('B3', $price_overall);
-    $sheet->setCellValue('B4', $amount_discount);
-    $sheet->setCellValue('B6', $price_overall - $amount_discount);
-    $sheet->setCellValue('B8', $total_expenses);
+      $total_expenses = $expenses->amount_overall ?? 0;
 
-    $row          = 11;
-    $temp_sallary = 0;
-    foreach ($sallaryUser as $item) {
-      $sheet->setCellValue("A{$row}", $item->fullname);
-      $sheet->setCellValue("B{$row}", $item->total_overall);
-      $temp_sallary += $item->total_overall;
+      // ── Ambil / buat sheet untuk bulan ini ───────────────────────────
+      if ($idx === 0) {
+        $sheet = $spreadsheet->getSheet(0);
+      } else {
+        $sheet = clone $templateSheet; // selalu clone dari template asli
+        $spreadsheet->addSheet($sheet);
+      }
+      $sheet->setTitle($monthData['label']);
+
+      // ── Isi data ke sheet ─────────────────────────────────────────────
+      $sheet->setCellValue('B3', $price_overall);
+      $sheet->setCellValue('B4', $amount_discount);
+      $sheet->setCellValue('B6', $price_overall - $amount_discount);
+      $sheet->setCellValue('B8', $total_expenses);
+
+      $row          = 11;
+      $temp_sallary = 0;
+      foreach ($sallaryUser as $item) {
+        $sheet->setCellValue("A{$row}", $item->fullname);
+        $sheet->setCellValue("B{$row}", $item->total_overall);
+        $temp_sallary += $item->total_overall;
+        $row++;
+      }
+
       $row++;
+      $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+      $sheet->setCellValue("A{$row}", 'TOTAL GAJI');
+      $sheet->setCellValue("B{$row}", $temp_sallary);
+
+      $row += 2;
+      $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+      $sheet->setCellValue("A{$row}", 'PROFIT SESUAI SISTEM');
+      $sheet->setCellValue("B{$row}", $price_overall - $amount_discount - $total_expenses);
+
+      $row++;
+      $netto = $price_overall - $amount_discount - $total_expenses - $temp_sallary;
+      $sheet->getStyle("A{$row}")->getFont()->setBold(true);
+      $sheet->setCellValue("A{$row}", 'REAL PROFIT');
+      $sheet->setCellValue("B{$row}", $netto);
+
+      $sheet->getStyle("A1:B{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+      // ── Rincian gaji per karyawan (kolom F+) ─────────────────────────
+      $col    = 0;
+      $letter = '';
+      foreach ($sallaryUser as $value) {
+        $letter = chr(70 + $col);
+        $sheet->getColumnDimension($letter)->setWidth(13);
+
+        $r = 5;
+        $sheet->setCellValue("{$letter}{$r}", $value->fullname);
+        $sheet->getStyle("{$letter}{$r}")->getFont()->setBold(true);
+
+        $sheet->setCellValue("{$letter}" . ++$r, $value->basic_sallary);
+        $sheet->setCellValue("{$letter}" . ++$r, $value->accomodation);
+        $sheet->setCellValue("{$letter}" . ++$r, $value->total_turnover);
+        $sheet->setCellValue("{$letter}" . ++$r, $value->total_inpatient);
+        $sheet->setCellValue("{$letter}" . ++$r, $value->total_surgery);
+        $sheet->setCellValue("{$letter}" . ++$r, $value->total_grooming);
+
+        $r += 2;
+        $sheet->setCellValue("{$letter}{$r}", $value->total_overall);
+        $sheet->getStyle("{$letter}{$r}")->getFont()->setBold(true);
+
+        $col++;
+      }
+
+      if (!empty($letter)) {
+        $sheet->getStyle("F6:{$letter}13")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+      }
     }
 
-    $row++;
-    $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-    $sheet->setCellValue("A{$row}", 'TOTAL GAJI');
-    $sheet->setCellValue("B{$row}", $temp_sallary);
+    $spreadsheet->setActiveSheetIndex(0);
 
-    $row += 2;
-    $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-    $sheet->setCellValue("A{$row}", 'PROFIT SESUAI SISTEM');
-    $sheet->setCellValue("B{$row}", $price_overall - $amount_discount - $total_expenses);
-
-    $row++;
-    $netto = $price_overall - $amount_discount - $total_expenses - $temp_sallary;
-    $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-    $sheet->setCellValue("A{$row}", 'REAL PROFIT');
-    $sheet->setCellValue("B{$row}", $netto);
-
-    $sheet->getStyle("A1:B{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-
-    // ── Rincian gaji per karyawan (kolom F+) ─────────────────────────────
-    $col    = 0;
-    $letter = '';
-    foreach ($sallaryUser as $value) {
-      $letter = chr(70 + $col);
-      $sheet->getColumnDimension($letter)->setWidth(13);
-
-      $r = 5;
-      $sheet->setCellValue("{$letter}{$r}", $value->fullname);
-      $sheet->getStyle("{$letter}{$r}")->getFont()->setBold(true);
-
-      $sheet->setCellValue("{$letter}" . ++$r, $value->basic_sallary);
-      $sheet->setCellValue("{$letter}" . ++$r, $value->accomodation);
-      $sheet->setCellValue("{$letter}" . ++$r, $value->total_turnover);
-      $sheet->setCellValue("{$letter}" . ++$r, $value->total_inpatient);
-      $sheet->setCellValue("{$letter}" . ++$r, $value->total_surgery);
-      $sheet->setCellValue("{$letter}" . ++$r, $value->total_grooming);
-
-      $r += 2;
-      $sheet->setCellValue("{$letter}{$r}", $value->total_overall);
-      $sheet->getStyle("{$letter}{$r}")->getFont()->setBold(true);
-
-      $col++;
-    }
-
-    if (!empty($letter)) {
-      $sheet->getStyle("F6:{$letter}13")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-    }
-
-    // ── Filename ──────────────────────────────────────────────────────────
-    $branchName = $branches->branch_name ?? 'Cabang';
-    $filename   = "Rekapitulasi Bintang Vet Cabang {$branchName} {$periodLabel}";
-
-    $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+    $filename = "Rekapitulasi Bintang Vet Cabang {$branchName} {$filenameRange}";
+    $writer   = IOFactory::createWriter($spreadsheet, 'Xlsx');
 
     return response()->stream(function () use ($writer) {
       $writer->save('php://output');
