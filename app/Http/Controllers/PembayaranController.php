@@ -43,7 +43,11 @@ class PembayaranController extends Controller
       $count_item = DB::table('detail_medicine_group_check_up_results')
         ->where('check_up_result_id', $id)->count();
 
-      if ($count_payed_service == $count_service && $count_payed_item == $count_item) {
+      if (
+        ($count_payed_service > 0 || $count_payed_item > 0) &&
+        $count_payed_service == $count_service &&
+        $count_payed_item == $count_item
+      ) {
         CheckUpResult::where('id', $id)->update([
           'status_paid_off' => 1,
           'updated_at'      => \Carbon\Carbon::now(),
