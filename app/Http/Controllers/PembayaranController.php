@@ -32,36 +32,15 @@ class PembayaranController extends Controller
         'registrations.id_number as registration_number',
         'patients.pet_name'
       )
-      ->where(function ($q) {
-        // Belum pernah diproses pembayaran sama sekali
-        $q->whereNotExists(function ($sub) {
-          $sub->select(DB::raw(1))
-            ->from('list_of_payments as lop')
-            ->whereColumn('lop.check_up_result_id', 'check_up_results.id');
-        })
-        // Atau sudah diproses tapi belum semua layanan/obat terbayar
-        ->orWhere(function ($q2) {
-          $q2->whereExists(function ($sub) {
-            $sub->select(DB::raw(1))
-              ->from('list_of_payments as lop')
-              ->whereColumn('lop.check_up_result_id', 'check_up_results.id');
-          })
-          ->where(function ($q3) {
-            // Jumlah layanan yang dibayar < jumlah layanan yang diinput dokter
-            $q3->whereRaw(
-              '(SELECT COUNT(*) FROM list_of_payment_services lps WHERE lps.check_up_result_id = check_up_results.id)
-              < (SELECT COUNT(*) FROM detail_service_patients dsp WHERE dsp.check_up_result_id = check_up_results.id)'
-            )
-            // Atau jumlah obat yang dibayar < jumlah obat yang diinput dokter
-            ->orWhereRaw(
-              '(SELECT COUNT(*) FROM list_of_payment_medicine_groups lopm
-                INNER JOIN detail_medicine_group_check_up_results dmg ON lopm.detail_medicine_group_check_up_result_id = dmg.id
-                WHERE dmg.check_up_result_id = check_up_results.id)
-              < (SELECT COUNT(*) FROM detail_medicine_group_check_up_results dmg2 WHERE dmg2.check_up_result_id = check_up_results.id)'
-            );
-          });
-        });
-      })
+      ->whereRaw('
+        (SELECT COUNT(*) FROM list_of_payment_services lps WHERE lps.check_up_result_id = check_up_results.id)
+        < (SELECT COUNT(*) FROM detail_service_patients dsp WHERE dsp.check_up_result_id = check_up_results.id)
+        OR
+        (SELECT COUNT(*) FROM list_of_payment_medicine_groups lopm
+          INNER JOIN detail_medicine_group_check_up_results dmg ON lopm.detail_medicine_group_check_up_result_id = dmg.id
+          WHERE dmg.check_up_result_id = check_up_results.id)
+        < (SELECT COUNT(*) FROM detail_medicine_group_check_up_results dmg2 WHERE dmg2.check_up_result_id = check_up_results.id)
+      ')
       ->whereNotBetween(
         DB::raw('DATE(check_up_results.created_at)'),
         ['2021-07-01', '2023-12-31']
