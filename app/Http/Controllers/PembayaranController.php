@@ -21,6 +21,36 @@ class PembayaranController extends Controller
 {
   public function DropDownPatient(Request $request)
   {
+    // Recalculate status_paid_off untuk records yang mungkin sudah lunas tapi flag belum ter-update
+    $candidates = DB::table('check_up_results')
+      ->where('status_paid_off', 0)
+      ->whereExists(function ($q) {
+        $q->select(DB::raw(1))
+          ->from('list_of_payments')
+          ->whereColumn('list_of_payments.check_up_result_id', 'check_up_results.id');
+      })
+      ->pluck('id');
+
+    foreach ($candidates as $id) {
+      $count_payed_service = DB::table('list_of_payment_services')
+        ->where('check_up_result_id', $id)->count();
+      $count_service = DB::table('detail_service_patients')
+        ->where('check_up_result_id', $id)->count();
+
+      $count_payed_item = DB::table('list_of_payment_medicine_groups as lopm')
+        ->join('detail_medicine_group_check_up_results as dmg', 'lopm.detail_medicine_group_check_up_result_id', 'dmg.id')
+        ->where('dmg.check_up_result_id', $id)->count();
+      $count_item = DB::table('detail_medicine_group_check_up_results')
+        ->where('check_up_result_id', $id)->count();
+
+      if ($count_payed_service == $count_service && $count_payed_item == $count_item) {
+        CheckUpResult::where('id', $id)->update([
+          'status_paid_off' => 1,
+          'updated_at'      => \Carbon\Carbon::now(),
+        ]);
+      }
+    }
+
     $data = DB::table('check_up_results')
       ->join('registrations', function ($join) {
         $join->on('check_up_results.patient_registration_id', '=', 'registrations.id')

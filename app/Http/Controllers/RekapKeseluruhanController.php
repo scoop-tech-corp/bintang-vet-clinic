@@ -7,6 +7,8 @@ use DB;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\RekapOmsetExport;
 
 class RekapKeseluruhanController extends Controller
 {
@@ -358,6 +360,51 @@ class RekapKeseluruhanController extends Controller
         }
 
         return response()->json(['datas' => $datas->toArray(), 'branches' => $branches], 200);
+    }
+
+    public function export(Request $request)
+    {
+        [$periods, $groupBy, $dateFrom, $dateTo] = $this->buildPeriods($request);
+        $branches = $this->getBranches($request);
+        $netMap   = $this->fetchNetByBranchAndPeriod($branches, $periods, $groupBy, $dateFrom, $dateTo);
+
+        $rows  = [];
+        $idx   = 1;
+        $periodeMap = [
+            'mingguan'     => 'Mingguan',
+            'bulanan'      => 'Bulanan',
+            'tahunan'      => 'Tahunan',
+            'sejak_dibuka' => 'Sejak Dibuka',
+        ];
+        $periodeLabel = $periodeMap[$request->periode ?? 'mingguan'] ?? ucfirst($request->periode ?? 'mingguan');
+
+        if ($request->branch_id) {
+            $headingRow = ['No', 'Periode', 'Total Omset (Rp)'];
+            foreach ($periods as $period) {
+                $total = 0;
+                foreach ($branches as $b) {
+                    $total += $netMap[$b->id][$period['key']] ?? 0;
+                }
+                $rows[] = [$idx++, $period['label'], number_format($total, 0, ',', '.')];
+            }
+        } else {
+            $branchNames = $branches->pluck('branch_name')->toArray();
+            $headingRow  = array_merge(['No', 'Periode', 'Total Omset (Rp)'], $branchNames);
+            foreach ($periods as $period) {
+                $total        = 0;
+                $branchValues = [];
+                foreach ($branches as $b) {
+                    $net            = $netMap[$b->id][$period['key']] ?? 0;
+                    $total         += $net;
+                    $branchValues[] = number_format($net, 0, ',', '.');
+                }
+                $rows[] = array_merge([$idx++, $period['label'], number_format($total, 0, ',', '.')], $branchValues);
+            }
+        }
+
+        $filename = 'rekap-omset-' . str_replace('_', '-', $request->periode ?? 'mingguan') . '-' . now()->format('Ymd') . '.xlsx';
+
+        return Excel::download(new RekapOmsetExport($rows, $headingRow, $periodeLabel), $filename);
     }
 
     public function chart(Request $request)
