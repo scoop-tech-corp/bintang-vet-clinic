@@ -33,6 +33,9 @@
       </div>
 
       <div class="section-right-box-title">
+        <button type="button" id="btn-export-omset" class="btn btn-success btn-sm" title="Generate Excel" style="display:none;">
+          <i class="fa fa-file-excel-o" aria-hidden="true"></i>&nbsp;&nbsp;Generate Excel
+        </button>
         <select id="filterCabang" class="filter-branch"></select>
       </div>
     </div>

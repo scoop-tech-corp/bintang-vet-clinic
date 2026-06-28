@@ -174,7 +174,7 @@ class AbsensiController extends Controller
 
         $jamKeluar         = Carbon::now();
         $shift             = Shift::find($attendance->shift_id);
-        $shiftSelesai      = Carbon::today()->setTimeFromTimeString($shift->jam_keluar);
+        $shiftSelesai      = Carbon::parse($attendance->tanggal)->setTimeFromTimeString($shift->jam_keluar);
         $batasLambatPulang = $shiftSelesai->copy()->addHour();
 
         if ($jamKeluar->gt($batasLambatPulang) && !$request->alasan_terlambat_pulang) {
@@ -230,7 +230,10 @@ class AbsensiController extends Controller
                 DB::raw("
                     CASE
                         WHEN a.status = 'tidak_sesuai' THEN 'tidak_sesuai'
-                        WHEN a.jam_keluar IS NOT NULL AND a.jam_keluar < shifts.jam_keluar THEN 'tidak_sesuai'
+                        WHEN a.jam_keluar IS NOT NULL
+                            AND a.jam_keluar < shifts.jam_keluar
+                            AND NOT (shifts.jam_keluar >= '22:00:00' AND a.jam_keluar <= '05:30:00')
+                            THEN 'tidak_sesuai'
                         WHEN a.jam_keluar IS NULL AND (
                             a.tanggal < CURDATE()
                             OR (a.tanggal = CURDATE() AND TIME(NOW()) > shifts.jam_keluar)
