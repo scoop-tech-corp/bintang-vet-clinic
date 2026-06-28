@@ -21,7 +21,8 @@ class PembayaranController extends Controller
 {
   public function DropDownPatient(Request $request)
   {
-    // Recalculate status_paid_off untuk records yang mungkin sudah lunas tapi flag belum ter-update
+    // Recalculate status_paid_off untuk records yang sudah lunas tapi flag belum ter-update
+    // Menggunakan status_paid_off per service/item karena field tersebut selalu diupdate dengan benar
     $candidates = DB::table('check_up_results')
       ->where('status_paid_off', 0)
       ->whereExists(function ($q) {
@@ -32,22 +33,24 @@ class PembayaranController extends Controller
       ->pluck('id');
 
     foreach ($candidates as $id) {
-      $count_payed_service = DB::table('list_of_payment_services')
+      $total_service = DB::table('detail_service_patients')
         ->where('check_up_result_id', $id)->count();
-      $count_service = DB::table('detail_service_patients')
-        ->where('check_up_result_id', $id)->count();
-
-      $count_payed_item = DB::table('list_of_payment_medicine_groups as lopm')
-        ->join('detail_medicine_group_check_up_results as dmg', 'lopm.detail_medicine_group_check_up_result_id', 'dmg.id')
-        ->where('dmg.check_up_result_id', $id)->count();
-      $count_item = DB::table('detail_medicine_group_check_up_results')
+      $total_item = DB::table('detail_medicine_group_check_up_results')
         ->where('check_up_result_id', $id)->count();
 
-      if (
-        ($count_payed_service > 0 || $count_payed_item > 0) &&
-        $count_payed_service == $count_service &&
-        $count_payed_item == $count_item
-      ) {
+      // Jika tidak ada service dan tidak ada item, skip — tidak ada yang bisa dijadikan acuan lunas
+      if ($total_service === 0 && $total_item === 0) {
+        continue;
+      }
+
+      $paid_service = DB::table('detail_service_patients')
+        ->where('check_up_result_id', $id)
+        ->where('status_paid_off', 1)->count();
+      $paid_item = DB::table('detail_medicine_group_check_up_results')
+        ->where('check_up_result_id', $id)
+        ->where('status_paid_off', 1)->count();
+
+      if ($paid_service === $total_service && $paid_item === $total_item) {
         CheckUpResult::where('id', $id)->update([
           'status_paid_off' => 1,
           'updated_at'      => \Carbon\Carbon::now(),

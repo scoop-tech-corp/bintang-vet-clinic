@@ -257,8 +257,11 @@ class RekapController extends Controller
       ], 403);
     }
 
+    // Normalise month/year: support both direct (month,year) and range-based (month_from,year_from)
+    $month = $request->month ?? $request->month_from ?? Carbon::now()->month;
+    $year  = $request->year  ?? $request->year_from  ?? Carbon::now()->year;
+
     // ── 1. Items: price_overall + amount_discount in one query ───────────
-    //    (was 2 queries; adi had 5 unnecessary JOINs removed)
     $items = DB::table('list_of_payments as lop')
       ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
       ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
@@ -266,12 +269,11 @@ class RekapController extends Controller
       ->join('branches', 'users.branch_id', '=', 'branches.id')
       ->selectRaw('(CASE WHEN lopm.quantity = 0 THEN TRIM(SUM(pmg.selling_price)) ELSE TRIM(SUM(pmg.selling_price * lopm.quantity)) END)+0 as price_overall, TRIM(SUM(lopm.amount_discount))+0 as amount_discount')
       ->where('branches.id', '=', $request->branch_id)
-      ->where(DB::raw("MONTH(lopm.updated_at)"), $request->month)
-      ->where(DB::raw("YEAR(lopm.updated_at)"), $request->year)
+      ->where(DB::raw("MONTH(lopm.updated_at)"), $month)
+      ->where(DB::raw("YEAR(lopm.updated_at)"), $year)
       ->first();
 
     // ── 2. Services: price_overall + amount_discount in one query ─────────
-    //    (was 2 queries; price_services JOIN was unused in both — removed)
     $services = DB::table('list_of_payments as lop')
       ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
       ->join('list_of_payment_services as lops', 'cur.id', '=', 'lops.check_up_result_id')
@@ -280,11 +282,11 @@ class RekapController extends Controller
       ->join('branches', 'users.branch_id', '=', 'branches.id')
       ->selectRaw('TRIM(SUM(dsp.price_overall))+0 as price_overall, TRIM(SUM(lops.amount_discount))+0 as amount_discount')
       ->where('branches.id', '=', $request->branch_id)
-      ->where(DB::raw("MONTH(lops.updated_at)"), $request->month)
-      ->where(DB::raw("YEAR(lops.updated_at)"), $request->year)
+      ->where(DB::raw("MONTH(lops.updated_at)"), $month)
+      ->where(DB::raw("YEAR(lops.updated_at)"), $year)
       ->first();
 
-    // ── 3. Shops: ppwc + pp combined via UNION ALL (was 2 queries) ────────
+    // ── 3. Shops: ppwc + pp combined via UNION ALL ────────────────────────
     $shops = DB::selectOne("
       SELECT COALESCE(SUM(t.amount), 0)+0 AS price_overall FROM (
         SELECT pip.selling_price * ppwc.total_item AS amount
@@ -301,8 +303,8 @@ class RekapController extends Controller
         INNER JOIN branches ON users.branch_id = branches.id
         WHERE branches.id = ? AND MONTH(pp.created_at) = ? AND YEAR(pp.created_at) = ?
       ) t
-    ", [$request->branch_id, $request->month, $request->year,
-        $request->branch_id, $request->month, $request->year]);
+    ", [$request->branch_id, $month, $year,
+        $request->branch_id, $month, $year]);
 
     $price_overall  = ($items->price_overall ?? 0) + ($services->price_overall ?? 0) + ($shops->price_overall ?? 0);
     $amount_discount = ($items->amount_discount ?? 0) + ($services->amount_discount ?? 0);
@@ -314,8 +316,8 @@ class RekapController extends Controller
       ->selectRaw('u.fullname, TRIM(py.total_overall)+0 as total_overall, TRIM(py.basic_sallary)+0 as basic_sallary, TRIM(py.accomodation)+0 as accomodation, TRIM(py.total_turnover)+0 as total_turnover, TRIM(py.total_inpatient)+0 as total_inpatient, TRIM(py.total_surgery)+0 as total_surgery, TRIM(py.total_grooming)+0 as total_grooming')
       ->where('py.isDeleted', '=', 0)
       ->where('branches.id', '=', $request->branch_id)
-      ->where(DB::raw("YEAR(py.date_payed)"), $request->year)
-      ->where(DB::raw("MONTH(py.date_payed)"), $request->month)
+      ->where(DB::raw("YEAR(py.date_payed)"), $year)
+      ->where(DB::raw("MONTH(py.date_payed)"), $month)
       ->orderBy('u.id', 'asc')
       ->get();
 
@@ -325,8 +327,8 @@ class RekapController extends Controller
       ->join('branches as b', 'u.branch_id', '=', 'b.id')
       ->selectRaw('TRIM(SUM(IFNULL(e.amount_overall,0)))+0 as amount_overall')
       ->where('b.id', '=', $request->branch_id)
-      ->where(DB::raw("MONTH(e.date_spend)"), $request->month)
-      ->where(DB::raw("YEAR(e.date_spend)"), $request->year)
+      ->where(DB::raw("MONTH(e.date_spend)"), $month)
+      ->where(DB::raw("YEAR(e.date_spend)"), $year)
       ->first();
 
     $total_expenses = $expenses->amount_overall ?? 0;
@@ -408,11 +410,13 @@ class RekapController extends Controller
       $col++;
     }
 
-    $sheet->getStyle("F6:{$letter}13")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+    if (!empty($letter)) {
+      $sheet->getStyle("F6:{$letter}13")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+    }
 
     Carbon::setLocale('id');
 
-    $monthName = Carbon::createFromFormat('m', $request->month)->locale('id')->isoFormat('MMMM');
+    $monthName = Carbon::createFromFormat('m', $month)->locale('id')->isoFormat('MMMM');
 
     $branches = Branch::find($request->branch_id);
 
