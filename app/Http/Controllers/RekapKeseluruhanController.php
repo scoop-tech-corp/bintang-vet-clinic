@@ -186,8 +186,10 @@ class RekapKeseluruhanController extends Controller
     }
 
     /**
-     * Fetch net omset per branch per period in bulk.
-     * Uses 2 UNION ALL queries per connection instead of 6 separate queries.
+     * Fetch omset (medicine + service) per branch per period.
+     * Formula matches LaporanKeuanganMingguanController line 687:
+     *   omset = SUM(medicine selling price) + SUM(service price_overall)
+     * Single UNION ALL query per connection for efficiency.
      */
     private function fetchNetByBranchAndPeriod(
         Collection $branches,
@@ -205,13 +207,10 @@ class RekapKeseluruhanController extends Controller
             $branchIds = $connBranches->pluck('id')->toArray();
             $inList    = implode(',', array_map('intval', $branchIds));
 
-            $gMed  = sprintf($grpExpr, 'lopm.updated_at');
-            $gSvc  = sprintf($grpExpr, 'lops.updated_at');
-            $gShop = sprintf($grpExpr, 'ppwc.created_at');
-            $gPet  = sprintf($grpExpr, 'pp.created_at');
+            $gMed = sprintf($grpExpr, 'lopm.updated_at');
+            $gSvc = sprintf($grpExpr, 'lops.updated_at');
 
-            // Single query: all 4 revenue sources via UNION ALL
-            $revSql = "
+            $sql = "
                 SELECT branch_id, period, SUM(total) AS total FROM (
                     SELECT b.id AS branch_id, {$gMed} AS period,
                         SUM(CASE WHEN lopm.quantity = 0 THEN pmg.selling_price ELSE pmg.selling_price * lopm.quantity END) AS total
@@ -234,80 +233,22 @@ class RekapKeseluruhanController extends Controller
                     JOIN branches b ON users.branch_id = b.id
                     WHERE b.id IN ({$inList}) AND DATE(lops.updated_at) BETWEEN ? AND ?
                     GROUP BY b.id, {$gSvc}
-
-                    UNION ALL
-
-                    SELECT b.id AS branch_id, {$gShop} AS period,
-                        SUM(pip.selling_price * ppwc.total_item) AS total
-                    FROM payment_petshop_with_clinics ppwc
-                    JOIN price_item_pet_shops pip ON ppwc.price_item_pet_shop_id = pip.id
-                    JOIN users ON ppwc.user_id = users.id
-                    JOIN branches b ON users.branch_id = b.id
-                    WHERE b.id IN ({$inList}) AND DATE(ppwc.created_at) BETWEEN ? AND ?
-                    GROUP BY b.id, {$gShop}
-
-                    UNION ALL
-
-                    SELECT b.id AS branch_id, {$gPet} AS period,
-                        SUM(pip.selling_price * pp.total_item) AS total
-                    FROM payment_petshops pp
-                    JOIN price_item_pet_shops pip ON pp.price_item_pet_shop_id = pip.id
-                    JOIN users ON pp.user_id = users.id
-                    JOIN branches b ON users.branch_id = b.id
-                    WHERE b.id IN ({$inList}) AND DATE(pp.created_at) BETWEEN ? AND ?
-                    GROUP BY b.id, {$gPet}
                 ) r GROUP BY branch_id, period
             ";
 
-            // Single query: both discount sources via UNION ALL (simplified joins)
-            $discSql = "
-                SELECT branch_id, period, SUM(total) AS total FROM (
-                    SELECT b.id AS branch_id, {$gMed} AS period,
-                        SUM(lopm.amount_discount) AS total
-                    FROM list_of_payment_medicine_groups lopm
-                    JOIN list_of_payments lop ON lopm.list_of_payment_id = lop.id
-                    JOIN users ON lop.user_id = users.id
-                    JOIN branches b ON users.branch_id = b.id
-                    WHERE b.id IN ({$inList}) AND DATE(lopm.updated_at) BETWEEN ? AND ?
-                    GROUP BY b.id, {$gMed}
-
-                    UNION ALL
-
-                    SELECT b.id AS branch_id, {$gSvc} AS period,
-                        SUM(lops.amount_discount) AS total
-                    FROM list_of_payment_services lops
-                    JOIN check_up_results cur ON lops.check_up_result_id = cur.id
-                    JOIN users ON cur.user_id = users.id
-                    JOIN branches b ON users.branch_id = b.id
-                    WHERE b.id IN ({$inList}) AND DATE(lops.updated_at) BETWEEN ? AND ?
-                    GROUP BY b.id, {$gSvc}
-                ) d GROUP BY branch_id, period
-            ";
-
-            $revRows  = DB::connection($conn)->select($revSql, [
-                $dateFrom, $dateTo,
-                $dateFrom, $dateTo,
-                $dateFrom, $dateTo,
-                $dateFrom, $dateTo,
-            ]);
-            $discRows = DB::connection($conn)->select($discSql, [
+            $rows = DB::connection($conn)->select($sql, [
                 $dateFrom, $dateTo,
                 $dateFrom, $dateTo,
             ]);
 
-            $rev  = [];
-            $disc = [];
-
-            foreach ($revRows as $row) {
-                $rev[$row->branch_id][$row->period] = (float) $row->total;
-            }
-            foreach ($discRows as $row) {
-                $disc[$row->branch_id][$row->period] = (float) $row->total;
+            $map = [];
+            foreach ($rows as $row) {
+                $map[$row->branch_id][$row->period] = (float) $row->total;
             }
 
             foreach ($connBranches as $branch) {
                 foreach ($keys as $key) {
-                    $netMap[$branch->id][$key] = ($rev[$branch->id][$key] ?? 0) - ($disc[$branch->id][$key] ?? 0);
+                    $netMap[$branch->id][$key] = $map[$branch->id][$key] ?? 0;
                 }
             }
         }
