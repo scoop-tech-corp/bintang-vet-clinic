@@ -273,9 +273,12 @@ class RekapKeseluruhanController extends Controller
                 $map[$row->branch_id][$row->period] = (float) $row->total;
             }
 
+            // Key by connection + branch id: branch ids are NOT unique across
+            // the separate databases, so keying by id alone would let branches
+            // from different connections clobber each other.
             foreach ($connBranches as $branch) {
                 foreach ($keys as $key) {
-                    $netMap[$branch->id][$key] = $map[$branch->id][$key] ?? 0;
+                    $netMap["{$conn}:{$branch->id}"][$key] = $map[$branch->id][$key] ?? 0;
                 }
             }
         }
@@ -296,7 +299,7 @@ class RekapKeseluruhanController extends Controller
             foreach ($periods as $period) {
                 $total = 0;
                 foreach ($branches as $b) {
-                    $total += $netMap[$b->id][$period['key']] ?? 0;
+                    $total += $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
                 }
                 $datas->push(['dates' => $period['label'], 'total_omset' => $total]);
             }
@@ -308,7 +311,7 @@ class RekapKeseluruhanController extends Controller
             $row   = ['dates' => $period['label']];
             $total = 0;
             foreach ($branches as $b) {
-                $net                  = $netMap[$b->id][$period['key']] ?? 0;
+                $net                  = $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
                 $row[$b->branch_slug] = $net;
                 $total               += $net;
             }
@@ -341,7 +344,7 @@ class RekapKeseluruhanController extends Controller
             foreach ($periods as $period) {
                 $total = 0;
                 foreach ($branches as $b) {
-                    $total += $netMap[$b->id][$period['key']] ?? 0;
+                    $total += $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
                 }
                 $rows[] = [$idx++, $period['label'], number_format($total, 0, ',', '.')];
             }
@@ -352,7 +355,7 @@ class RekapKeseluruhanController extends Controller
                 $total        = 0;
                 $branchValues = [];
                 foreach ($branches as $b) {
-                    $net            = $netMap[$b->id][$period['key']] ?? 0;
+                    $net            = $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
                     $total         += $net;
                     $branchValues[] = number_format($net, 0, ',', '.');
                 }
@@ -394,7 +397,7 @@ class RekapKeseluruhanController extends Controller
         foreach ($periods as $period) {
             $total = 0;
             foreach ($branches as $b) {
-                $total += $netMap[$b->id][$period['key']] ?? 0;
+                $total += $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
             }
             $datas->push(['dates' => $period['label'], 'total_omset' => $total]);
         }
