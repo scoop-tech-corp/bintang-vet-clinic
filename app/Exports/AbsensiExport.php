@@ -43,7 +43,10 @@ class AbsensiExport implements FromCollection, ShouldAutoSize, WithHeadings, Wit
                 DB::raw("
                     CASE
                         WHEN a.status = 'tidak_sesuai' THEN 'tidak_sesuai'
-                        WHEN a.jam_keluar IS NOT NULL AND a.jam_keluar < shifts.jam_keluar THEN 'tidak_sesuai'
+                        WHEN a.jam_keluar IS NOT NULL
+                            AND a.jam_keluar < shifts.jam_keluar
+                            AND NOT (a.jam_keluar <= '05:30:00' AND shifts.jam_keluar > shifts.jam_masuk)
+                            THEN 'tidak_sesuai'
                         WHEN a.jam_keluar IS NULL AND (
                             a.tanggal < CURDATE()
                             OR (a.tanggal = CURDATE() AND TIME(NOW()) > shifts.jam_keluar)

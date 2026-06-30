@@ -232,7 +232,7 @@ class AbsensiController extends Controller
                         WHEN a.status = 'tidak_sesuai' THEN 'tidak_sesuai'
                         WHEN a.jam_keluar IS NOT NULL
                             AND a.jam_keluar < shifts.jam_keluar
-                            AND NOT (shifts.jam_keluar >= '22:00:00' AND a.jam_keluar <= '05:30:00')
+                            AND NOT (a.jam_keluar <= '05:30:00' AND shifts.jam_keluar > shifts.jam_masuk)
                             THEN 'tidak_sesuai'
                         WHEN a.jam_keluar IS NULL AND (
                             a.tanggal < CURDATE()
