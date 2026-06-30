@@ -12,7 +12,7 @@ use App\Exports\RekapOmsetExport;
 
 class RekapKeseluruhanController extends Controller
 {
-    private function getFirstTransactionDate(Request $request = null): string
+    private function getFirstTransactionDate(?Request $request = null): string
     {
         // Jika branch tertentu dipilih, cari tanggal transaksi pertama branch itu saja
         if ($request && $request->branch_id && $request->connection) {
@@ -75,20 +75,24 @@ class RekapKeseluruhanController extends Controller
 
         switch ($periode) {
             case 'bulanan':
-                $cur = Carbon::now()->startOfMonth();
-                $end = Carbon::now()->endOfMonth();
+                $cur = $request->start_month
+                    ? Carbon::createFromFormat('Y-m', $request->start_month)->startOfMonth()
+                    : Carbon::now()->startOfMonth();
+                $end = $request->end_month
+                    ? Carbon::createFromFormat('Y-m', $request->end_month)->startOfMonth()
+                    : Carbon::now()->startOfMonth();
                 while ($cur->lte($end)) {
                     $periods[] = [
-                        'key'   => $cur->format('Y-m-d'),
-                        'label' => $cur->translatedFormat('j M Y'),
+                        'key'   => $cur->format('Y-m'),
+                        'label' => $cur->translatedFormat('F Y'),
                     ];
-                    $cur->addDay();
+                    $cur->addMonth();
                 }
-                $groupBy = 'day';
+                $groupBy = 'month';
                 break;
 
             case 'tahunan':
-                $year = Carbon::now()->year;
+                $year = $request->tahun ? (int) $request->tahun : Carbon::now()->year;
                 for ($m = 1; $m <= 12; $m++) {
                     $month = Carbon::createFromDate($year, $m, 1);
                     $periods[] = [
@@ -114,12 +118,16 @@ class RekapKeseluruhanController extends Controller
                 break;
 
             default: // mingguan
-                $cur = Carbon::now()->startOfWeek();
-                $end = Carbon::now()->endOfWeek();
+                $cur = $request->start_date
+                    ? Carbon::parse($request->start_date)
+                    : Carbon::now()->startOfWeek();
+                $end = $request->end_date
+                    ? Carbon::parse($request->end_date)
+                    : Carbon::now()->endOfWeek();
                 while ($cur->lte($end)) {
                     $periods[] = [
                         'key'   => $cur->format('Y-m-d'),
-                        'label' => $cur->translatedFormat('l, j M Y'),
+                        'label' => $cur->translatedFormat('j M Y'),
                     ];
                     $cur->addDay();
                 }
@@ -178,10 +186,10 @@ class RekapKeseluruhanController extends Controller
     }
 
     /**
-     * Fetch net omset per branch per period in bulk.
-     *
-     * $groupBy 'day'   → groups by DATE(column),           key format Y-m-d
-     * $groupBy 'month' → groups by DATE_FORMAT(column,'%Y-%m'), key format Y-m
+     * Fetch total omset per branch per period.
+     * Formula mirrors LaporanKeuanganMingguanController (diff>0 block, line 230-231):
+     *   price_overall = medicine + service + petshop_with_clinic + petshop
+     * Single UNION ALL query per connection for efficiency.
      */
     private function fetchNetByBranchAndPeriod(
         Collection $branches,
@@ -190,136 +198,87 @@ class RekapKeseluruhanController extends Controller
         string $dateFrom,
         string $dateTo
     ): array {
-        $keys   = array_column($periods, 'key');
-        $netMap = [];
-
+        $keys    = array_column($periods, 'key');
+        $netMap  = [];
         $grpDay  = $groupBy === 'day';
-        $grpExpr = $grpDay ? "DATE(%s)" : "DATE_FORMAT(%s, '%%Y-%%m')";
+        $grpExpr = $grpDay ? 'DATE(%s)' : "DATE_FORMAT(%s, '%%Y-%%m')";
 
         foreach ($branches->groupBy('connection') as $conn => $connBranches) {
             $branchIds = $connBranches->pluck('id')->toArray();
+            $inList    = implode(',', array_map('intval', $branchIds));
 
-            $g = fn(string $col) => DB::raw(sprintf($grpExpr, $col));
+            $gMed  = sprintf($grpExpr, 'lopm.updated_at');
+            $gSvc  = sprintf($grpExpr, 'lops.updated_at');
+            $gShop = sprintf($grpExpr, 'ppwc.created_at');
+            $gPet  = sprintf($grpExpr, 'pp.created_at');
 
-            // --- revenue: medicine items ---
-            $itemRows = DB::connection($conn)->table('list_of_payments as lop')
-                ->join('list_of_payment_medicine_groups as lopm', 'lop.id', '=', 'lopm.list_of_payment_id')
-                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-                ->join('users', 'lop.user_id', '=', 'users.id')
-                ->join('branches', 'users.branch_id', '=', 'branches.id')
-                ->select(
-                    'branches.id as branch_id',
-                    DB::raw(sprintf($grpExpr, 'lopm.updated_at') . ' as period'),
-                    DB::raw("SUM(CASE WHEN lopm.quantity = 0 THEN pmg.selling_price ELSE pmg.selling_price * lopm.quantity END) as total")
-                )
-                ->whereIn('branches.id', $branchIds)
-                ->whereBetween(DB::raw("DATE(lopm.updated_at)"), [$dateFrom, $dateTo])
-                ->groupBy('branches.id', $g('lopm.updated_at'))
-                ->get();
+            $sql = "
+                SELECT branch_id, period, SUM(total) AS total FROM (
+                    SELECT b.id AS branch_id, {$gMed} AS period,
+                        SUM(CASE WHEN lopm.quantity = 0 THEN pmg.selling_price ELSE pmg.selling_price * lopm.quantity END) AS total
+                    FROM list_of_payments lop
+                    JOIN list_of_payment_medicine_groups lopm ON lop.id = lopm.list_of_payment_id
+                    JOIN price_medicine_groups pmg ON lopm.medicine_group_id = pmg.id
+                    JOIN users ON lop.user_id = users.id
+                    JOIN branches b ON users.branch_id = b.id
+                    WHERE b.id IN ({$inList}) AND DATE(lopm.updated_at) BETWEEN ? AND ?
+                    GROUP BY b.id, {$gMed}
 
-            // --- revenue: services ---
-            $svcRows = DB::connection($conn)->table('list_of_payments')
-                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-                ->join('users', 'check_up_results.user_id', '=', 'users.id')
-                ->join('branches', 'users.branch_id', '=', 'branches.id')
-                ->select(
-                    'branches.id as branch_id',
-                    DB::raw(sprintf($grpExpr, 'list_of_payment_services.updated_at') . ' as period'),
-                    DB::raw("SUM(detail_service_patients.price_overall) as total")
-                )
-                ->whereIn('branches.id', $branchIds)
-                ->whereBetween(DB::raw("DATE(list_of_payment_services.updated_at)"), [$dateFrom, $dateTo])
-                ->groupBy('branches.id', $g('list_of_payment_services.updated_at'))
-                ->get();
+                    UNION ALL
 
-            // --- revenue: petshop + clinic ---
-            $shopClinicRows = DB::connection($conn)->table('payment_petshop_with_clinics as ppwc')
-                ->join('price_item_pet_shops as pip', 'ppwc.price_item_pet_shop_id', '=', 'pip.id')
-                ->join('users', 'ppwc.user_id', '=', 'users.id')
-                ->join('branches', 'users.branch_id', '=', 'branches.id')
-                ->select(
-                    'branches.id as branch_id',
-                    DB::raw(sprintf($grpExpr, 'ppwc.created_at') . ' as period'),
-                    DB::raw("SUM(pip.selling_price * ppwc.total_item) as total")
-                )
-                ->whereIn('branches.id', $branchIds)
-                ->whereBetween(DB::raw("DATE(ppwc.created_at)"), [$dateFrom, $dateTo])
-                ->groupBy('branches.id', $g('ppwc.created_at'))
-                ->get();
+                    SELECT b.id AS branch_id, {$gSvc} AS period,
+                        SUM(dsp.price_overall) AS total
+                    FROM list_of_payments lop2
+                    JOIN check_up_results cur ON lop2.check_up_result_id = cur.id
+                    JOIN list_of_payment_services lops ON cur.id = lops.check_up_result_id
+                    JOIN detail_service_patients dsp ON lops.detail_service_patient_id = dsp.id
+                    JOIN users ON cur.user_id = users.id
+                    JOIN branches b ON users.branch_id = b.id
+                    WHERE b.id IN ({$inList}) AND DATE(lops.updated_at) BETWEEN ? AND ?
+                    GROUP BY b.id, {$gSvc}
 
-            // --- revenue: petshop only ---
-            $shopRows = DB::connection($conn)->table('payment_petshops as pp')
-                ->join('price_item_pet_shops as pip', 'pp.price_item_pet_shop_id', '=', 'pip.id')
-                ->join('users', 'pp.user_id', '=', 'users.id')
-                ->join('branches', 'users.branch_id', '=', 'branches.id')
-                ->select(
-                    'branches.id as branch_id',
-                    DB::raw(sprintf($grpExpr, 'pp.created_at') . ' as period'),
-                    DB::raw("SUM(pip.selling_price * pp.total_item) as total")
-                )
-                ->whereIn('branches.id', $branchIds)
-                ->whereBetween(DB::raw("DATE(pp.created_at)"), [$dateFrom, $dateTo])
-                ->groupBy('branches.id', $g('pp.created_at'))
-                ->get();
+                    UNION ALL
 
-            // --- discount: medicine items ---
-            $discItemRows = DB::connection($conn)->table('list_of_payments as lop')
-                ->join('check_up_results as cur', 'lop.check_up_result_id', '=', 'cur.id')
-                ->join('list_of_payment_medicine_groups as lopm', 'lopm.list_of_payment_id', '=', 'lop.id')
-                ->join('price_medicine_groups as pmg', 'lopm.medicine_group_id', '=', 'pmg.id')
-                ->join('registrations as reg', 'cur.patient_registration_id', '=', 'reg.id')
-                ->join('patients as pa', 'reg.patient_id', '=', 'pa.id')
-                ->join('users', 'lop.user_id', '=', 'users.id')
-                ->join('branches', 'users.branch_id', '=', 'branches.id')
-                ->select(
-                    'branches.id as branch_id',
-                    DB::raw(sprintf($grpExpr, 'lopm.updated_at') . ' as period'),
-                    DB::raw("SUM(lopm.amount_discount) as total")
-                )
-                ->whereIn('branches.id', $branchIds)
-                ->whereBetween(DB::raw("DATE(lopm.updated_at)"), [$dateFrom, $dateTo])
-                ->groupBy('branches.id', $g('lopm.updated_at'))
-                ->get();
+                    SELECT b.id AS branch_id, {$gShop} AS period,
+                        SUM(pip.selling_price * ppwc.total_item) AS total
+                    FROM payment_petshop_with_clinics ppwc
+                    JOIN price_item_pet_shops pip ON ppwc.price_item_pet_shop_id = pip.id
+                    JOIN users ON ppwc.user_id = users.id
+                    JOIN branches b ON users.branch_id = b.id
+                    WHERE b.id IN ({$inList}) AND DATE(ppwc.created_at) BETWEEN ? AND ?
+                    GROUP BY b.id, {$gShop}
 
-            // --- discount: services ---
-            $discSvcRows = DB::connection($conn)->table('list_of_payments')
-                ->join('check_up_results', 'list_of_payments.check_up_result_id', '=', 'check_up_results.id')
-                ->join('list_of_payment_services', 'check_up_results.id', '=', 'list_of_payment_services.check_up_result_id')
-                ->join('detail_service_patients', 'list_of_payment_services.detail_service_patient_id', '=', 'detail_service_patients.id')
-                ->join('price_services', 'detail_service_patients.price_service_id', '=', 'price_services.id')
-                ->join('users', 'check_up_results.user_id', '=', 'users.id')
-                ->join('branches', 'users.branch_id', '=', 'branches.id')
-                ->select(
-                    'branches.id as branch_id',
-                    DB::raw(sprintf($grpExpr, 'list_of_payment_services.updated_at') . ' as period'),
-                    DB::raw("SUM(list_of_payment_services.amount_discount) as total")
-                )
-                ->whereIn('branches.id', $branchIds)
-                ->whereBetween(DB::raw("DATE(list_of_payment_services.updated_at)"), [$dateFrom, $dateTo])
-                ->groupBy('branches.id', $g('list_of_payment_services.updated_at'))
-                ->get();
+                    UNION ALL
 
-            // Build in-memory lookup maps
-            $rev  = [];
-            $disc = [];
+                    SELECT b.id AS branch_id, {$gPet} AS period,
+                        SUM(pip.selling_price * pp.total_item) AS total
+                    FROM payment_petshops pp
+                    JOIN price_item_pet_shops pip ON pp.price_item_pet_shop_id = pip.id
+                    JOIN users ON pp.user_id = users.id
+                    JOIN branches b ON users.branch_id = b.id
+                    WHERE b.id IN ({$inList}) AND DATE(pp.created_at) BETWEEN ? AND ?
+                    GROUP BY b.id, {$gPet}
+                ) r GROUP BY branch_id, period
+            ";
 
-            foreach ([$itemRows, $svcRows, $shopClinicRows, $shopRows] as $rows) {
-                foreach ($rows as $row) {
-                    $rev[$row->branch_id][$row->period] = ($rev[$row->branch_id][$row->period] ?? 0) + (float) $row->total;
-                }
-            }
-            foreach ([$discItemRows, $discSvcRows] as $rows) {
-                foreach ($rows as $row) {
-                    $disc[$row->branch_id][$row->period] = ($disc[$row->branch_id][$row->period] ?? 0) + (float) $row->total;
-                }
+            $rows = DB::connection($conn)->select($sql, [
+                $dateFrom, $dateTo,
+                $dateFrom, $dateTo,
+                $dateFrom, $dateTo,
+                $dateFrom, $dateTo,
+            ]);
+
+            $map = [];
+            foreach ($rows as $row) {
+                $map[$row->branch_id][$row->period] = (float) $row->total;
             }
 
+            // Key by connection + branch id: branch ids are NOT unique across
+            // the separate databases, so keying by id alone would let branches
+            // from different connections clobber each other.
             foreach ($connBranches as $branch) {
                 foreach ($keys as $key) {
-                    $netMap[$branch->id][$key] = ($rev[$branch->id][$key] ?? 0) - ($disc[$branch->id][$key] ?? 0);
+                    $netMap["{$conn}:{$branch->id}"][$key] = $map[$branch->id][$key] ?? 0;
                 }
             }
         }
@@ -329,6 +288,7 @@ class RekapKeseluruhanController extends Controller
 
     public function index(Request $request)
     {
+        set_time_limit(0);
         [$periods, $groupBy, $dateFrom, $dateTo] = $this->buildPeriods($request);
         $branches = $this->getBranches($request);
         $netMap   = $this->fetchNetByBranchAndPeriod($branches, $periods, $groupBy, $dateFrom, $dateTo);
@@ -339,7 +299,7 @@ class RekapKeseluruhanController extends Controller
             foreach ($periods as $period) {
                 $total = 0;
                 foreach ($branches as $b) {
-                    $total += $netMap[$b->id][$period['key']] ?? 0;
+                    $total += $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
                 }
                 $datas->push(['dates' => $period['label'], 'total_omset' => $total]);
             }
@@ -351,7 +311,7 @@ class RekapKeseluruhanController extends Controller
             $row   = ['dates' => $period['label']];
             $total = 0;
             foreach ($branches as $b) {
-                $net                  = $netMap[$b->id][$period['key']] ?? 0;
+                $net                  = $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
                 $row[$b->branch_slug] = $net;
                 $total               += $net;
             }
@@ -364,6 +324,7 @@ class RekapKeseluruhanController extends Controller
 
     public function export(Request $request)
     {
+        set_time_limit(0);
         [$periods, $groupBy, $dateFrom, $dateTo] = $this->buildPeriods($request);
         $branches = $this->getBranches($request);
         $netMap   = $this->fetchNetByBranchAndPeriod($branches, $periods, $groupBy, $dateFrom, $dateTo);
@@ -383,7 +344,7 @@ class RekapKeseluruhanController extends Controller
             foreach ($periods as $period) {
                 $total = 0;
                 foreach ($branches as $b) {
-                    $total += $netMap[$b->id][$period['key']] ?? 0;
+                    $total += $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
                 }
                 $rows[] = [$idx++, $period['label'], number_format($total, 0, ',', '.')];
             }
@@ -394,7 +355,7 @@ class RekapKeseluruhanController extends Controller
                 $total        = 0;
                 $branchValues = [];
                 foreach ($branches as $b) {
-                    $net            = $netMap[$b->id][$period['key']] ?? 0;
+                    $net            = $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
                     $total         += $net;
                     $branchValues[] = number_format($net, 0, ',', '.');
                 }
@@ -402,13 +363,32 @@ class RekapKeseluruhanController extends Controller
             }
         }
 
-        $filename = 'rekap-omset-' . str_replace('_', '-', $request->periode ?? 'mingguan') . '-' . now()->format('Ymd') . '.xlsx';
+        $periode = $request->periode ?? 'mingguan';
+        switch ($periode) {
+            case 'mingguan':
+                $suffix = ($request->start_date ?? '') . '-sd-' . ($request->end_date ?? '');
+                break;
+            case 'bulanan':
+                $suffix = ($request->start_month ?? '') . '-sd-' . ($request->end_month ?? '');
+                break;
+            case 'tahunan':
+                $suffix = $request->tahun ?? Carbon::now()->year;
+                break;
+            case 'sejak_dibuka':
+                $keys   = array_column($periods, 'key');
+                $suffix = ($keys[0] ?? '') . '-sd-' . ($keys[count($keys) - 1] ?? '');
+                break;
+            default:
+                $suffix = now()->format('Ymd');
+        }
+        $filename = 'rekap-omset-' . str_replace('_', '-', $periode) . '-' . $suffix . '.xlsx';
 
         return Excel::download(new RekapOmsetExport($rows, $headingRow, $periodeLabel), $filename);
     }
 
     public function chart(Request $request)
     {
+        set_time_limit(0);
         [$periods, $groupBy, $dateFrom, $dateTo] = $this->buildPeriods($request);
         $branches = $this->getBranches($request);
         $netMap   = $this->fetchNetByBranchAndPeriod($branches, $periods, $groupBy, $dateFrom, $dateTo);
@@ -417,7 +397,7 @@ class RekapKeseluruhanController extends Controller
         foreach ($periods as $period) {
             $total = 0;
             foreach ($branches as $b) {
-                $total += $netMap[$b->id][$period['key']] ?? 0;
+                $total += $netMap["{$b->connection}:{$b->id}"][$period['key']] ?? 0;
             }
             $datas->push(['dates' => $period['label'], 'total_omset' => $total]);
         }
