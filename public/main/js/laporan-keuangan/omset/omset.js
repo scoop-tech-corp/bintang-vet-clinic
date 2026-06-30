@@ -3,13 +3,14 @@ $(document).ready(function () {
   const isNoBranch = role.toLowerCase() === "dokter" || role.toLowerCase() === "resepsionis";
 
   let paramUrlSetup = {
-    periode   : "",
-    branchId  : "",
-    connection: "",
-    startDate : "",
-    endDate   : "",
-    bulan     : "",
-    tahun     : "",
+    periode    : "",
+    branchId   : "",
+    connection : "",
+    startDate  : "",
+    endDate    : "",
+    startMonth : "",
+    endMonth   : "",
+    tahun      : "",
   };
 
   // Populate year select (tahunan)
@@ -20,21 +21,38 @@ $(document).ready(function () {
   }
   $("#selectTahun").html(yearOpts);
 
-  // Bootstrap datepicker – month picker untuk bulanan
-  $("#inputBulan").datepicker({
+  // Bootstrap datepicker – month range picker untuk bulanan
+  const bulanDpOptions = {
     format      : "mm-yyyy",
     startView   : "months",
     minViewMode : "months",
     autoclose   : true,
+  };
+  $("#inputBulanFrom").datepicker(bulanDpOptions);
+  $("#inputBulanTo").datepicker(bulanDpOptions);
+
+  $("#inputBulanFrom, #addonBulanFrom").on("click", function () {
+    $("#inputBulanFrom").datepicker("show");
   });
-  $("#inputBulan, #filter-bulanan .input-group-addon").on("click", function () {
-    $("#inputBulan").datepicker("show");
+  $("#inputBulanTo, #addonBulanTo").on("click", function () {
+    $("#inputBulanTo").datepicker("show");
   });
-  $("#inputBulan").on("changeDate", function () {
+
+  $("#inputBulanFrom").on("changeDate", function () {
     const d = $(this).datepicker("getDate");
     if (d) {
-      paramUrlSetup.bulan = String(d.getMonth() + 1).padStart(2, "0");
-      paramUrlSetup.tahun = String(d.getFullYear());
+      const mm   = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = String(d.getFullYear());
+      paramUrlSetup.startMonth = `${yyyy}-${mm}`;
+      tryLoad();
+    }
+  });
+  $("#inputBulanTo").on("changeDate", function () {
+    const d = $(this).datepicker("getDate");
+    if (d) {
+      const mm   = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = String(d.getFullYear());
+      paramUrlSetup.endMonth = `${yyyy}-${mm}`;
       tryLoad();
     }
   });
@@ -65,12 +83,52 @@ $(document).ready(function () {
     onFilterCabang($(this).val());
   });
 
-  // Mingguan: date range
-  $("#startDate, #endDate").on("change", function () {
-    paramUrlSetup.startDate = $("#startDate").val();
-    paramUrlSetup.endDate   = $("#endDate").val();
-    tryLoad();
-  });
+  // Mingguan: daterangepicker (diinisialisasi saat periode dipilih)
+  function initMingguanDatepicker() {
+    const $input = $("#datepicker-omset-range");
+    $input.val("");
+
+    if ($input.data("daterangepicker")) {
+      $input.data("daterangepicker").remove();
+    }
+    $input.off("apply.daterangepicker cancel.daterangepicker");
+
+    $input.daterangepicker({
+      autoUpdateInput : false,
+      autoApply       : false,
+      linkedCalendars : true,
+      opens           : "right",
+      locale: {
+        format      : "YYYY-MM-DD",
+        applyLabel  : "Terapkan",
+        cancelLabel : "Batal",
+        fromLabel   : "Dari",
+        toLabel     : "Sampai",
+        daysOfWeek  : ["Min","Sen","Sel","Rab","Kam","Jum","Sab"],
+        monthNames  : ["Januari","Februari","Maret","April","Mei","Juni",
+                       "Juli","Agustus","September","Oktober","November","Desember"],
+        firstDay    : 1,
+      },
+    });
+
+    $input.on("apply.daterangepicker", function (ev, picker) {
+      paramUrlSetup.startDate = picker.startDate.format("YYYY-MM-DD");
+      paramUrlSetup.endDate   = picker.endDate.format("YYYY-MM-DD");
+      $input.val(paramUrlSetup.startDate + " - " + paramUrlSetup.endDate);
+      tryLoad();
+    });
+
+    $input.on("cancel.daterangepicker", function () {
+      $input.val("");
+      paramUrlSetup.startDate = "";
+      paramUrlSetup.endDate   = "";
+    });
+
+    // calendar icon juga buka picker
+    $("#filter-mingguan .input-group-addon").off("click.drp").on("click.drp", function () {
+      $input.trigger("click");
+    });
+  }
 
   // Tahunan: tahun
   $("#selectTahun").on("change", function () {
@@ -88,36 +146,72 @@ $(document).ready(function () {
     $(".filter-periode-input").css("display", "none");
     if (periode === "mingguan") {
       $("#filter-mingguan").css("display", "flex");
+      initMingguanDatepicker();
+      if (!isNoBranch) {
+        $("#filterCabang").val(null).trigger("change");
+        paramUrlSetup.branchId   = "";
+        paramUrlSetup.connection = "";
+        $("#cabang-filter-wrapper").hide();
+      }
     } else if (periode === "bulanan") {
       $("#filter-bulanan").css("display", "flex");
+      if (!isNoBranch) {
+        $("#filterCabang").val(null).trigger("change");
+        paramUrlSetup.branchId   = "";
+        paramUrlSetup.connection = "";
+        $("#cabang-filter-wrapper").hide();
+      }
     } else if (periode === "tahunan") {
       $("#filter-tahunan").css("display", "flex");
+      if (!isNoBranch) {
+        $("#filterCabang").val(null).trigger("change");
+        paramUrlSetup.branchId   = "";
+        paramUrlSetup.connection = "";
+        $("#cabang-filter-wrapper").hide();
+      }
+    } else if (periode === "sejak_dibuka") {
+      if (!isNoBranch) {
+        $("#filterCabang").val(null).trigger("change");
+        paramUrlSetup.branchId   = "";
+        paramUrlSetup.connection = "";
+        $("#cabang-filter-wrapper").hide();
+      }
+    } else {
+      if (!isNoBranch) {
+        $("#cabang-filter-wrapper").show();
+      }
     }
   }
 
   function resetDateParams() {
-    paramUrlSetup.startDate = "";
-    paramUrlSetup.endDate   = "";
-    paramUrlSetup.bulan     = "";
-    paramUrlSetup.tahun     = "";
-    $("#startDate").val("");
-    $("#endDate").val("");
-    $("#inputBulan").val("").datepicker("update", "");
+    paramUrlSetup.startDate  = "";
+    paramUrlSetup.endDate    = "";
+    paramUrlSetup.startMonth = "";
+    paramUrlSetup.endMonth   = "";
+    paramUrlSetup.tahun      = "";
+
+    const drp = $("#datepicker-omset-range").data("daterangepicker");
+    if (drp) drp.remove();
+    $("#datepicker-omset-range").val("");
+
+    $("#inputBulanFrom").val("").datepicker("update", "");
+    $("#inputBulanTo").val("").datepicker("update", "");
     $("#selectTahun").val("");
   }
 
   function isDateReady() {
     const p = paramUrlSetup.periode;
-    if (p === "mingguan")    return !!(paramUrlSetup.startDate && paramUrlSetup.endDate);
-    if (p === "bulanan")     return !!(paramUrlSetup.bulan && paramUrlSetup.tahun);
-    if (p === "tahunan")     return !!paramUrlSetup.tahun;
+    if (p === "mingguan")     return !!(paramUrlSetup.startDate && paramUrlSetup.endDate);
+    if (p === "bulanan")      return !!(paramUrlSetup.startMonth && paramUrlSetup.endMonth);
+    if (p === "tahunan")      return !!paramUrlSetup.tahun;
     if (p === "sejak_dibuka") return true;
     return false;
   }
 
   function canLoad() {
     if (!isDateReady()) return false;
-    if (!isNoBranch && !paramUrlSetup.branchId) return false;
+    const noBranchRequired = ["mingguan", "bulanan", "tahunan", "sejak_dibuka"];
+    if (!noBranchRequired.includes(paramUrlSetup.periode) && !isNoBranch && !paramUrlSetup.branchId) return false;
     return true;
   }
 
@@ -128,26 +222,23 @@ $(document).ready(function () {
 
   function buildParam() {
     const p    = paramUrlSetup.periode;
-    const base = {
-      periode   : p,
-      branch_id : paramUrlSetup.branchId,
-      connection: paramUrlSetup.connection,
-    };
+    const base = { periode: p };
+
     if (p === "mingguan") {
       base.start_date = paramUrlSetup.startDate;
       base.end_date   = paramUrlSetup.endDate;
     } else if (p === "bulanan") {
-      base.bulan = paramUrlSetup.bulan;
-      base.tahun = paramUrlSetup.tahun;
+      base.start_month = paramUrlSetup.startMonth;
+      base.end_month   = paramUrlSetup.endMonth;
     } else if (p === "tahunan") {
       base.tahun = paramUrlSetup.tahun;
     }
+    // sejak_dibuka: tidak perlu parameter tambahan
     return base;
   }
 
   function loadAll() {
     loadLaporanKeuanganOmset();
-    widgetRekapOmset();
   }
 
   // Tombol Generate Excel
@@ -258,6 +349,7 @@ $(document).ready(function () {
         $("#head-laporan-keuangan-omset").append(headHTML);
         $("#list-laporan-keuangan-omset").append(bodyHTML);
         $("#btn-export-omset").show();
+        renderOmsetChart(getData, headers);
       },
       complete: function () { $("#loading-screen").hide(); },
       error: function (err) {
@@ -294,42 +386,59 @@ $(document).ready(function () {
     });
   }
 
-  function widgetRekapOmset() {
-    $.ajax({
-      url    : $(".baseUrl").val() + "/api/laporan-keuangan/rekap-all-chart",
-      headers: { Authorization: `Bearer ${token}` },
-      type   : "GET",
-      data   : buildParam(),
-      beforeSend: function () { $("#loading-screen").show(); },
-      success: function (resp) {
-        const tempDataSeries  = [];
-        const categoriesXAxis = [];
+  function renderOmsetChart(getData, branches) {
+    const categories    = getData.map(d => d.dates);
+    const isMultiBranch = branches && branches.length > 1;
 
-        resp.forEach((dt) => {
-          categoriesXAxis.push(dt.dates);
-          tempDataSeries.push({ name: dt.dates, y: dt.total_omset });
-        });
+    let series, tooltipConfig;
 
-        Highcharts.chart("rekapWidgetOmset", {
-          chart  : { type: "column" },
-          title  : { text: "" },
-          xAxis  : { categories: categoriesXAxis },
-          yAxis  : { title: { text: "Nominal (Rp)" } },
-          legend : { enabled: false },
-          credits: { enabled: false },
-          plotOptions: {
-            column: { dataLabels: { enabled: true } },
+    if (isMultiBranch) {
+      series = branches.map(b => ({
+        name: b.branch_name,
+        data: getData.map(d => d[b.branch_slug] || 0),
+      }));
+      tooltipConfig = {
+        shared     : true,
+        headerFormat: "<b>{point.x}</b><br/>",
+        pointFormatter: function () {
+          return `${this.series.name}: <b>Rp ${Number(this.y).toLocaleString("id-ID")}</b><br/>`;
+        },
+      };
+    } else {
+      series = [{
+        name: "Omset",
+        data: getData.map(d => d.total_omset),
+      }];
+      tooltipConfig = {
+        headerFormat : "<b>{point.x}</b><br/>",
+        pointFormatter: function () {
+          return `Omset: <b>Rp ${Number(this.y).toLocaleString("id-ID")}</b>`;
+        },
+      };
+    }
+
+    Highcharts.chart("rekapWidgetOmset", {
+      chart  : { type: "line" },
+      title  : { text: "" },
+      xAxis  : { categories: categories },
+      yAxis  : {
+        title: { text: "Nominal (Rp)" },
+        labels: {
+          formatter: function () {
+            return Number(this.value).toLocaleString("id-ID");
           },
-          series: [{ name: "Omset", data: tempDataSeries }],
-        });
+        },
       },
-      complete: function () { $("#loading-screen").hide(); },
-      error: function (err) {
-        if (err.status === 401) {
-          localStorage.removeItem("vet-clinic");
-          location.href = $(".baseUrl").val() + "/masuk";
-        }
+      legend : { enabled: isMultiBranch },
+      credits: { enabled: false },
+      plotOptions: {
+        line: {
+          marker    : { enabled: true, radius: 4 },
+          dataLabels: { enabled: false },
+        },
       },
+      tooltip: tooltipConfig,
+      series : series,
     });
   }
 });
