@@ -139,7 +139,10 @@ class LaporanKeuanganHarianController extends Controller
 
 
 
-      if ($data->groupBy('check_up_result_id')->count() == 0) {
+      // Count once and reuse below instead of re-running the same COUNT query twice.
+      $mainDataCount = $data->groupBy('check_up_result_id')->count();
+
+      if ($mainDataCount == 0) {
 
         $data = DB::table('payment_petshops as pp')
           ->join('master_payment_petshops as mpp', 'mpp.id', 'pp.master_payment_petshop_id')
@@ -207,7 +210,7 @@ class LaporanKeuanganHarianController extends Controller
 
       } else {
 
-        $count_data = $data->groupBy('check_up_result_id')->count();
+        $count_data = $mainDataCount;
 
         $offset = ($page - 1) * $items_per_page;
 
