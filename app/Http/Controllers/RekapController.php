@@ -383,10 +383,12 @@ class RekapController extends Controller
           TRIM(SUM(py.total_overall))+0   as total_overall,
           TRIM(SUM(py.basic_sallary))+0   as basic_sallary,
           TRIM(SUM(py.accomodation))+0    as accomodation,
+          TRIM(SUM(py.eat))+0             as eat,
           TRIM(SUM(py.total_turnover))+0  as total_turnover,
           TRIM(SUM(py.total_inpatient))+0 as total_inpatient,
           TRIM(SUM(py.total_surgery))+0   as total_surgery,
-          TRIM(SUM(py.total_grooming))+0  as total_grooming')
+          TRIM(SUM(py.total_grooming))+0  as total_grooming,
+          TRIM(SUM(py.fine))+0            as fine')
         ->where('py.isDeleted', 0)
         ->where('branches.id', $branchId)
         ->whereBetween(DB::raw('DATE(py.date_payed)'), [$dateFrom, $dateTo])
@@ -417,9 +419,9 @@ class RekapController extends Controller
       $sheet->setCellValue('B3', $price_overall);
       $sheet->setCellValue('B4', $amount_discount);
       $sheet->setCellValue('B6', $price_overall - $amount_discount);
-      $sheet->setCellValue('B8', $total_expenses);
+      $sheet->setCellValue('B9', $total_expenses);
 
-      $row          = 11;
+      $row          = 12;
       $temp_sallary = 0;
       foreach ($sallaryUser as $item) {
         $sheet->setCellValue("A{$row}", $item->fullname);
@@ -459,12 +461,14 @@ class RekapController extends Controller
 
         $sheet->setCellValue("{$letter}" . ++$r, $value->basic_sallary);
         $sheet->setCellValue("{$letter}" . ++$r, $value->accomodation);
+        $sheet->setCellValue("{$letter}" . ++$r, $value->eat);
         $sheet->setCellValue("{$letter}" . ++$r, $value->total_turnover);
         $sheet->setCellValue("{$letter}" . ++$r, $value->total_inpatient);
         $sheet->setCellValue("{$letter}" . ++$r, $value->total_surgery);
         $sheet->setCellValue("{$letter}" . ++$r, $value->total_grooming);
+        $sheet->setCellValue("{$letter}" . ++$r, $value->fine);
 
-        $r += 2;
+        $r++;
         $sheet->setCellValue("{$letter}{$r}", $value->total_overall);
         $sheet->getStyle("{$letter}{$r}")->getFont()->setBold(true);
 
@@ -472,7 +476,7 @@ class RekapController extends Controller
       }
 
       if (!empty($letter)) {
-        $sheet->getStyle("F6:{$letter}13")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $sheet->getStyle("F6:{$letter}14")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
       }
     }
 
