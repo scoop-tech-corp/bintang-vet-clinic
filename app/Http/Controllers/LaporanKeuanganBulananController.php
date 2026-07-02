@@ -175,11 +175,11 @@ class LaporanKeuanganBulananController extends Controller
       $data = $data->orderBy('list_of_payment_id', 'desc');
     }
 
-    // ── Pagination (single get() call to count, then slice) ──────────────────────
-    $count_data = $data->get()->count();                    // one query
-    $offset     = max(0, ($page - 1) * $items_per_page);   // never negative
-
-    $rows        = $data->offset($offset)->limit($items_per_page)->get();   // one query
+    // ── Pagination: COUNT via SQL wrapper, then fetch only the required page ────
+    // Wrapping in fromSub avoids loading all rows into PHP memory just to count.
+    $count_data   = DB::query()->fromSub($data, 'cnt')->count();
+    $offset       = max(0, ($page - 1) * $items_per_page);
+    $rows         = $data->offset($offset)->limit($items_per_page)->get();
     $total_paging = ceil($count_data / $items_per_page);
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -289,20 +289,26 @@ class LaporanKeuanganBulananController extends Controller
 
     // ─────────────────────────────────────────────────────────────────────────────
     // 5.  COMBINE TOTALS
+    //     Explicit (float) cast + ?? 0 guards against NULL from SUM() on empty
+    //     periods, ensuring the JSON response always returns stable numeric values.
     // ─────────────────────────────────────────────────────────────────────────────
-    $price_overall   = $item_summary->price_overall   + $service_summary->price_overall
-      + $shop_clinic_summary->price_overall + $shop_summary->price_overall;
+    $price_overall   = (float)($item_summary->price_overall        ?? 0)
+                     + (float)($service_summary->price_overall      ?? 0)
+                     + (float)($shop_clinic_summary->price_overall  ?? 0)
+                     + (float)($shop_summary->price_overall         ?? 0);
 
-    $capital_price   = $item_summary->capital_price   + $service_summary->capital_price
-      + $shop_clinic_summary->capital_price + $shop_summary->capital_price;
+    $capital_price   = (float)($item_summary->capital_price        ?? 0)
+                     + (float)($service_summary->capital_price      ?? 0)
+                     + (float)($shop_clinic_summary->capital_price  ?? 0)
+                     + (float)($shop_summary->capital_price         ?? 0);
 
-    $doctor_fee      = $item_summary->doctor_fee      + $service_summary->doctor_fee;
-    $petshop_fee     = $item_summary->petshop_fee     + $service_summary->petshop_fee;
-    $amount_discount = $item_summary->amount_discount + $service_summary->amount_discount;
+    $doctor_fee      = (float)($item_summary->doctor_fee      ?? 0) + (float)($service_summary->doctor_fee      ?? 0);
+    $petshop_fee     = (float)($item_summary->petshop_fee     ?? 0) + (float)($service_summary->petshop_fee     ?? 0);
+    $amount_discount = (float)($item_summary->amount_discount ?? 0) + (float)($service_summary->amount_discount ?? 0);
 
     $net_profit = $doctor_fee - $total_expenses
-      + $shop_clinic_summary->profit
-      + $shop_summary->profit;
+                + (float)($shop_clinic_summary->profit ?? 0)
+                + (float)($shop_summary->profit        ?? 0);
 
     // ─────────────────────────────────────────────────────────────────────────────
     // 6.  RESPONSE
@@ -494,30 +500,20 @@ class LaporanKeuanganBulananController extends Controller
 
   public function download_excel(Request $request)
   {
-    // if ($request->user()->role == 'resepsionis') {
-    //     return response()->json([
-    //         'message' => 'The user role was invalid.',
-    //         'errors' => ['Akses User tidak diizinkan!'],
-    //     ], 403);
-    // }
+    $branch   = ($request->user()->role === 'admin') ? $request->branch_id : $request->user()->branch_id;
+    $branches = Branch::find($branch);
 
-    if ($request->user()->role == 'admin') {
-      $branch = $request->branch_id;
-    } else {
-      $branch = $request->user()->branch_id;
+    if (!$branches) {
+      return response()->json(['message' => 'Branch tidak ditemukan.'], 404);
     }
 
-    $name = '';
-    $branches = Branch::find($branch);
+    $base = 'Laporan Keuangan Bulanan ' . $branches->branch_name;
 
     if ($request->month && $request->year) {
       $monthName = date('F', mktime(0, 0, 0, $request->month, 10));
-
-      $time = $monthName . ' ' . $request->year;
-
-      $name = 'Laporan Keuangan Bulanan ' . $branches->branch_name . ' ' . $time . '.xlsx';
+      $name      = "{$base} {$monthName} {$request->year}.xlsx";
     } else {
-      $name = 'Laporan Keuangan Bulanan ' . $branches->branch_name . '.xlsx';
+      $name = "{$base}.xlsx";
     }
 
     return Excel::download(
