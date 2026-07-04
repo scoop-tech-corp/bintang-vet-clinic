@@ -35,6 +35,27 @@ class PembayaranController extends Controller
         'registrations.id_number as registration_number',
         'patients.pet_name'
       )
+      ->selectSub(function ($query) {
+        $query->from('list_of_payment_services')
+          ->selectRaw('COUNT(*)')
+          ->whereColumn('list_of_payment_services.check_up_result_id', 'check_up_results.id');
+      }, 'count_payed_service')
+      ->selectSub(function ($query) {
+        $query->from('detail_service_patients')
+          ->selectRaw('COUNT(*)')
+          ->whereColumn('detail_service_patients.check_up_result_id', 'check_up_results.id');
+      }, 'count_service')
+      ->selectSub(function ($query) {
+        $query->from('list_of_payment_medicine_groups as lopm')
+          ->join('detail_medicine_group_check_up_results as dmg', 'lopm.detail_medicine_group_check_up_result_id', '=', 'dmg.id')
+          ->selectRaw('COUNT(*)')
+          ->whereColumn('dmg.check_up_result_id', 'check_up_results.id');
+      }, 'count_payed_item')
+      ->selectSub(function ($query) {
+        $query->from('detail_medicine_group_check_up_results')
+          ->selectRaw('COUNT(*)')
+          ->whereColumn('detail_medicine_group_check_up_results.check_up_result_id', 'check_up_results.id');
+      }, 'count_item')
       // ->whereNotExists(function ($sub) {
       //   $sub->select(DB::raw(1))
       //     ->from('list_of_payments')
@@ -43,7 +64,9 @@ class PembayaranController extends Controller
       ->whereNotBetween(
         DB::raw('DATE(check_up_results.created_at)'),
         ['2021-07-01', '2023-12-31']
-      );
+      )
+      // Exclude rows that are already fully paid off (services and items both fully matched)
+      ->havingRaw('NOT (count_payed_service = count_service AND count_payed_item = count_item)');
 
     // Branch filter only applies to receptionist / doctor roles
     if (in_array($request->user()->role, ['resepsionis', 'dokter'])) {
