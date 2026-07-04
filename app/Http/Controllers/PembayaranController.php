@@ -74,6 +74,51 @@ class PembayaranController extends Controller
     }
 
     return response()->json($data->orderBy('check_up_results.created_at', 'desc')->get(), 200);
+
+    //     SELECT
+    //   check_up_results.id AS check_up_result_id,
+    //   registrations.id_number AS registration_number,
+    //   patients.pet_name,
+    //   (
+    //     SELECT COUNT(*)
+    //     FROM list_of_payment_services
+    //     WHERE list_of_payment_services.check_up_result_id = check_up_results.id
+    //   ) AS count_payed_service,
+    //   (
+    //     SELECT COUNT(*)
+    //     FROM detail_service_patients
+    //     WHERE detail_service_patients.check_up_result_id = check_up_results.id
+    //   ) AS count_service,
+    //   (
+    //     SELECT COUNT(*)
+    //     FROM list_of_payment_medicine_groups AS lopm
+    //     JOIN detail_medicine_group_check_up_results AS dmg
+    //       ON lopm.detail_medicine_group_check_up_result_id = dmg.id
+    //     WHERE dmg.check_up_result_id = check_up_results.id
+    //   ) AS count_payed_item,
+    //   (
+    //     SELECT COUNT(*)
+    //     FROM detail_medicine_group_check_up_results
+    //     WHERE detail_medicine_group_check_up_results.check_up_result_id = check_up_results.id
+    //   ) AS count_item
+    // FROM check_up_results
+    // JOIN registrations
+    //   ON check_up_results.patient_registration_id = registrations.id
+    //   AND check_up_results.status_paid_off = 0
+    // JOIN users
+    //   ON registrations.user_id = users.id
+    // JOIN users AS user_doctor
+    //   ON registrations.doctor_user_id = user_doctor.id
+    // JOIN branches
+    //   ON user_doctor.branch_id = branches.id
+    // JOIN patients
+    //   ON registrations.patient_id = patients.id
+    // WHERE DATE(check_up_results.created_at) NOT BETWEEN '2021-07-01' AND '2023-12-31'
+    //   -- kondisi berikut hanya ditambahkan jika role = resepsionis / dokter:
+    //   -- AND user_doctor.branch_id = :user_branch_id
+    // HAVING NOT (count_payed_service = count_service AND count_payed_item = count_item)
+    // ORDER BY check_up_results.created_at DESC;
+
   }
 
   public function index(Request $request)
