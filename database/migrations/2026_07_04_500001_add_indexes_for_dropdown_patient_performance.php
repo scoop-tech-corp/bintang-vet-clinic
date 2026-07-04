@@ -2,10 +2,19 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class AddIndexesForDropdownPatientPerformance extends Migration
 {
+    private $indexes = [
+        ['list_of_payment_medicine_groups', 'detail_medicine_group_check_up_result_id', 'lopmg_detail_medicine_group_check_up_result_id_idx'],
+        ['list_of_payment_services', 'check_up_result_id', 'list_of_payment_services_check_up_result_id_index'],
+        ['detail_service_patients', 'check_up_result_id', 'detail_service_patients_check_up_result_id_index'],
+        ['detail_medicine_group_check_up_results', 'check_up_result_id', 'detail_medicine_group_check_up_results_check_up_result_id_index'],
+        ['check_up_results', 'created_at', 'check_up_results_created_at_index'],
+    ];
+
     /**
      * Run the migrations.
      *
@@ -13,25 +22,15 @@ class AddIndexesForDropdownPatientPerformance extends Migration
      */
     public function up()
     {
-        Schema::table('list_of_payment_services', function (Blueprint $table) {
-            $table->index('check_up_result_id');
-        });
+        foreach ($this->indexes as [$table, $column, $indexName]) {
+            if ($this->indexExists($table, $indexName)) {
+                continue;
+            }
 
-        Schema::table('detail_service_patients', function (Blueprint $table) {
-            $table->index('check_up_result_id');
-        });
-
-        Schema::table('list_of_payment_medicine_groups', function (Blueprint $table) {
-            $table->index('detail_medicine_group_check_up_result_id');
-        });
-
-        Schema::table('detail_medicine_group_check_up_results', function (Blueprint $table) {
-            $table->index('check_up_result_id');
-        });
-
-        Schema::table('check_up_results', function (Blueprint $table) {
-            $table->index('created_at');
-        });
+            Schema::table($table, function (Blueprint $blueprint) use ($column, $indexName) {
+                $blueprint->index($column, $indexName);
+            });
+        }
     }
 
     /**
@@ -41,24 +40,24 @@ class AddIndexesForDropdownPatientPerformance extends Migration
      */
     public function down()
     {
-        Schema::table('list_of_payment_services', function (Blueprint $table) {
-            $table->dropIndex(['check_up_result_id']);
-        });
+        foreach ($this->indexes as [$table, $column, $indexName]) {
+            if (! $this->indexExists($table, $indexName)) {
+                continue;
+            }
 
-        Schema::table('detail_service_patients', function (Blueprint $table) {
-            $table->dropIndex(['check_up_result_id']);
-        });
+            Schema::table($table, function (Blueprint $blueprint) use ($indexName) {
+                $blueprint->dropIndex($indexName);
+            });
+        }
+    }
 
-        Schema::table('list_of_payment_medicine_groups', function (Blueprint $table) {
-            $table->dropIndex(['detail_medicine_group_check_up_result_id']);
-        });
+    private function indexExists(string $table, string $indexName): bool
+    {
+        $result = DB::select(
+            'SELECT 1 FROM information_schema.statistics WHERE table_schema = ? AND table_name = ? AND index_name = ? LIMIT 1',
+            [DB::getDatabaseName(), $table, $indexName]
+        );
 
-        Schema::table('detail_medicine_group_check_up_results', function (Blueprint $table) {
-            $table->dropIndex(['check_up_result_id']);
-        });
-
-        Schema::table('check_up_results', function (Blueprint $table) {
-            $table->dropIndex(['created_at']);
-        });
+        return count($result) > 0;
     }
 }
