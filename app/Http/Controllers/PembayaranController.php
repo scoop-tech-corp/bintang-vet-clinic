@@ -65,6 +65,8 @@ class PembayaranController extends Controller
         DB::raw('DATE(check_up_results.created_at)'),
         ['2021-07-01', '2023-12-31']
       )
+      // Only show data from the last 2 months
+      ->where('check_up_results.created_at', '>=', now()->subMonths(2))
       // Exclude rows that are already fully paid off (services and items both fully matched)
       ->havingRaw('NOT (count_payed_service = count_service AND count_payed_item = count_item)');
 
