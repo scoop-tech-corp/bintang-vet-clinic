@@ -282,6 +282,31 @@ Route::group(['middleware' => ['api']], function () {
         Route::put('pengeluaran', 'PengeluaranController@update');
         Route::delete('pengeluaran', 'PengeluaranController@delete');
 
+        //mitra vet - stok barang
+        Route::get('mitra-vet/items', 'MitraVetController@index');
+        Route::get('mitra-vet/items/dropdown', 'MitraVetController@itemDropdown');
+        Route::get('mitra-vet/items/download-template', 'MitraVetController@downloadTemplate');
+        Route::post('mitra-vet/items', 'MitraVetController@createItem');
+        Route::post('mitra-vet/items/upload', 'MitraVetController@uploadItems');
+        Route::put('mitra-vet/items', 'MitraVetController@updateItem');
+        Route::delete('mitra-vet/items', 'MitraVetController@deleteItem');
+        Route::post('mitra-vet/tambah-stok', 'MitraVetController@tambahStok');
+        Route::get('mitra-vet/stock-histories/export-excel', 'MitraVetController@exportStockHistories');
+
+        //mitra vet - orderan
+        Route::get('mitra-vet/orders', 'MitraVetController@getOrders');
+        Route::post('mitra-vet/orders', 'MitraVetController@createOrder');
+        Route::delete('mitra-vet/orders', 'MitraVetController@deleteOrder');
+        Route::get('mitra-vet/orders/export-excel', 'MitraVetController@exportOrders');
+
+        //mitra vet - customer
+        Route::get('mitra-vet/customers', 'MitraVetController@getCustomers');
+        Route::post('mitra-vet/customers', 'MitraVetController@createCustomer');
+
+        //mitra vet - grafik
+        Route::get('mitra-vet/chart', 'MitraVetController@chartData');
+
+
         //shift
         Route::get('shift', 'ShiftController@index');
         Route::get('shift/dropdown', 'ShiftController@dropdown');

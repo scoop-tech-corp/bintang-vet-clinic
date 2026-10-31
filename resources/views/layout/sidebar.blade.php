@@ -77,6 +77,7 @@
 			<li class="menuPembayaran"><a href="{{ url('/pembayaran') }}"><i class="fa fa-money" aria-hidden="true"></i> <span>Pembayaran</span></a></li>
       <li class="menuPenggajian"><a href="{{ url('/penggajian') }}"><i class="fa fa-dollar" aria-hidden="true"></i> <span>Penggajian</span></a></li>
 			<li class="menuPengeluaran"><a href="{{ url('/pengeluaran') }}"><i class="fa fa-dollar" aria-hidden="true"></i> <span>Pengeluaran</span></a></li>
+			<li class="menuMitraVet"><a href="{{ url('/mitra-vet') }}"><i class="fa fa-handshake-o" aria-hidden="true"></i> <span>Mitra Vet</span></a></li>
 			<li class="treeview menuAbsensi">
 				<a>
 					<i class="fa fa-id-badge" aria-hidden="true"></i>

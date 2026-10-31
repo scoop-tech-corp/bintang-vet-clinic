@@ -62,6 +62,11 @@ $(document).ready(function() {
       location.href = $('.baseUrl').val() + '/unauthorized';
     }
 
+    // Halaman Mitra Vet hanya untuk admin, dokter, dan resepsionis — selain itu redirect unauthorized
+    if (window.location.pathname.startsWith('/mitra-vet') && !['admin', 'dokter', 'resepsionis'].includes(role)) {
+      location.href = $('.baseUrl').val() + '/unauthorized';
+    }
+
     if (role === 'admin') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuDokter').show();   $('.menuTindakan').show();
@@ -69,7 +74,7 @@ $(document).ready(function() {
       $('.menuKeuangan').show(); $('.menuKunjungan').show();
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
-      $('.menuPengeluaran').show(); $('.menuRekap').show();
+      $('.menuPengeluaran').show(); $('.menuMitraVet').show(); $('.menuRekap').show();
       $('.menuLayanan').show();
       $('.menuAbsensi').show();
       $('.menuMasterShift').show(); $('.menuLaporanAbsensi').show(); $('.menuRadiusException').show();
@@ -79,7 +84,7 @@ $(document).ready(function() {
       $('.menuTindakan').show(); $('.menuPembayaran').show();
       $('.menuKunjungan').show(); $('.menuGudang').show();
       $('.menuPenggajian').show(); $('.menuPeriksa').show();
-      $('.menuPengeluaran').show(); $('.menuKeuangan').show();
+      $('.menuPengeluaran').show(); $('.menuMitraVet').show(); $('.menuKeuangan').show();
       $('.menuRekap').hide();
       $('.menuLayanan').show();
       $('.menuAbsensi').show();
@@ -90,7 +95,7 @@ $(document).ready(function() {
       $('.menuKunjungan').show(); $('.menuPeriksa').show();
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
-      $('.menuPengeluaran').show(); $('.menuRekap').hide();
+      $('.menuPengeluaran').show(); $('.menuMitraVet').show(); $('.menuRekap').hide();
       $('.menuLayanan').show();
       $('.menuAbsensi').show();
       $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
