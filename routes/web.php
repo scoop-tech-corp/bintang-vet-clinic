@@ -186,6 +186,12 @@ Route::get('/pengeluaran', function () {
 	return view('pengeluaran.index');
 });
 
+Route::get('/mitra-vet', function () {
+	return view('mitra-vet.index');
+});
+
+Route::get('/mitra-vet/nota/{id}', 'MitraVetController@notaOrder');
+
 Route::middleware(['jwt.print'])->group(function () {
     Route::get('pendaftaran/cetak/{id}', 'RegistrasiController@cetakRegistrasi');
     Route::get('hasil-pemeriksaan/cetak/{id}', 'HasilPemeriksaanController@cetakHasilPemeriksaan');
