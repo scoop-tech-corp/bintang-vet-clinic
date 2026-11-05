@@ -13,7 +13,7 @@ $(document).ready(function() {
   // if (role.toLowerCase() == 'resepsionis') {
 	// 	window.location.href = $('.baseUrl').val() + `/unauthorized`;
 	// } else {
-    if (role.toLowerCase() == 'dokter' || role.toLowerCase() == 'resepsionis') {
+    if (role.toLowerCase() != 'admin') {
       $('#filterCabang').hide();
       $('.section-right-box-title').css('width', 'unset');
       $('.section-right-box-title .btn-download-excel').css('margin-right', 'unset');

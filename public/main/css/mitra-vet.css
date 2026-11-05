@@ -1,0 +1,190 @@
+/* =========================================================
+   MITRA VET STYLING & RESPONSIVE RULES
+   ========================================================= */
+
+/* Info Cards / Summary */
+.mitra-vet-summary .info-box {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.mitra-vet-summary .info-box-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 90px;
+    font-size: 38px;
+}
+
+.mitra-vet-summary .info-box-content {
+    padding: 15px 10px;
+}
+
+.mitra-vet-summary .info-box-text {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.mitra-vet-summary .info-box-number {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Validation error text */
+.validate-error {
+    color: #dd4b39;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Select2 in Modals */
+.select2-container .select2-selection--single {
+    height: 34px !important;
+    border: 1px solid #d2d6de !important;
+    border-radius: 3px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 32px !important;
+    padding-left: 8px !important;
+    color: #555 !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 32px !important;
+}
+
+/* Tables */
+.table tbody tr td {
+    vertical-align: middle !important;
+}
+
+.table thead th {
+    background-color: #f4f6f9;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Toolbar Buttons Wrap */
+#btn-tambah-barang-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+#btn-tambah-barang-wrap button {
+    margin: 0 !important;
+}
+
+#chart-mitra-vet {
+    min-height: 320px;
+    width: 100%;
+}
+
+.order-item-row td {
+    padding: 6px 10px !important;
+}
+
+/* =========================================================
+   RESPONSIVE BREAKPOINTS (Tablet & Mobile)
+   ========================================================= */
+
+/* Tablet & Mobile Screens (<= 768px) */
+@media (max-width: 768px) {
+    /* Stack inner-box-title sections */
+    .inner-box-title {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .section-left-box-title,
+    .section-right-box-title {
+        width: 100% !important;
+        float: none !important;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .section-right-box-title {
+        justify-content: flex-start;
+    }
+
+    .input-search-section {
+        width: 100% !important;
+    }
+
+    .input-search-section input {
+        width: 100% !important;
+    }
+
+    /* Chart filter header */
+    .box-header > .box-tools.pull-right {
+        position: static !important;
+        float: none !important;
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .box-header > .box-tools.pull-right select {
+        flex: 1 1 auto;
+        min-width: 120px;
+    }
+
+    /* Summary cards: icon & text font */
+    .mitra-vet-summary .info-box-icon {
+        height: 70px;
+        font-size: 28px;
+    }
+
+    .mitra-vet-summary .info-box-number {
+        font-size: 17px;
+    }
+
+    /* Order filter selectors in tab orderan */
+    #filter-order-month,
+    #filter-order-year {
+        flex: 1 1 auto;
+        min-width: 130px;
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        float: none !important;
+        margin: 15px 0 !important;
+    }
+}
+
+/* Small Smartphone Screens (<= 480px) */
+@media (max-width: 480px) {
+    #btn-tambah-barang-wrap button {
+        flex: 1 1 45%;
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+
+    .btn-xs {
+        padding: 3px 6px;
+        font-size: 11px;
+    }
+
+    .nav-tabs-custom > .nav-tabs > li {
+        float: none;
+    }
+
+    .nav-tabs-custom > .nav-tabs > li > a {
+        text-align: center;
+    }
+}

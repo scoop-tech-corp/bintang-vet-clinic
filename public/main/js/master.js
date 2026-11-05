@@ -41,6 +41,10 @@ $(document).ready(function() {
 
     const hostname = window.location.hostname;
 
+    // Modul Mitra Vet HANYA tersedia di localhost, uat.stellavet.net, dan admin.stellavet.net
+    const allowedMitraVetHosts = ['localhost', '127.0.0.1', 'uat.stellavet.net', 'admin.stellavet.net'];
+    const isMitraVetDomain = allowedMitraVetHosts.includes(hostname);
+
     if (hostname === 'bintangvet.stellavet.net' || hostname === 'uat.stellavet.net' || hostname === '127.0.0.1') {
 
       if (role === 'admin') {
@@ -49,7 +53,7 @@ $(document).ready(function() {
         $('.menuOmset').hide();
       } else if (role === 'dokter') {
         $('.menuOmset').hide();
-      } else if (role === 'paramedis') {
+      } else if (role === 'paramedis' || role === 'admin_gudang' || role === 'admin gudang') {
         $('.menuOmset').hide();
       }
 
@@ -62,6 +66,14 @@ $(document).ready(function() {
       location.href = $('.baseUrl').val() + '/unauthorized';
     }
 
+    // Halaman Mitra Vet hanya tersedia di localhost, uat.stellavet.net, dan admin.stellavet.net
+    // dan hanya untuk role admin, admin_gudang, dan resepsionis (dokter tidak memiliki akses)
+    if (window.location.pathname.startsWith('/mitra-vet')) {
+      if (!isMitraVetDomain || !['admin', 'admin_gudang', 'admin gudang', 'resepsionis'].includes(role)) {
+        location.href = $('.baseUrl').val() + '/unauthorized';
+      }
+    }
+
     if (role === 'admin') {
       $('.menuPasien').show();   $('.menuPendaftaran').show();
       $('.menuDokter').show();   $('.menuTindakan').show();
@@ -69,7 +81,7 @@ $(document).ready(function() {
       $('.menuKeuangan').show(); $('.menuKunjungan').show();
       $('.menuCabang').show();   $('.menuUser').show();
       $('.menuPeriksa').show();  $('.menuPenggajian').show();
-      $('.menuPengeluaran').show(); $('.menuRekap').show();
+      $('.menuPengeluaran').show(); $('.menuMitraVet').show(); $('.menuRekap').show();
       $('.menuLayanan').show();
       $('.menuAbsensi').show();
       $('.menuMasterShift').show(); $('.menuLaporanAbsensi').show(); $('.menuRadiusException').show();
@@ -79,7 +91,7 @@ $(document).ready(function() {
       $('.menuTindakan').show(); $('.menuPembayaran').show();
       $('.menuKunjungan').show(); $('.menuGudang').show();
       $('.menuPenggajian').show(); $('.menuPeriksa').show();
-      $('.menuPengeluaran').show(); $('.menuKeuangan').show();
+      $('.menuPengeluaran').show(); $('.menuMitraVet').show(); $('.menuKeuangan').show();
       $('.menuRekap').hide();
       $('.menuLayanan').show();
       $('.menuAbsensi').show();
@@ -90,13 +102,28 @@ $(document).ready(function() {
       $('.menuKunjungan').show(); $('.menuPeriksa').show();
       $('.menuPendaftaran').show(); $('.menuKeuangan').show();
       $('.menuPembayaran').show(); $('.menuPenggajian').show();
-      $('.menuPengeluaran').show(); $('.menuRekap').hide();
+      $('.menuPengeluaran').show(); $('.menuMitraVet').hide(); $('.menuRekap').hide();
+      $('.menuLayanan').show();
+      $('.menuAbsensi').show();
+      $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
+    } else if (role === 'admin_gudang' || role === 'admin gudang') {
+      $('.menuDokter').show();   $('.menuPasien').show();
+      $('.menuTindakan').show(); $('.menuGudang').show();
+      $('.menuKunjungan').show(); $('.menuPeriksa').show();
+      $('.menuPendaftaran').show(); $('.menuKeuangan').show();
+      $('.menuPembayaran').show(); $('.menuPenggajian').show();
+      $('.menuPengeluaran').show(); $('.menuMitraVet').show(); $('.menuRekap').hide();
       $('.menuLayanan').show();
       $('.menuAbsensi').show();
       $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
     } else if (role === 'paramedis') {
       $('.menuAbsensi').show();
       $('.menuMasterShift').hide(); $('.menuLaporanAbsensi').show();
+    }
+
+    // Pastikan menu Mitra Vet selalu disembunyikan di luar domain yang diizinkan
+    if (!isMitraVetDomain) {
+      $('.menuMitraVet').hide();
     }
   }
 
