@@ -13,9 +13,9 @@
                     <ul style="margin-top:6px; margin-bottom:0;">
                         <li>Download template Excel terlebih dahulu.</li>
                         <li>Isi data sesuai kolom: <code>nama_barang</code>, <code>satuan</code>, <code>harga_modal</code>, <code>harga_jual</code>, <code>stok</code>.</li>
-                        <li><strong>Validasi harga:</strong> <code>harga_jual</code> harus lebih besar dari <code>harga_modal</code>.</li>
+                        <li><strong>Validasi harga:</strong> <code>harga_jual</code> tidak boleh lebih kecil dari <code>harga_modal</code> (boleh sama / profit Rp 0).</li>
                         <li>Jika nama barang sudah ada, stok akan <strong>ditambahkan</strong> (tidak duplikat).</li>
-                        <li>File maksimal 5MB, format <code>.xlsx</code> atau <code>.xls</code>.</li>
+                        <li>File maksimal 5MB, format <code>.xlsx</code>, <code>.xls</code>, atau <code>.csv</code>.</li>
                     </ul>
                 </div>
 
@@ -23,9 +23,9 @@
                 <div id="upload-validation-result" style="display:none; margin-bottom:10px;"></div>
 
                 <div class="form-group">
-                    <label>Pilih File Excel <span class="text-danger">*</span></label>
-                    <input type="file" id="input-file-excel" accept=".xls,.xlsx" class="form-control">
-                    <small class="text-muted">Format: .xls atau .xlsx | Maks: 5MB</small>
+                    <label>Pilih File Excel / CSV <span class="text-danger">*</span></label>
+                    <input type="file" id="input-file-excel" accept=".xls,.xlsx,.csv" class="form-control">
+                    <small class="text-muted">Format: .xls, .xlsx, atau .csv | Maks: 5MB</small>
                     <div id="err-upload-file" class="validate-error"></div>
                 </div>
 
