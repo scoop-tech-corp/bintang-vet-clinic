@@ -197,10 +197,10 @@ class MitraVetController extends Controller
         $hargaModal = (float) $request->harga_modal;
         $hargaJual  = (float) $request->harga_jual;
 
-        if ($hargaJual <= $hargaModal) {
+        if ($hargaJual < $hargaModal) {
             return response()->json([
                 'message' => 'Data tidak valid.',
-                'errors'  => ['Harga Jual harus lebih besar dari Harga Modal!'],
+                'errors'  => ['Harga Jual tidak boleh lebih kecil dari Harga Modal! (Harga Modal: Rp ' . number_format($hargaModal, 0, ',', '.') . ', Harga Jual: Rp ' . number_format($hargaJual, 0, ',', '.') . ')'],
             ], 422);
         }
 
@@ -290,10 +290,10 @@ class MitraVetController extends Controller
         $hargaModal = (float) $request->harga_modal;
         $hargaJual  = (float) $request->harga_jual;
 
-        if ($hargaJual <= $hargaModal) {
+        if ($hargaJual < $hargaModal) {
             return response()->json([
                 'message' => 'Data tidak valid.',
-                'errors'  => ['Harga Jual harus lebih besar dari Harga Modal!'],
+                'errors'  => ['Harga Jual tidak boleh lebih kecil dari Harga Modal! (Harga Modal: Rp ' . number_format($hargaModal, 0, ',', '.') . ', Harga Jual: Rp ' . number_format($hargaJual, 0, ',', '.') . ')'],
             ], 422);
         }
 
@@ -464,13 +464,26 @@ class MitraVetController extends Controller
         }
 
         $validate = Validator::make($request->all(), [
-            'file' => 'required|mimes:xls,xlsx|max:5120',
+            'file' => 'required|max:5120',
+        ], [
+            'file.required' => 'File wajib dipilih.',
+            'file.max'      => 'Ukuran file maksimal 5MB.',
         ]);
 
         if ($validate->fails()) {
             return response()->json([
                 'message' => 'File tidak valid.',
                 'errors'  => $validate->errors()->all(),
+            ], 422);
+        }
+
+        // Validasi ekstensi file (.xls, .xlsx, .csv)
+        $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension());
+        if (!in_array($extension, ['xls', 'xlsx', 'csv'])) {
+            return response()->json([
+                'message' => 'Format file tidak didukung.',
+                'errors'  => ["Format file harus berupa Excel (.xlsx, .xls) atau CSV (.csv). File yang Anda pilih berformat: .{$extension}"],
             ], 422);
         }
 
@@ -484,7 +497,7 @@ class MitraVetController extends Controller
             if (empty($data)) {
                 return response()->json([
                     'message' => 'File kosong.',
-                    'errors'  => ['File Excel tidak memiliki data.'],
+                    'errors'  => ['File tidak memiliki data untuk diimpor.'],
                 ], 422);
             }
 
@@ -495,8 +508,12 @@ class MitraVetController extends Controller
 
             if (!empty($missingCols)) {
                 return response()->json([
-                    'message' => 'Format file tidak sesuai.',
-                    'errors'  => ['Kolom berikut tidak ditemukan pada template Excel: ' . implode(', ', $missingCols) . '. Silakan download dan gunakan template Excel terbaru.'],
+                    'message' => 'Format kolom file tidak sesuai.',
+                    'errors'  => [
+                        'Kolom wajib berikut tidak ditemukan pada file: ' . implode(', ', $missingCols) . '.',
+                        'Kolom yang ditemukan: ' . implode(', ', $firstRow) . '.',
+                        'Pastikan baris pertama (header) memiliki kolom: nama_barang, satuan, harga_modal, harga_jual, stok.'
+                    ],
                 ], 422);
             }
 
@@ -504,40 +521,47 @@ class MitraVetController extends Controller
             $validationErrors = [];
             foreach ($data as $index => $row) {
                 $rowNumber = $index + 2; // +2 karena baris 1 adalah header
+                $nama = trim($row['nama_barang'] ?? '');
+                $itemLabel = $nama ? " ({$nama})" : "";
 
-                if (empty(trim($row['nama_barang'] ?? ''))) {
-                    $validationErrors[] = "Baris {$rowNumber}: nama_barang wajib diisi.";
+                if (empty($nama)) {
+                    $validationErrors[] = "Baris {$rowNumber}: Kolom 'nama_barang' wajib diisi.";
                 }
                 if (empty(trim($row['satuan'] ?? ''))) {
-                    $validationErrors[] = "Baris {$rowNumber}: satuan wajib diisi.";
+                    $validationErrors[] = "Baris {$rowNumber}{$itemLabel}: Kolom 'satuan' wajib diisi.";
                 }
                 
-                $hasModal = isset($row['harga_modal']) && is_numeric($row['harga_modal']) && $row['harga_modal'] >= 0;
-                $hasJual  = isset($row['harga_jual']) && is_numeric($row['harga_jual']) && $row['harga_jual'] >= 0;
+                $cleanModal = isset($row['harga_modal']) ? str_replace(',', '', trim($row['harga_modal'])) : '';
+                $cleanJual  = isset($row['harga_jual']) ? str_replace(',', '', trim($row['harga_jual'])) : '';
+                $cleanStok  = isset($row['stok']) ? str_replace(',', '', trim($row['stok'])) : '';
+
+                $hasModal = ($cleanModal !== '') && is_numeric($cleanModal) && (float) $cleanModal >= 0;
+                $hasJual  = ($cleanJual !== '') && is_numeric($cleanJual) && (float) $cleanJual >= 0;
 
                 if (!$hasModal) {
-                    $validationErrors[] = "Baris {$rowNumber}: harga_modal harus berupa angka >= 0.";
+                    $validationErrors[] = "Baris {$rowNumber}{$itemLabel}: Kolom 'harga_modal' harus berupa angka >= 0 (Nilai saat ini: '{$row['harga_modal']}').";
                 }
                 if (!$hasJual) {
-                    $validationErrors[] = "Baris {$rowNumber}: harga_jual harus berupa angka >= 0.";
+                    $validationErrors[] = "Baris {$rowNumber}{$itemLabel}: Kolom 'harga_jual' harus berupa angka >= 0 (Nilai saat ini: '{$row['harga_jual']}').";
                 }
 
+                // Harga Jual tidak boleh lebih kecil dari Harga Modal (boleh sama / profit Rp 0)
                 if ($hasModal && $hasJual) {
-                    $modalVal = (float) $row['harga_modal'];
-                    $jualVal  = (float) $row['harga_jual'];
-                    if ($jualVal <= $modalVal) {
-                        $validationErrors[] = "Baris {$rowNumber}: Harga Jual (Rp " . number_format($jualVal, 0, ',', '.') . ") harus lebih besar dari Harga Modal (Rp " . number_format($modalVal, 0, ',', '.') . ").";
+                    $modalVal = (float) $cleanModal;
+                    $jualVal  = (float) $cleanJual;
+                    if ($jualVal < $modalVal) {
+                        $validationErrors[] = "Baris {$rowNumber}{$itemLabel}: Harga Jual (Rp " . number_format($jualVal, 0, ',', '.') . ") tidak boleh lebih kecil dari Harga Modal (Rp " . number_format($modalVal, 0, ',', '.') . ").";
                     }
                 }
 
-                if (!isset($row['stok']) || !is_numeric($row['stok']) || (int) $row['stok'] < 0) {
-                    $validationErrors[] = "Baris {$rowNumber}: stok harus berupa angka bulat >= 0.";
+                if ($cleanStok === '' || !is_numeric($cleanStok) || (int) $cleanStok < 0) {
+                    $validationErrors[] = "Baris {$rowNumber}{$itemLabel}: Kolom 'stok' harus berupa angka bulat >= 0 (Nilai saat ini: '{$row['stok']}').";
                 }
             }
 
             if (!empty($validationErrors)) {
                 return response()->json([
-                    'message' => 'Terdapat kesalahan pada data.',
+                    'message' => 'Terdapat kesalahan validasi pada data file (' . count($validationErrors) . ' error).',
                     'errors'  => $validationErrors,
                 ], 422);
             }
@@ -552,9 +576,9 @@ class MitraVetController extends Controller
             try {
                 foreach ($data as $row) {
                     $namaBarangClean = trim(preg_replace('/\s+/', ' ', $row['nama_barang']));
-                    $qtyTambah       = (int) $row['stok'];
-                    $hargaModal      = (float) str_replace(',', '', $row['harga_modal']);
-                    $hargaJual       = (float) str_replace(',', '', $row['harga_jual']);
+                    $qtyTambah       = (int) str_replace(',', '', trim($row['stok']));
+                    $hargaModal      = (float) str_replace(',', '', trim($row['harga_modal']));
+                    $hargaJual       = (float) str_replace(',', '', trim($row['harga_jual']));
                     $profit          = $hargaJual - $hargaModal;
                     $satuan          = trim($row['satuan']);
 

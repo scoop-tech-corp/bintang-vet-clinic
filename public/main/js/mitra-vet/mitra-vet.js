@@ -179,8 +179,8 @@ $(document).ready(function () {
         const profit = jual - modal;
         if (jual > 0 || modal > 0) {
             $('#input-profit').val(formatRupiah(profit));
-            if (jual <= modal && jual > 0) {
-                $('#err-harga-jual').text('Harga Jual harus lebih besar dari Harga Modal!');
+            if (jual < modal && jual > 0) {
+                $('#err-harga-jual').text('Harga Jual tidak boleh lebih kecil dari Harga Modal!');
             } else {
                 $('#err-harga-jual').empty();
             }
@@ -236,8 +236,8 @@ $(document).ready(function () {
         if (!satuan) { $('#err-satuan').text('Satuan wajib diisi'); hasError = true; }
         if (!modal || isNaN(modal) || parseFloat(modal) < 0) { $('#err-harga-modal').text('Harga modal harus angka valid (>= 0)'); hasError = true; }
         if (!jual || isNaN(jual) || parseFloat(jual) < 0) { $('#err-harga-jual').text('Harga jual harus angka valid (>= 0)'); hasError = true; }
-        if (!hasError && parseFloat(jual) <= parseFloat(modal)) {
-            $('#err-harga-jual').text('Harga Jual harus lebih besar dari Harga Modal!');
+        if (!hasError && parseFloat(jual) < parseFloat(modal)) {
+            $('#err-harga-jual').text('Harga Jual tidak boleh lebih kecil dari Harga Modal!');
             hasError = true;
         }
 
@@ -403,8 +403,8 @@ $(document).ready(function () {
         const profit = jual - modal;
         if (jual > 0 || modal > 0) {
             $('#tab-profit').val(formatRupiah(profit));
-            if (jual <= modal && jual > 0) {
-                $('#err-tab-jual').text('Harga Jual harus lebih besar dari Harga Modal!');
+            if (jual < modal && jual > 0) {
+                $('#err-tab-jual').text('Harga Jual tidak boleh lebih kecil dari Harga Modal!');
             } else {
                 $('#err-tab-jual').empty();
             }
@@ -435,8 +435,8 @@ $(document).ready(function () {
         if (!satuan) { $('#err-tab-satuan').text('Satuan wajib diisi'); hasError = true; }
         if (!modal || isNaN(modal) || parseFloat(modal) < 0) { $('#err-tab-modal').text('Harga modal harus angka valid (>= 0)'); hasError = true; }
         if (!jual || isNaN(jual) || parseFloat(jual) < 0) { $('#err-tab-jual').text('Harga jual harus angka valid (>= 0)'); hasError = true; }
-        if (!hasError && parseFloat(jual) <= parseFloat(modal)) {
-            $('#err-tab-jual').text('Harga Jual harus lebih besar dari Harga Modal!');
+        if (!hasError && parseFloat(jual) < parseFloat(modal)) {
+            $('#err-tab-jual').text('Harga Jual tidak boleh lebih kecil dari Harga Modal!');
             hasError = true;
         }
         if (stokAwal === '' || isNaN(stokAwal) || parseInt(stokAwal) < 0) {
@@ -527,7 +527,7 @@ $(document).ready(function () {
 
         const fileInput = document.getElementById('tab-file-excel');
         if (!fileInput.files.length) {
-            $('#err-tab-upload-file').text('Pilih file Excel terlebih dahulu (.xlsx / .xls)');
+            $('#err-tab-upload-file').text('Pilih file terlebih dahulu (.xlsx, .xls, atau .csv)');
             return;
         }
 
@@ -560,22 +560,41 @@ $(document).ready(function () {
                 }
                 successHtml += `</div>`;
                 $('#tab-upload-result').html(successHtml).show();
-                showNotice('Berhasil', resp.message || 'Data Excel berhasil diproses.');
+                showNotice('Berhasil', resp.message || 'Data file berhasil diproses.');
                 loadStokBarang();
                 loadChart();
             },
             error: function (err) {
                 $('#tab-upload-progress').hide();
                 $('#btnTabProsesUpload').prop('disabled', false);
-                let errHtml = '<div class="alert alert-danger"><strong>Gagal mengunggah file:</strong><ul>';
+                let errHtml = `
+                    <div class="alert alert-danger" style="max-height: 280px; overflow-y: auto;">
+                        <div style="font-weight:bold; font-size:13px; margin-bottom:6px;">
+                            <i class="fa fa-exclamation-triangle"></i> Gagal Mengunggah File (Terdapat Kesalahan Validasi):
+                        </div>
+                        <ul style="padding-left:18px; margin-bottom:0;">
+                `;
                 if (err.responseJSON && err.responseJSON.errors) {
-                    err.responseJSON.errors.forEach(function (e) {
-                        errHtml += `<li>${e}</li>`;
-                    });
+                    if (Array.isArray(err.responseJSON.errors)) {
+                        err.responseJSON.errors.forEach(function (e) {
+                            errHtml += `<li style="margin-bottom:3px;">${e}</li>`;
+                        });
+                    } else if (typeof err.responseJSON.errors === 'object') {
+                        Object.keys(err.responseJSON.errors).forEach(function (k) {
+                            const errVal = err.responseJSON.errors[k];
+                            if (Array.isArray(errVal)) {
+                                errVal.forEach(function (msg) {
+                                    errHtml += `<li style="margin-bottom:3px;">${msg}</li>`;
+                                });
+                            } else {
+                                errHtml += `<li style="margin-bottom:3px;">${errVal}</li>`;
+                            }
+                        });
+                    }
                 } else if (err.responseJSON && err.responseJSON.message) {
                     errHtml += `<li>${err.responseJSON.message}</li>`;
                 } else {
-                    errHtml += `<li>Terjadi kesalahan jaringan atau server.</li>`;
+                    errHtml += `<li>Terjadi kesalahan jaringan atau server saat memproses file.</li>`;
                 }
                 errHtml += '</ul></div>';
                 $('#tab-upload-result').html(errHtml).show();
