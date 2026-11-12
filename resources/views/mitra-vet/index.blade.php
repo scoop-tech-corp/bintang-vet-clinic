@@ -230,9 +230,9 @@
                                     <ol style="margin-top:6px; margin-bottom:0; padding-left:18px;">
                                         <li>Unduh template Excel resmi terlebih dahulu.</li>
                                         <li>Isi kolom: <code>nama_barang</code>, <code>satuan</code>, <code>harga_modal</code>, <code>harga_jual</code>, <code>stok</code>.</li>
-                                        <li><strong>Validasi harga:</strong> <code>harga_jual</code> harus lebih besar dari <code>harga_modal</code>.</li>
+                                        <li><strong>Validasi harga:</strong> <code>harga_jual</code> tidak boleh lebih kecil dari <code>harga_modal</code> (boleh sama / profit Rp 0).</li>
                                         <li>Jika nama barang sudah ada, sistem akan <strong>menambahkan stoknya</strong> dan memperbarui harga modal & jual.</li>
-                                        <li>Maksimal ukuran file 5MB (format <code>.xlsx</code> atau <code>.xls</code>).</li>
+                                        <li>Maksimal ukuran file 5MB (format <code>.xlsx</code>, <code>.xls</code>, atau <code>.csv</code>).</li>
                                     </ol>
                                 </div>
 
@@ -245,8 +245,8 @@
                                 <div id="tab-upload-result" style="display:none; margin-bottom:12px;"></div>
 
                                 <div class="form-group">
-                                    <label>Pilih File Excel Hasil Pengisian <span class="text-danger">*</span></label>
-                                    <input type="file" id="tab-file-excel" accept=".xls,.xlsx" class="form-control">
+                                    <label>Pilih File Excel / CSV Hasil Pengisian <span class="text-danger">*</span></label>
+                                    <input type="file" id="tab-file-excel" accept=".xls,.xlsx,.csv" class="form-control">
                                     <div id="err-tab-upload-file" class="validate-error"></div>
                                 </div>
 

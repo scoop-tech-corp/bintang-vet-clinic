@@ -38,7 +38,7 @@
                     <div class="form-group">
                         <label>Estimasi Profit (Rp)</label>
                         <input type="text" class="form-control" id="input-profit" placeholder="Rp 0" readonly style="background-color:#eef2f7; font-weight:bold; color:#1a6596;">
-                        <small class="text-muted"><i class="fa fa-info-circle"></i> Harga Jual harus lebih besar dari Harga Modal.</small>
+                        <small class="text-muted"><i class="fa fa-info-circle"></i> Harga Jual tidak boleh lebih kecil dari Harga Modal.</small>
                     </div>
                     <div class="form-group" id="wrap-stok-awal">
                         <label id="label-stok-barang">Stok Awal <span class="text-danger">*</span></label>
