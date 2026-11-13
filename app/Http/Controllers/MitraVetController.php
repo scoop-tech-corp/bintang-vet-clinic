@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use DB;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Validator;
 
 class MitraVetController extends Controller
@@ -487,33 +488,79 @@ class MitraVetController extends Controller
             ], 422);
         }
 
+        @ini_set('memory_limit', '512M');
+        @ini_set('max_execution_time', '300');
+
         try {
-            $import = new MitraVetItemImport($request->user()->id);
+            $filePath = $file->getRealPath();
+            $reader = IOFactory::createReaderForFile($filePath);
+            if (method_exists($reader, 'setReadDataOnly')) {
+                $reader->setReadDataOnly(true);
+            }
+            if (method_exists($reader, 'setReadEmptyCells')) {
+                $reader->setReadEmptyCells(false);
+            }
 
-            // Baca dulu untuk preview & validasi sebelum import
-            $rows = Excel::toArray(new MitraVetItemImport($request->user()->id), $request->file('file'));
-            $data = $rows[0] ?? [];
+            $spreadsheet = $reader->load($filePath);
+            $sheet = $spreadsheet->getActiveSheet();
+            $highestRow = $sheet->getHighestDataRow();
+            $highestColumn = $sheet->getHighestDataColumn();
 
-            if (empty($data)) {
+            if ($highestRow < 2) {
                 return response()->json([
                     'message' => 'File kosong.',
                     'errors'  => ['File tidak memiliki data untuk diimpor.'],
                 ], 422);
             }
 
+            // Baca data hanya dalam rentang yang berisi isi (menghindari memory exhausted jika dimensi sheet 1.048.576)
+            $rawRows = $sheet->rangeToArray("A1:{$highestColumn}{$highestRow}", null, true, false, false);
+            $headerRow = array_shift($rawRows);
+
+            $headerKeys = array_map(function($h) {
+                $h = strtolower(trim((string)$h));
+                $h = str_replace([' ', '-'], '_', $h);
+                return $h;
+            }, $headerRow);
+
             // Validasi kolom wajib ada
             $requiredColumns = ['nama_barang', 'satuan', 'harga_modal', 'harga_jual', 'stok'];
-            $firstRow        = array_keys($data[0] ?? []);
-            $missingCols     = array_diff($requiredColumns, $firstRow);
+            $missingCols     = array_diff($requiredColumns, $headerKeys);
 
             if (!empty($missingCols)) {
                 return response()->json([
                     'message' => 'Format kolom file tidak sesuai.',
                     'errors'  => [
                         'Kolom wajib berikut tidak ditemukan pada file: ' . implode(', ', $missingCols) . '.',
-                        'Kolom yang ditemukan: ' . implode(', ', $firstRow) . '.',
+                        'Kolom yang ditemukan: ' . implode(', ', array_filter($headerKeys)) . '.',
                         'Pastikan baris pertama (header) memiliki kolom: nama_barang, satuan, harga_modal, harga_jual, stok.'
                     ],
+                ], 422);
+            }
+
+            // Bentuk associative array per baris dan lewati baris yang sepenuhnya kosong
+            $data = [];
+            foreach ($rawRows as $r) {
+                $nonEmpty = array_filter($r, function($v) {
+                    return $v !== null && trim((string)$v) !== '';
+                });
+                if (empty($nonEmpty)) {
+                    continue;
+                }
+
+                $rowAssoc = [];
+                foreach ($headerKeys as $idx => $key) {
+                    if ($key) {
+                        $rowAssoc[$key] = $r[$idx] ?? null;
+                    }
+                }
+                $data[] = $rowAssoc;
+            }
+
+            if (empty($data)) {
+                return response()->json([
+                    'message' => 'File kosong.',
+                    'errors'  => ['File tidak memiliki baris data untuk diimpor.'],
                 ], 422);
             }
 
