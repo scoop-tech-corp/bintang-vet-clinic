@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Sistem Administrasi Bintang Vet Clinic | Masuk</title>
+  <title>Sistem Administrasi Stella Vet Clinic | Masuk</title>
+  <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-  <link rel="shortcut icon" type="image/jpg" href="{{ asset('assets/image/logo-vet-clinic.jpg') }}">
+  <link rel="shortcut icon" type="image/jpg" href="{{ asset('assets/image/logo-stella-new.jpeg') }}">
+  <!-- Bootstrap 3.3.7 -->
   <link rel="stylesheet" href="{{ asset('bootstrap/dist/css/bootstrap.min.css') }}">
   <link rel="stylesheet" href="{{ asset('bower_components/font-awesome/css/font-awesome.min.css') }}">
   <link rel="stylesheet" href="{{ asset('bower_components/Ionicons/css/ionicons.min.css') }}">
@@ -77,11 +79,11 @@
 <div class="login-box" id="login-app">
   <input ref="baseUrl" type="hidden" value="{{ url('/') }}"/>
 
-  <div class="header-login-section">
-    <div class="title-login">Sistem Administrasi Bintang Vet Clinic</div>
-    <img src="{{ asset('assets/image/logo-vet-clinic.jpg') }}">
-  </div>
-  <div class="login-container">
+    <div class="header-login-section">
+      <div class="title-login">Sistem Administrasi Stella Vet Clinic</div>
+      <img src="{{ asset('assets/image/logo-stella-new.jpeg') }}">
+    </div>
+    <div class="login-container">
     <div v-if="showAlert" class="alert alert-dismissible"
       v-bind:class="{ 'alert-success': isSuccess, 'alert-danger': !isSuccess }">
       <button type="button" @click="showAlert = false" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>

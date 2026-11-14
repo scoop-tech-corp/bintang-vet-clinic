@@ -22,8 +22,8 @@
 <body>
   <div class="wrapper">
     <div class="header">
-      <img src="{{ asset('assets/image/logo-vet-clinic.jpg') }}" alt="Bintang Vet Clinic">
-      <h1>Bintang Vet Clinic</h1>
+      <img src="{{ asset('assets/image/logo-stella-new.jpeg') }}" alt="Stella Vet Clinic">
+      <h1>Stella Vet Clinic</h1>
     </div>
     <div class="body">
       <p>Halo, <strong>{{ $fullname }}</strong>,</p>
@@ -37,12 +37,12 @@
       <p>Masukkan kode ini di halaman reset password yang sedang Anda buka.</p>
 
       <div class="warning">
-        <strong>Peringatan:</strong> Jangan bagikan kode ini kepada siapapun. Tim Bintang Vet Clinic tidak pernah meminta kode OTP Anda.
+        <strong>Peringatan:</strong> Jangan bagikan kode ini kepada siapapun. Tim Stella Vet Clinic tidak pernah meminta kode OTP Anda.
         Jika Anda tidak merasa meminta reset password, abaikan email ini.
       </div>
     </div>
     <div class="footer">
-      &copy; {{ date('Y') }} Bintang Vet Clinic. Semua hak dilindungi.
+      &copy; {{ date('Y') }} Stella Vet Clinic. Semua hak dilindungi.
     </div>
   </div>
 </body>

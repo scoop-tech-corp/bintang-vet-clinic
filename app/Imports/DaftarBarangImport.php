@@ -58,7 +58,7 @@ class DaftarBarangImport implements ToModel, WithHeadingRow, WithValidation
             '*.nama_barang' => 'required|string',
             '*.jumlah_barang' => 'required|integer',
             '*.limit_barang' => 'required|integer',
-            '*.tanggal_kedaluwarsa_barang_ddmmyyyy' => 'required|date_format:d/m/Y',
+            '*.tanggal_kedaluwarsa_barang_ddmmyyyy' => 'required',
             '*.kode_satuan_barang' => 'required|integer',
             '*.kode_kategori_barang' => 'required|integer',
             '*.kode_cabang_barang' => 'required|integer',

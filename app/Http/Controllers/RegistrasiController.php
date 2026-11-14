@@ -104,346 +104,346 @@ class RegistrasiController extends Controller
     ], 200);
   }
 
-  private function Search($request)
-  {
+    private function Search($request)
+    {
 
-    $temp_column = '';
-    $data = DB::table('registrations')
-      ->join('users', 'registrations.user_id', '=', 'users.id')
-      ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-      ->join('branches', 'patients.branch_id', '=', 'branches.id')
-      ->select(
-        'registrations.id_number',
-        'patients.id_member',
-        'patients.pet_name',
-        'patients.owner_name',
-        'complaint',
-        'registrant',
-        'user_doctor.username',
-        'users.fullname',
-        DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
-      )
-      ->where('registrations.isDeleted', '=', 0);
+        $temp_column = '';
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_name',
+                'patients.owner_name',
+                'complaint',
+                'registrant',
+                'user_doctor.username',
+                'users.fullname',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('registrations.isDeleted', '=', 0);
 
-    if ($request->user()->role == 'resepsionis') {
-      $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        if ($request->user()->role == 'resepsionis') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('registrations.id_number', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'registrations.id_number';
+            return $temp_column;
+        }
+        //==================================================
+
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_name',
+                'patients.owner_name',
+                'complaint',
+                'registrant',
+                'user_doctor.username',
+                'users.fullname',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('registrations.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.id_member', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.id_member';
+            return $temp_column;
+        }
+        //==================================================
+
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_name',
+                'patients.owner_name',
+                'complaint',
+                'registrant',
+                'user_doctor.username',
+                'users.fullname',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('registrations.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.pet_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.pet_name';
+            return $temp_column;
+        }
+        //==================================================
+
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_name',
+                'patients.owner_name',
+                'complaint',
+                'registrant',
+                'user_doctor.username',
+                'users.fullname',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('registrations.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'patients.owner_name';
+            return $temp_column;
+        }
+        //==================================================
+
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_name',
+                'patients.owner_name',
+                'complaint',
+                'registrant',
+                'user_doctor.username',
+                'users.fullname',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('registrations.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('complaint', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'complaint';
+            return $temp_column;
+        }
+        //==================================================
+
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_name',
+                'patients.owner_name',
+                'complaint',
+                'registrant',
+                'user_doctor.username',
+                'users.fullname',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('registrations.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('registrant', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'registrant';
+            return $temp_column;
+        }
+        //==================================================
+
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_name',
+                'patients.owner_name',
+                'complaint',
+                'registrant',
+                'user_doctor.username',
+                'users.fullname',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('registrations.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('user_doctor.username', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'user_doctor.username';
+            return $temp_column;
+        }
+        //==================================================
+
+        $data = DB::table('registrations')
+            ->join('users', 'registrations.user_id', '=', 'users.id')
+            ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
+            ->join('patients', 'registrations.patient_id', '=', 'patients.id')
+            ->join('branches', 'patients.branch_id', '=', 'branches.id')
+            ->select(
+                'registrations.id_number',
+                'patients.id_member',
+                'patients.pet_name',
+                'patients.owner_name',
+                'complaint',
+                'registrant',
+                'user_doctor.username',
+                'users.fullname',
+                DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
+            )
+            ->where('registrations.isDeleted', '=', 0);
+
+        if ($request->user()->role == 'resepsionis') {
+            $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->user()->role == 'dokter') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
+        }
+
+        if ($request->branch_id && $request->user()->role == 'admin') {
+            $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
+        }
+
+        if ($request->keyword) {
+            $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
+        }
+
+        $data = $data->get();
+
+        if (count($data)) {
+            $temp_column = 'users.fullname';
+            return $temp_column;
+        }
+        //==================================================
     }
-
-    if ($request->user()->role == 'dokter') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->branch_id && $request->user()->role == 'admin') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
-    }
-
-    if ($request->keyword) {
-      $data = $data->where('registrations.id_number', 'like', '%' . $request->keyword . '%');
-    }
-
-    $data = $data->get();
-
-    if (count($data)) {
-      $temp_column = 'registrations.id_number';
-      return $temp_column;
-    }
-    //==================================================
-
-    $data = DB::table('registrations')
-      ->join('users', 'registrations.user_id', '=', 'users.id')
-      ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-      ->join('branches', 'patients.branch_id', '=', 'branches.id')
-      ->select(
-        'registrations.id_number',
-        'patients.id_member',
-        'patients.pet_name',
-        'patients.owner_name',
-        'complaint',
-        'registrant',
-        'user_doctor.username',
-        'users.fullname',
-        DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
-      )
-      ->where('registrations.isDeleted', '=', 0);
-
-    if ($request->user()->role == 'resepsionis') {
-      $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->user()->role == 'dokter') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->branch_id && $request->user()->role == 'admin') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
-    }
-
-    if ($request->keyword) {
-      $data = $data->where('patients.id_member', 'like', '%' . $request->keyword . '%');
-    }
-
-    $data = $data->get();
-
-    if (count($data)) {
-      $temp_column = 'patients.id_member';
-      return $temp_column;
-    }
-    //==================================================
-
-    $data = DB::table('registrations')
-      ->join('users', 'registrations.user_id', '=', 'users.id')
-      ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-      ->join('branches', 'patients.branch_id', '=', 'branches.id')
-      ->select(
-        'registrations.id_number',
-        'patients.id_member',
-        'patients.pet_name',
-        'patients.owner_name',
-        'complaint',
-        'registrant',
-        'user_doctor.username',
-        'users.fullname',
-        DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
-      )
-      ->where('registrations.isDeleted', '=', 0);
-
-    if ($request->user()->role == 'resepsionis') {
-      $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->user()->role == 'dokter') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->branch_id && $request->user()->role == 'admin') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
-    }
-
-    if ($request->keyword) {
-      $data = $data->where('patients.pet_name', 'like', '%' . $request->keyword . '%');
-    }
-
-    $data = $data->get();
-
-    if (count($data)) {
-      $temp_column = 'patients.pet_name';
-      return $temp_column;
-    }
-    //==================================================
-
-    $data = DB::table('registrations')
-      ->join('users', 'registrations.user_id', '=', 'users.id')
-      ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-      ->join('branches', 'patients.branch_id', '=', 'branches.id')
-      ->select(
-        'registrations.id_number',
-        'patients.id_member',
-        'patients.pet_name',
-        'patients.owner_name',
-        'complaint',
-        'registrant',
-        'user_doctor.username',
-        'users.fullname',
-        DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
-      )
-      ->where('registrations.isDeleted', '=', 0);
-
-    if ($request->user()->role == 'resepsionis') {
-      $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->user()->role == 'dokter') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->branch_id && $request->user()->role == 'admin') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
-    }
-
-    if ($request->keyword) {
-      $data = $data->where('patients.owner_name', 'like', '%' . $request->keyword . '%');
-    }
-
-    $data = $data->get();
-
-    if (count($data)) {
-      $temp_column = 'patients.owner_name';
-      return $temp_column;
-    }
-    //==================================================
-
-    $data = DB::table('registrations')
-      ->join('users', 'registrations.user_id', '=', 'users.id')
-      ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-      ->join('branches', 'patients.branch_id', '=', 'branches.id')
-      ->select(
-        'registrations.id_number',
-        'patients.id_member',
-        'patients.pet_name',
-        'patients.owner_name',
-        'complaint',
-        'registrant',
-        'user_doctor.username',
-        'users.fullname',
-        DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
-      )
-      ->where('registrations.isDeleted', '=', 0);
-
-    if ($request->user()->role == 'resepsionis') {
-      $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->user()->role == 'dokter') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->branch_id && $request->user()->role == 'admin') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
-    }
-
-    if ($request->keyword) {
-      $data = $data->where('complaint', 'like', '%' . $request->keyword . '%');
-    }
-
-    $data = $data->get();
-
-    if (count($data)) {
-      $temp_column = 'complaint';
-      return $temp_column;
-    }
-    //==================================================
-
-    $data = DB::table('registrations')
-      ->join('users', 'registrations.user_id', '=', 'users.id')
-      ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-      ->join('branches', 'patients.branch_id', '=', 'branches.id')
-      ->select(
-        'registrations.id_number',
-        'patients.id_member',
-        'patients.pet_name',
-        'patients.owner_name',
-        'complaint',
-        'registrant',
-        'user_doctor.username',
-        'users.fullname',
-        DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
-      )
-      ->where('registrations.isDeleted', '=', 0);
-
-    if ($request->user()->role == 'resepsionis') {
-      $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->user()->role == 'dokter') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->branch_id && $request->user()->role == 'admin') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
-    }
-
-    if ($request->keyword) {
-      $data = $data->where('registrant', 'like', '%' . $request->keyword . '%');
-    }
-
-    $data = $data->get();
-
-    if (count($data)) {
-      $temp_column = 'registrant';
-      return $temp_column;
-    }
-    //==================================================
-
-    $data = DB::table('registrations')
-      ->join('users', 'registrations.user_id', '=', 'users.id')
-      ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-      ->join('branches', 'patients.branch_id', '=', 'branches.id')
-      ->select(
-        'registrations.id_number',
-        'patients.id_member',
-        'patients.pet_name',
-        'patients.owner_name',
-        'complaint',
-        'registrant',
-        'user_doctor.username',
-        'users.fullname',
-        DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
-      )
-      ->where('registrations.isDeleted', '=', 0);
-
-    if ($request->user()->role == 'resepsionis') {
-      $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->user()->role == 'dokter') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->branch_id && $request->user()->role == 'admin') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
-    }
-
-    if ($request->keyword) {
-      $data = $data->where('user_doctor.username', 'like', '%' . $request->keyword . '%');
-    }
-
-    $data = $data->get();
-
-    if (count($data)) {
-      $temp_column = 'user_doctor.username';
-      return $temp_column;
-    }
-    //==================================================
-
-    $data = DB::table('registrations')
-      ->join('users', 'registrations.user_id', '=', 'users.id')
-      ->join('users as user_doctor', 'registrations.doctor_user_id', '=', 'user_doctor.id')
-      ->join('patients', 'registrations.patient_id', '=', 'patients.id')
-      ->join('branches', 'patients.branch_id', '=', 'branches.id')
-      ->select(
-        'registrations.id_number',
-        'patients.id_member',
-        'patients.pet_name',
-        'patients.owner_name',
-        'complaint',
-        'registrant',
-        'user_doctor.username',
-        'users.fullname',
-        DB::raw("DATE_FORMAT(registrations.created_at, '%d %b %Y') as created_at")
-      )
-      ->where('registrations.isDeleted', '=', 0);
-
-    if ($request->user()->role == 'resepsionis') {
-      $data = $data->where('users.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->user()->role == 'dokter') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->user()->branch_id);
-    }
-
-    if ($request->branch_id && $request->user()->role == 'admin') {
-      $data = $data->where('user_doctor.branch_id', '=', $request->branch_id);
-    }
-
-    if ($request->keyword) {
-      $data = $data->where('users.fullname', 'like', '%' . $request->keyword . '%');
-    }
-
-    $data = $data->get();
-
-    if (count($data)) {
-      $temp_column = 'users.fullname';
-      return $temp_column;
-    }
-    //==================================================
-  }
 
   public function create(Request $request)
   {
@@ -477,7 +477,7 @@ class RegistrasiController extends Controller
       ->where('id', '=', $request->user()->branch_id)
       ->first();
 
-    $registration_number = 'BVC-RP-' . $getbranchuser->branch_code . '-' . str_pad($lasttransaction + 1, 4, 0, STR_PAD_LEFT);
+    $registration_number = 'SVC-RP-' . $getbranchuser->branch_code . '-' . str_pad($lasttransaction + 1, 4, 0, STR_PAD_LEFT);
 
     $dataPet = Patient::find($request->patient_id);
 

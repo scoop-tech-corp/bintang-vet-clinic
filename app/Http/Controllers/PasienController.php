@@ -135,6 +135,7 @@ class PasienController extends Controller
     //         $patient = $patient->where('patients.branch_id', '=', $request->user()->branch_id);
     //     }
 
+            $patient_number = 'SVC-P-' . $getbranchuser->branch_code . '-' . str_pad($lastpatient + 1, 4, 0, STR_PAD_LEFT);
     //     if ($request->branch_id && $request->user()->role == 'admin') {
     //         $patient = $patient->where('patients.branch_id', '=', $request->branch_id);
     //     }
@@ -471,7 +472,7 @@ class PasienController extends Controller
       ->where('id', '=', $request->user()->branch_id)
       ->first();
 
-    $patient_number = 'BVC-P-' . $getbranchuser->branch_code . '-' . str_pad($lastpatient + 1, 4, 0, STR_PAD_LEFT);
+    $patient_number = 'SVC-P-' . $getbranchuser->branch_code . '-' . str_pad($lastpatient + 1, 4, 0, STR_PAD_LEFT);
 
     $petCategory = PetCategory::find($request->pet_category_id);
 
@@ -567,7 +568,7 @@ class PasienController extends Controller
         ->where('id', '=', $request->id_cabang)
         ->first();
 
-      $patient_number = 'BVC-P-' . $getbranchuser->branch_code . '-' . str_pad($lastpatient + 1, 4, 0, STR_PAD_LEFT);
+      $patient_number = 'SVC-P-' . $getbranchuser->branch_code . '-' . str_pad($lastpatient + 1, 4, 0, STR_PAD_LEFT);
 
       $temp_id_member = $patient_number;
       $temp_branch = $request->id_cabang;

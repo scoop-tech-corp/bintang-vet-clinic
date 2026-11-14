@@ -45,7 +45,7 @@ $(document).ready(function() {
   $('#filterCabang').on("select2:unselect", function () { onFilterCabang($(this).val()); });
 
   $('.btn-download-excel').click(function() {
-    const getBranchId = (role.toLowerCase() != 'admin') ? branchId : paramUrlSetup.branchId;
+    const getBranchId = (role.toLowerCase() == 'dokter' || role.toLowerCase() == 'resepsionis') ? branchId : paramUrlSetup.branchId;
 
     if (getBranchId) {
       $.ajax({

@@ -21,7 +21,7 @@ class OtpResetPasswordMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Kode OTP Reset Password - Bintang Vet Clinic')
+        return $this->subject('Kode OTP Reset Password - Stella Vet Clinic')
                     ->view('emails.otp-reset-password');
     }
 }

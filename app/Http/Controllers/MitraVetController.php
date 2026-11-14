@@ -327,34 +327,37 @@ class MitraVetController extends Controller
             $oldStok  = (int) $item->stok;
             $userRole = strtolower($request->user()->role ?? '');
 
-            // Admin Gudang HANYA BISA update/tambah stok, TIDAK BISA mengurangi stok
-            if ($newStok < $oldStok && $userRole !== 'admin') {
-                return response()->json([
-                    'message' => 'Akses ditolak.',
-                    'errors'  => ["Admin Gudang tidak diizinkan mengurangi stok barang! Stok saat ini ({$oldStok}) tidak boleh diturunkan menjadi ({$newStok})."],
-                ], 422);
-            }
-
-            if ($newStok > $oldStok) {
-                $selisih = $newStok - $oldStok;
-                MitraVetStockHistory::create([
-                    'item_id'    => $item->id,
-                    'quantity'   => $selisih,
-                    'type'       => 'masuk',
-                    'keterangan' => "Update penambahan stok barang ({$oldStok} -> {$newStok})",
-                    'created_by' => $request->user()->id,
-                ]);
-                $item->stok = $newStok;
-            } elseif ($newStok < $oldStok && $userRole === 'admin') {
-                $selisih = $oldStok - $newStok;
-                MitraVetStockHistory::create([
-                    'item_id'    => $item->id,
-                    'quantity'   => $selisih,
-                    'type'       => 'keluar',
-                    'keterangan' => "Penyesuaian pengurangan stok oleh Admin ({$oldStok} -> {$newStok})",
-                    'created_by' => $request->user()->id,
-                ]);
-                $item->stok = $newStok;
+            // Admin Gudang TIDAK BISA mengedit stok secara manual
+            if ($userRole !== 'admin') {
+                if ($newStok !== $oldStok) {
+                    return response()->json([
+                        'message' => 'Akses ditolak.',
+                        'errors'  => ["Admin Gudang tidak diizinkan mengedit stok secara manual. Untuk menambah stok silakan gunakan tombol '+ Stok'."],
+                    ], 422);
+                }
+            } else {
+                // Role Admin bisa mengedit stok manual
+                if ($newStok > $oldStok) {
+                    $selisih = $newStok - $oldStok;
+                    MitraVetStockHistory::create([
+                        'item_id'    => $item->id,
+                        'quantity'   => $selisih,
+                        'type'       => 'masuk',
+                        'keterangan' => "Penyesuaian penambahan stok manual oleh Admin ({$oldStok} -> {$newStok})",
+                        'created_by' => $request->user()->id,
+                    ]);
+                    $item->stok = $newStok;
+                } elseif ($newStok < $oldStok) {
+                    $selisih = $oldStok - $newStok;
+                    MitraVetStockHistory::create([
+                        'item_id'    => $item->id,
+                        'quantity'   => $selisih,
+                        'type'       => 'keluar',
+                        'keterangan' => "Penyesuaian pengurangan stok manual oleh Admin ({$oldStok} -> {$newStok})",
+                        'created_by' => $request->user()->id,
+                    ]);
+                    $item->stok = $newStok;
+                }
             }
         }
 
@@ -842,7 +845,7 @@ class MitraVetController extends Controller
      */
     public function createOrder(Request $request)
     {
-        if ($deny = $this->validateRoleAccess($request, ['admin'], 'Hanya Admin yang dapat membuat orderan (mengurangi stok barang).')) {
+        if ($deny = $this->validateRoleAccess($request, self::MITRA_VET_ITEM_MANAGERS, 'Hanya Admin dan Admin Gudang yang dapat membuat orderan.')) {
             return $deny;
         }
 
