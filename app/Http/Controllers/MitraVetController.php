@@ -89,7 +89,7 @@ class MitraVetController extends Controller
                 DB::raw('TRIM(profit)+0 as profit'),
                 DB::raw('TRIM(harga_satuan)+0 as harga_satuan'),
                 'stok',
-                DB::raw('TRIM(harga_satuan)+0 * stok as nilai_aset'),
+                DB::raw('TRIM(harga_modal)+0 * stok as nilai_aset'),
                 'created_by',
                 DB::raw("DATE_FORMAT(created_at, '%d %b %Y') as created_at")
             );
@@ -110,9 +110,9 @@ class MitraVetController extends Controller
 
         $items = $query->offset($offset)->limit($items_per_page)->get();
 
-        // Hitung total nilai aset keseluruhan
+        // Hitung total nilai aset keseluruhan (harga modal * stok real)
         $total_nilai_aset = MitraVetItem::where('is_deleted', false)
-            ->selectRaw('SUM(harga_satuan * stok) as total')
+            ->selectRaw('SUM(harga_modal * stok) as total')
             ->value('total') ?? 0;
 
         $now = Carbon::now();
@@ -1471,13 +1471,13 @@ class MitraVetController extends Controller
         $year  = $request->year  ?? Carbon::now()->year;
         $month = $request->month ?? Carbon::now()->month;
 
-        // Aset masuk: stok yang masuk dalam bulan tersebut (dari history)
+        // Aset masuk: stok yang masuk dalam bulan tersebut (dihitung berdasarkan harga modal)
         $masuk = DB::table('mitra_vet_stock_histories as h')
             ->join('mitra_vet_items as i', 'h.item_id', '=', 'i.id')
             ->select(
                 DB::raw('DAY(h.created_at) as hari'),
                 DB::raw('SUM(h.quantity) as total_qty'),
-                DB::raw('SUM(h.quantity * i.harga_satuan) as total_nilai')
+                DB::raw('SUM(h.quantity * i.harga_modal) as total_nilai')
             )
             ->where('h.type', 'masuk')
             ->whereMonth('h.created_at', $month)
@@ -1486,13 +1486,13 @@ class MitraVetController extends Controller
             ->orderBy('hari')
             ->get();
 
-        // Aset keluar: stok yang keluar dalam bulan tersebut
+        // Aset keluar: stok yang keluar dalam bulan tersebut (dihitung berdasarkan harga modal)
         $keluar = DB::table('mitra_vet_stock_histories as h')
             ->join('mitra_vet_items as i', 'h.item_id', '=', 'i.id')
             ->select(
                 DB::raw('DAY(h.created_at) as hari'),
                 DB::raw('SUM(h.quantity) as total_qty'),
-                DB::raw('SUM(h.quantity * i.harga_satuan) as total_nilai')
+                DB::raw('SUM(h.quantity * i.harga_modal) as total_nilai')
             )
             ->where('h.type', 'keluar')
             ->whereMonth('h.created_at', $month)

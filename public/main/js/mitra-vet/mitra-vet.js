@@ -96,7 +96,7 @@ $(document).ready(function () {
                 } else {
                     data.forEach(function (item, index) {
                         const no = (currentPageStok - 1) * 50 + (index + 1);
-                        const nilaiAset = parseFloat(item.harga_satuan) * parseInt(item.stok);
+                        const nilaiAset = parseFloat(item.harga_modal) * parseInt(item.stok);
                         const stokBadge = item.stok <= 5
                             ? `<span class="label label-danger">${item.stok}</span>`
                             : `<span class="label label-success">${item.stok}</span>`;
