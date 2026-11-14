@@ -39,14 +39,14 @@ $(document).ready(function () {
     }
 
     // Validasi Akses Role:
-    // Admin: Bisa Tambah Barang, Order Barang (mengurangi stok), & Hapus Order
-    // Admin Gudang: Bisa Tambah Barang & Stok, Edit Barang, Lihat Order (tidak bisa buat order karena mengurangi stok barang)
+    // Admin: Bisa Tambah Barang, Buat Order (mengurangi stok via penjualan), Edit Stok Manual, & Hapus Order
+    // Admin Gudang: Bisa Tambah Barang & Stok (+ Stok), Edit Data Barang (tidak bisa edit stok manual), dan Buat Order
     // Resepsionis: Hanya Bisa Lihat Order & Piutang (tidak bisa buat order/tambah barang)
     // Dokter: Tidak memiliki akses ke modul Mitra Vet
     const userRole = (typeof role !== 'undefined' ? role.toLowerCase() : '');
 
-    if (userRole !== 'admin') {
-        // Non-admin tidak bisa membuat orderan (mengurangi stok barang)
+    // Admin dan Admin Gudang dapat membuat orderan
+    if (userRole !== 'admin' && userRole !== 'admin_gudang' && userRole !== 'admin gudang') {
         $('#btnBuatOrder').hide();
     }
 
@@ -196,23 +196,25 @@ $(document).ready(function () {
         selectedItemId = $(this).data('id');
         const itemStok = parseInt($(this).data('stok')) || 0;
 
-        $('#modal-tambah-barang-title').text('Ubah Data & Stok Barang');
         $('#input-nama-barang').val($(this).data('nama'));
         $('#input-satuan').val($(this).data('satuan'));
         $('#input-harga-modal').val($(this).data('modal') || 0);
         $('#input-harga-jual').val($(this).data('jual') || 0);
         hitungModalProfit();
 
-        // Tampilkan field stok untuk update stok barang
+        // Tampilkan field stok
         $('#wrap-stok-awal').show();
-        $('#label-stok-barang').html('Stok Barang <span class="text-danger">*</span>');
         $('#input-stok-awal').val(itemStok).data('current-stok', itemStok);
 
         if (userRole === 'admin_gudang' || userRole === 'admin gudang') {
-            $('#input-stok-awal').attr('min', itemStok);
-            $('#help-stok-barang').show().html('<i class="fa fa-info-circle text-warning"></i> <em>Admin Gudang dapat mengupdate/menambah stok, namun tidak dapat mengurangi stok saat ini (' + itemStok + ').</em>');
+            $('#modal-tambah-barang-title').text('Ubah Data Barang');
+            $('#label-stok-barang').html('Stok Barang Saat Ini');
+            $('#input-stok-awal').prop('readonly', true).css('background-color', '#eee');
+            $('#help-stok-barang').show().html('<i class="fa fa-info-circle text-info"></i> <em>Admin Gudang tidak dapat mengedit stok secara manual. Gunakan tombol <strong>+ Stok</strong> di tabel untuk menambah stok.</em>');
         } else {
-            $('#input-stok-awal').attr('min', 0);
+            $('#modal-tambah-barang-title').text('Ubah Data & Stok Barang');
+            $('#label-stok-barang').html('Stok Barang <span class="text-danger">*</span>');
+            $('#input-stok-awal').prop('readonly', false).css('background-color', '#fff').attr('min', 0);
             $('#help-stok-barang').hide();
         }
 
@@ -230,6 +232,7 @@ $(document).ready(function () {
         const stokInput = $('#input-stok-awal').val().trim();
         const stokVal = parseInt(stokInput);
         const currentStok = parseInt($('#input-stok-awal').data('current-stok')) || 0;
+        const isAdmin = (userRole === 'admin');
 
         let hasError = false;
         if (!nama) { $('#err-nama-barang').text('Nama barang wajib diisi'); hasError = true; }
@@ -241,31 +244,36 @@ $(document).ready(function () {
             hasError = true;
         }
 
-        if (stokInput === '' || isNaN(stokVal) || stokVal < 0) {
-            $('#err-stok-awal').text('Jumlah stok harus berupa angka valid (>= 0)');
-            hasError = true;
-        } else if ((userRole === 'admin_gudang' || userRole === 'admin gudang') && modalActionState === 'edit-item' && stokVal < currentStok) {
-            $('#err-stok-awal').text('Admin Gudang tidak dapat mengurangi stok! Stok saat ini (' + currentStok + '), tidak boleh dikurangi.');
-            hasError = true;
+        if (isAdmin) {
+            if (stokInput === '' || isNaN(stokVal) || stokVal < 0) {
+                $('#err-stok-awal').text('Jumlah stok harus berupa angka valid (>= 0)');
+                hasError = true;
+            }
         }
 
         if (hasError) return;
 
         $('#btnSimpanBarang').prop('disabled', true).text('Menyimpan...');
 
+        const updatePayload = {
+            id: selectedItemId,
+            nama_barang: nama,
+            satuan: satuan,
+            harga_modal: modal,
+            harga_jual: jual
+        };
+
+        // Hanya kirim field stok jika role Admin (Admin Gudang tidak bisa edit stok manual)
+        if (isAdmin) {
+            updatePayload.stok = stokVal;
+        }
+
         $.ajax({
             url: $('.baseUrl').val() + '/api/mitra-vet/items',
             type: 'PUT',
             dataType: 'JSON',
             headers: { Authorization: `Bearer ${token}` },
-            data: {
-                id: selectedItemId,
-                nama_barang: nama,
-                satuan: satuan,
-                harga_modal: modal,
-                harga_jual: jual,
-                stok: stokVal
-            },
+            data: updatePayload,
             success: function (resp) {
                 $('#modal-tambah-barang').modal('hide');
                 showNotice('Sukses', resp.message || 'Data barang berhasil diubah.');
